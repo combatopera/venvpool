@@ -5,7 +5,7 @@ import unittest, os, subprocess, sys, re
 class TestAll(unittest.TestCase):
 
   def test_all(self):
-    thispath = __file__
+    thispath = __file__ # Observe we intentionally do not follow symlink(s).
     top, thisname = os.path.split(thispath)
     flakesregex = []
     f = open(os.path.join(top, '.flakesignore'))
