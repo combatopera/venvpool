@@ -15,9 +15,12 @@ class TestAll(unittest.TestCase):
         flakesregex.append(line)
     finally:
       f.close()
-    flakesregex = re.compile('|'.join(flakesregex))
-    def flakesaccept(path):
-      return flakesregex.search(path[len(top) + len(os.sep):].replace(os.sep, '/')) is None
+    if flakesregex:
+      flakesregex = re.compile('|'.join(flakesregex))
+      def flakesaccept(path):
+        return flakesregex.search(path[len(top) + len(os.sep):].replace(os.sep, '/')) is None
+    else:
+      flakesaccept = lambda path: True
     paths = []
     for dirpath, dirnames, filenames in os.walk(top):
       paths.extend(sorted(os.path.join(dirpath, n) for n in filenames if n.endswith('.py')))
