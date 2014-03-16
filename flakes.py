@@ -1,3 +1,5 @@
 #!/bin/bash
 
-find -name '*.py' -not '(' $(cat .flakesignore) ')' -exec pyflakes '{}' +
+eval "notexpr=($(cat .flakesignore))"
+
+find -name '*.py' -not '(' "${notexpr[@]}" ')' -exec pyflakes '{}' +
