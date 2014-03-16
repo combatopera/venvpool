@@ -2,6 +2,8 @@
 
 cd "$(dirname "$0")"
 
-{ "$(dirname "$(readlink -f "$0")")"/flakes.py && echo 'pyflakes: OK'; } >&2
+eval "notexpr=($(cat .flakesignore))"
+
+{ find -name '*.py' -not '(' "${notexpr[@]}" ')' -exec pyflakes '{}' + && echo 'pyflakes: OK'; } >&2
 
 nosetests --exe -v
