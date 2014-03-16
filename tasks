@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "$0")"
+
 for tag in XXX TODO FIXME; do
 
   find -name '*.py' -exec pcregrep --color=always "$tag LATER" '{}' +
