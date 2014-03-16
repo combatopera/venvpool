@@ -2,4 +2,6 @@
 
 cd "$(dirname "$0")"
 
+{ "$(dirname "$(readlink -f "$0")")"/test_all.py && echo 'pyflakes: OK'; } >&2
+
 nosetests --exe -v
