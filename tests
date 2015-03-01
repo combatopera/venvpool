@@ -8,7 +8,7 @@ cd "$(dirname "$0")"
     export PYTHONPATH="$PWD"
     IFS=$'\n'
     "$(dirname "$(readlink -f "$0")")"/licheck.py $(
-        find '(' -name '*.py' -or -name '*.pyx' -or -name '*.sh' ')' -exec hg st -A '{}' + |
+        find '(' -name '*.py' -or -name '*.pyx' -or -name '*.s' -or -name '*.sh' ')' -exec hg st -A '{}' + |
         grep -v ^I |
         cut -c 3-
     )
