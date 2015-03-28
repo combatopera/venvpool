@@ -19,6 +19,9 @@ cd "$(dirname "$0")"
     "$(dirname "$(readlink -f "$0")")"/divcheck.py $(find -name '*.py')
     echo divcheck: OK >&2
 
+    "$(dirname "$(readlink -f "$0")")"/execcheck.py $(find -name '*.py')
+    echo execcheck: OK >&2
+
 )
 
 eval "notexpr=($(cat .flakesignore))"
