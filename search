@@ -1,3 +1,0 @@
-#!/bin/bash
-
-find "$(dirname "$0")" -name '*.py' -exec egrep --color=always "$@" '{}' +
