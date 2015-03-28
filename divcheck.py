@@ -15,7 +15,7 @@ def main():
                 break
         else:
             hasdiv = False
-        if hasdiv and re.search('^from __future__ import division$', text, flags = re.MULTILINE) is None:
+        if hasdiv == (re.search('^from __future__ import division$', text, flags = re.MULTILINE) is None):
             raise Exception(path)
 
 if '__main__' == __name__:
