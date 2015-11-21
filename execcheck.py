@@ -22,7 +22,7 @@ def main():
             lines = f.read().splitlines()
         finally:
             f.close()
-        hashbang = lines[0] == '#!/usr/bin/env python'
+        hashbang = lines[0] in ('#!/usr/bin/env python', '#!/usr/bin/env runpy')
         main = lines[-2:] == ['''if '__main__' == __name__:''', '    unittest.main()' if istest else '    main()']
         if 1 != len(set([hashbang, main, executable])):
             raise Exception(path) # Want all or nothing.
