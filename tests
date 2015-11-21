@@ -28,4 +28,4 @@ eval "notexpr=($(cat .flakesignore))"
 
 { find -name '*.py' -not '(' "${notexpr[@]}" ')' -exec pyflakes '{}' + && echo pyflakes: OK; } >&2
 
-nosetests --exe -v
+runpy -c 'import nose; nose.main()' --exe -v
