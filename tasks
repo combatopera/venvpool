@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd "$(dirname "$0")"
+while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 
 for tag in XXX TODO FIXME; do
 
