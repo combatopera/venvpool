@@ -8,7 +8,6 @@ while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 
 (
 
-    export PYTHONPATH="$PWD"
     IFS=$'\n'
 
     licheck.py $(
