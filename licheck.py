@@ -1,16 +1,36 @@
 #!/usr/bin/env python
 
-import anchor, sys, re
+import sys, re, os
+
+template="""# Copyright 2014 Andrzej Cichocki
+
+# This file is part of %(name)s.
+#
+# %(name)s is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# %(name)s is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with %(name)s.  If not, see <http://www.gnu.org/licenses/>.
+
+""" # Check it ends with 2 newlines.
 
 def main():
-    path = anchor.__file__
-    if path.endswith('.pyc'):
-        path = path[:-1]
-    f = open(path)
-    try:
-        master = f.read()
-    finally:
-        f.close()
+    projectpath = os.path.abspath(sys.argv[1])
+    while True:
+        projectpath = os.path.dirname(projectpath)
+        infopath = os.path.join(projectpath, 'project.info')
+        if os.path.exists(infopath):
+            break
+    info = {}
+    execfile(infopath, info)
+    master = template % info
     for path in sys.argv[1:]:
         f = open(path)
         try:
