@@ -2,7 +2,7 @@
 
 import sys, re, os
 
-template="""# Copyright 2014 Andrzej Cichocki
+template="""# Copyright 2014 %(author)s
 
 # This file is part of %(name)s.
 #
