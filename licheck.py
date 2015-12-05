@@ -22,10 +22,14 @@ template="""# Copyright 2014 Andrzej Cichocki
 """ # Check it ends with 2 newlines.
 
 def main():
+    infoname = 'project.info'
     projectpath = os.path.abspath(sys.argv[1])
     while True:
-        projectpath = os.path.dirname(projectpath)
-        infopath = os.path.join(projectpath, 'project.info')
+        parent = os.path.dirname(projectpath)
+        if parent == projectpath:
+            raise Exception(infoname)
+        projectpath = parent
+        infopath = os.path.join(projectpath, infoname)
         if os.path.exists(infopath):
             break
     info = {}
