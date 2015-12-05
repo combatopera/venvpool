@@ -9,17 +9,17 @@ while ! [[ -e .hg || -e .svn ]]; do cd ..; done
     export PYTHONPATH="$PWD"
     IFS=$'\n'
 
-    "$(dirname "$(readlink -f "$0")")"/licheck.py $(
+    licheck.py $(
         find '(' -name '*.py' -or -name '*.pyx' -or -name '*.s' -or -name '*.sh' ')' -exec hg st -A '{}' + |
         grep -v '^[IR ]' |
         cut -c 3-
     )
     echo licheck: OK >&2
 
-    "$(dirname "$(readlink -f "$0")")"/divcheck.py $(find -name '*.py')
+    divcheck.py $(find -name '*.py')
     echo divcheck: OK >&2
 
-    "$(dirname "$(readlink -f "$0")")"/execcheck.py $(find -name '*.py')
+    execcheck.py $(find -name '*.py')
     echo execcheck: OK >&2
 
 )
