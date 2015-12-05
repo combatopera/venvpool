@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env runpy
 
-set -e
+import subprocess
+
+subprocess.check_call(['bash', '-c', '''set -e
 
 while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 
@@ -26,6 +28,7 @@ while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 
 eval "notexpr=($(cat .flakesignore))"
 
-{ find -name '*.py' -not '(' "${notexpr[@]}" ')' -exec "$MINICONDA_HOME/bin/pyflakes" '{}' + && echo pyflakes: OK; } >&2
+{ find -name '*.py' -not '(' "${notexpr[@]}" ')' -exec pyflakes '{}' + && echo pyflakes: OK; } >&2
 
-runpy -c 'import nose; nose.main()' --exe -v
+nosetests --exe -v
+'''])
