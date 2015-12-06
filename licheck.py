@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, re, os
+import sys, re, os, hashlib
 
 template="""# Copyright 2014 %(author)s
 
@@ -49,6 +49,12 @@ def main():
             text = re.sub('^;', '#', text, flags = re.MULTILINE)
         if master != text:
             raise Exception(path)
+    gplpath = os.path.join(projectpath, 'COPYING')
+    md5 = hashlib.md5()
+    with open(gplpath) as f:
+        md5.update(f.read())
+    if 'd32239bcb673463ab874e80d47fae504' != md5.hexdigest():
+        raise Exception(gplpath)
 
 if '__main__' == __name__:
     main()
