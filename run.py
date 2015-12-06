@@ -36,19 +36,21 @@ def resolvepath(path):
 
 def main():
     confname = 'runpy.conf'
-    context = os.path.abspath(sys.argv[1])
+    context = os.getcwd()
     while True:
+        confpath = os.path.join(context, confname)
+        if os.path.exists(confpath):
+            break
         parent = os.path.dirname(context)
         if parent == context:
             raise Exception(confname)
         context = parent
-        confpath = os.path.join(context, confname)
-        if os.path.exists(confpath):
-            break
     conf = {}
     execfile(confpath, conf)
-    os.environ['PATH'] = os.pathsep.join([resolvepath(p) for p in conf['path']] + [os.environ['PATH']])
-    os.environ['PYTHONPATH'] = os.pathsep.join(resolvepath(p) for p in conf['pythonpath'])
+    if 'path' in conf:
+        os.environ['PATH'] = os.pathsep.join([resolvepath(p) for p in conf['path']] + [os.environ['PATH']])
+    if 'pythonpath' in conf:
+        os.environ['PYTHONPATH'] = os.pathsep.join(resolvepath(p) for p in conf['pythonpath'])
     subprocess.check_call(['python'] + sys.argv[1:])
 
 if '__main__' == __name__:
