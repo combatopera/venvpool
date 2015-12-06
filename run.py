@@ -34,6 +34,11 @@ def resolveword(word):
 def resolvepath(path):
     return os.sep.join(resolveword(w) for w in path.split('/'))
 
+def prepend(conf, confkey, envkey):
+    if confkey in conf:
+        current = [os.environ[envkey]] if envkey in os.environ else []
+        os.environ[envkey] = os.pathsep.join([resolvepath(p) for p in conf[confkey]] + current)
+
 def main():
     confname = 'runpy.conf'
     context = os.getcwd()
@@ -47,10 +52,8 @@ def main():
         context = parent
     conf = {}
     execfile(confpath, conf)
-    if 'path' in conf:
-        os.environ['PATH'] = os.pathsep.join([resolvepath(p) for p in conf['path']] + [os.environ['PATH']])
-    if 'pythonpath' in conf:
-        os.environ['PYTHONPATH'] = os.pathsep.join(resolvepath(p) for p in conf['pythonpath'])
+    prepend(conf, 'path', 'PATH')
+    prepend(conf, 'pythonpath', 'PYTHONPATH')
     subprocess.check_call(['python'] + sys.argv[1:])
 
 if '__main__' == __name__:
