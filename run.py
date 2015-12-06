@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python
 
 # Copyright 2014 Andrzej Cichocki
 
@@ -17,29 +17,39 @@
 # You should have received a copy of the GNU General Public License
 # along with runpy.  If not, see <http://www.gnu.org/licenses/>.
 
-set -e
+import os, sys, subprocess
 
-confname=runpy.conf
+workspace = os.path.dirname(os.path.dirname(sys.argv[0]))
 
-context="$(dirname "$PWD/$1")"
+def resolveword(word):
+    if word.startswith('$'):
+        key = word[1:]
+        if 'WORKSPACE' == key:
+            return workspace
+        else:
+            return os.environ[key]
+    else:
+        return word
 
-while true; do
+def resolvepath(path):
+    return os.sep.join(resolveword(w) for w in path.split('/'))
 
-    confpath="$context/$confname"
+def main():
+    confname = 'runpy.conf'
+    context = os.path.abspath(sys.argv[1])
+    while True:
+        parent = os.path.dirname(context)
+        if parent == context:
+            raise Exception(confname)
+        context = parent
+        confpath = os.path.join(context, confname)
+        if os.path.exists(confpath):
+            break
+    conf = {}
+    execfile(confpath, conf)
+    os.environ['PATH'] = os.pathsep.join([resolvepath(p) for p in conf['path']] + [os.environ['PATH']])
+    os.environ['PYTHONPATH'] = os.pathsep.join(resolvepath(p) for p in conf['pythonpath'])
+    subprocess.check_call(['python'] + sys.argv[1:])
 
-    [[ -e "$confpath" ]] && break
-
-    [[ / = "$context" ]] && {
-        echo Not found: "$confname" >&2
-        exit 1
-    }
-
-    context="$(dirname "$context")"
-
-done
-
-WORKSPACE="$(dirname "$(dirname "$0")")"
-
-. "$confpath"
-
-exec python "$@"
+if '__main__' == __name__:
+    main()
