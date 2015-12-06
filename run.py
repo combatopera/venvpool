@@ -40,7 +40,7 @@ def prepend(conf, confkey, envkey):
         os.environ[envkey] = os.pathsep.join([resolvepath(p) for p in conf[confkey]] + current)
 
 def main():
-    confname = 'runpy.conf'
+    confname = 'project.info'
     context = os.getcwd()
     while True:
         confpath = os.path.join(context, confname)
