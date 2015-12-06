@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, re, os
+import sys, os
 
 def main():
     for path in sys.argv[1:]:
