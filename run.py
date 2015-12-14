@@ -54,7 +54,7 @@ def main():
     execfile(confpath, conf)
     prepend(conf, 'path', 'PATH')
     prepend(conf, 'pythonpath', 'PYTHONPATH')
-    subprocess.check_call(['python'] + sys.argv[1:])
+    sys.exit(subprocess.call(['python'] + sys.argv[1:]))
 
 if '__main__' == __name__:
     main()
