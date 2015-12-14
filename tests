@@ -1,6 +1,6 @@
 #!/usr/bin/env runpy
 
-import subprocess
+import subprocess, sys
 
 subprocess.check_call(['bash', '-c', '''set -e
 
@@ -28,6 +28,6 @@ while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 eval "notexpr=($(cat .flakesignore))"
 
 { find -name '*.py' -not '(' "${notexpr[@]}" ')' -exec pyflakes '{}' + && echo pyflakes: OK; } >&2
-
-nosetests --exe -v
 '''])
+
+sys.exit(subprocess.call(['nosetests', '--exe', '-v']))
