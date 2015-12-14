@@ -10,12 +10,14 @@ while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 
     IFS=$'\n'
 
-    licheck.py $(
-        find '(' -name '*.py' -or -name '*.pyx' -or -name '*.s' -or -name '*.sh' ')' -exec hg st -A '{}' + |
-        grep -v '^[IR ]' |
-        cut -c 3-
-    )
-    echo licheck: OK >&2
+    for script in licheck nlcheck; do
+        $script.py $(
+            find '(' -name '*.py' -or -name '*.pyx' -or -name '*.s' -or -name '*.sh' ')' -exec hg st -A '{}' + |
+            grep -v '^[IR ]' |
+            cut -c 3-
+        )
+        echo $script: OK >&2
+    done
 
     divcheck.py $(find -name '*.py')
     echo divcheck: OK >&2
