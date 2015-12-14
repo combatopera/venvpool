@@ -19,6 +19,8 @@
 
 set -ex
 
+pip install pyflakes
+
 cd ..
 
 PATH="$PWD/runpy:$PATH"
