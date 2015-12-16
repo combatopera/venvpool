@@ -19,6 +19,16 @@
 
 import sys, os
 
+def endswithifmain(istest, lines):
+    if ('    unittest.main()' if istest else '    main()') != lines[-1]:
+        return False
+    for i in xrange(len(lines) - 2, -1, -1):
+        if '''if '__main__' == __name__:''' == lines[i]:
+            return True
+        if not lines[i].startswith('    '):
+            return False
+    return False
+
 def main():
     for path in sys.argv[1:]:
         executable = os.stat(path).st_mode & 0x49
@@ -40,7 +50,7 @@ def main():
         finally:
             f.close()
         hashbang = lines[0] in ('#!/usr/bin/env python', '#!/usr/bin/env runpy')
-        main = lines[-2:] == ['''if '__main__' == __name__:''', '    unittest.main()' if istest else '    main()']
+        main = endswithifmain(istest, lines)
         if 1 != len(set([hashbang, main, executable])):
             raise Exception(path) # Want all or nothing.
 
