@@ -21,11 +21,8 @@ import sys, re, ast
 
 def main():
     for path in sys.argv[1:]:
-        f = open(path)
-        try:
+        with open(path) as f:
             text = f.read()
-        finally:
-            f.close()
         for node in ast.walk(ast.parse(text)):
             if 'Div' == type(node).__name__:
                 hasdiv = True

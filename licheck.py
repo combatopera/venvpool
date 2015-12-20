@@ -53,11 +53,8 @@ def main():
     execfile(infopath, info)
     master = template % info
     for path in sys.argv[1:]:
-        f = open(path)
-        try:
+        with open(path) as f:
             text = f.read()
-        finally:
-            f.close()
         if text.startswith('#!'):
             for _ in xrange(2):
                 text = text[text.index('\n') + 1:]
