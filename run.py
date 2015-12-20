@@ -52,6 +52,8 @@ def main():
         context = parent
     conf = {}
     execfile(confpath, conf)
+    conf['path'] = ['$MINICONDA_HOME/bin']
+    conf['pythonpath'] = ["$WORKSPACE/%s" % p for p in conf['projects']]
     prepend(conf, 'path', 'PATH')
     prepend(conf, 'pythonpath', 'PYTHONPATH')
     sys.exit(subprocess.call(['python'] + sys.argv[1:]))
