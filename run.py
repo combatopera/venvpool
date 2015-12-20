@@ -39,7 +39,7 @@ def main():
     conf = {}
     execfile(confpath, conf)
     prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
-    prepend([os.path.join(workspace, project) for project in conf['projects']], 'PYTHONPATH')
+    prepend([os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']], 'PYTHONPATH')
     sys.exit(subprocess.call(['python'] + sys.argv[1:]))
 
 if '__main__' == __name__:
