@@ -21,23 +21,9 @@ import os, sys, subprocess
 
 workspace = os.path.dirname(os.path.dirname(sys.argv[0]))
 
-def resolveword(word):
-    if word.startswith('$'):
-        key = word[1:]
-        if 'WORKSPACE' == key:
-            return workspace
-        else:
-            return os.environ[key]
-    else:
-        return word
-
-def resolvepath(path):
-    return os.sep.join(resolveword(w) for w in path.split('/'))
-
-def prepend(conf, confkey, envkey):
-    if confkey in conf:
-        current = [os.environ[envkey]] if envkey in os.environ else []
-        os.environ[envkey] = os.pathsep.join([resolvepath(p) for p in conf[confkey]] + current)
+def prepend(paths, envkey):
+    current = [os.environ[envkey]] if envkey in os.environ else []
+    os.environ[envkey] = os.pathsep.join(paths + current)
 
 def main():
     confname = 'project.info'
@@ -52,10 +38,8 @@ def main():
         context = parent
     conf = {}
     execfile(confpath, conf)
-    conf['path'] = ['$MINICONDA_HOME/bin']
-    conf['pythonpath'] = ["$WORKSPACE/%s" % p for p in conf['projects']]
-    prepend(conf, 'path', 'PATH')
-    prepend(conf, 'pythonpath', 'PYTHONPATH')
+    prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
+    prepend([os.path.join(workspace, project) for project in conf['projects']], 'PYTHONPATH')
     sys.exit(subprocess.call(['python'] + sys.argv[1:]))
 
 if '__main__' == __name__:
