@@ -1,3 +1,4 @@
 author = 'Andrzej Cichocki'
 name = 'runpy'
 projects = ()
+deps = ()
