@@ -32,7 +32,7 @@ bashscript = '''set -e
 
 IFS=$'\n'
 
-for script in licheck nlcheck; do
+for script in licheck; do
     $script.py $(
         find '(' -name '*.py' -or -name '*.pyx' -or -name '*.s' -or -name '*.sh' ')' -exec hg st -A '{}' + |
         grep -v '^[IR ]' |
@@ -41,6 +41,15 @@ for script in licheck nlcheck; do
     echo $script: OK >&2
 done
 '''
+
+def nlcheck():
+    command = ['nlcheck.py']
+    badstatuses = set('IR ')
+    for line in subprocess.Popen(['hg', 'st', '-A'] + list(findfiles('.py', '.pyx', '.s', '.sh')), stdout = subprocess.PIPE).stdout:
+        line, = line.splitlines()
+        if line[0] not in badstatuses:
+            command.append(line[2:])
+    subprocess.check_call(command)
 
 def divcheck():
     subprocess.check_call(['divcheck.py'] + list(findfiles('.py')))
@@ -64,7 +73,7 @@ def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn')):
         os.chdir('..')
     subprocess.check_call(['bash', '-c', bashscript])
-    for f in divcheck, execcheck, pyflakes:
+    for f in nlcheck, divcheck, execcheck, pyflakes:
         f()
         print >> sys.stderr, "%s: OK" % f.__name__
     sys.exit(subprocess.call(['nosetests', '--exe', '-v']))
