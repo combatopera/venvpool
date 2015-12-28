@@ -1,8 +1,19 @@
 #!/usr/bin/env runpy
 
-import subprocess, sys
+import subprocess, sys, os
 
-subprocess.check_call(['bash', '-c', '''set -e
+def findfiles(*suffixes):
+    for dirpath, dirnames, filenames in os.walk('.'):
+        for name in sorted(filenames):
+            for suffix in suffixes:
+                if name.endswith(suffix):
+                    break
+            else:
+                continue
+            yield os.path.join(dirpath, name)
+        dirnames.sort()
+
+bashscript = '''set -e
 
 while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 
@@ -30,6 +41,11 @@ while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 eval "notexpr=($(cat .flakesignore))"
 
 { find -name '*.py' -not '(' "${notexpr[@]}" ')' -exec pyflakes '{}' + && echo pyflakes: OK; } >&2
-'''])
+'''
 
-sys.exit(subprocess.call(['nosetests', '--exe', '-v']))
+def main():
+    subprocess.check_call(['bash', '-c', bashscript])
+    sys.exit(subprocess.call(['nosetests', '--exe', '-v']))
+
+if '__main__' == __name__:
+    main()
