@@ -30,8 +30,6 @@ def findfiles(*suffixes):
 
 bashscript = '''set -e
 
-while ! [[ -e .hg || -e .svn ]]; do cd ..; done
-
 IFS=$'\n'
 
 for script in licheck nlcheck; do
@@ -63,6 +61,8 @@ def pyflakes():
     subprocess.check_call(command)
 
 def main():
+    while not (os.path.exists('.hg') or os.path.exists('.svn')):
+        os.chdir('..')
     subprocess.check_call(['bash', '-c', bashscript])
     for f in divcheck, execcheck, pyflakes:
         f()
