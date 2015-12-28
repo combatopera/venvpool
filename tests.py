@@ -45,14 +45,14 @@ while ! [[ -e .hg || -e .svn ]]; do cd ..; done
         echo $script: OK >&2
     done
 
-    divcheck.py $(find -name '*.py')
-    echo divcheck: OK >&2
-
-    execcheck.py $(find -name '*.py')
-    echo execcheck: OK >&2
-
 )
 '''
+
+def divcheck():
+    subprocess.check_call(['divcheck.py'] + list(findfiles('.py')))
+
+def execcheck():
+    subprocess.check_call(['execcheck.py'] + list(findfiles('.py')))
 
 def pyflakes():
     with open('.flakesignore') as f:
@@ -68,7 +68,7 @@ def pyflakes():
 
 def main():
     subprocess.check_call(['bash', '-c', bashscript])
-    for f in pyflakes,:
+    for f in divcheck, execcheck, pyflakes:
         f()
         print >> sys.stderr, "%s: OK" % f.__name__
     sys.exit(subprocess.call(['nosetests', '--exe', '-v']))
