@@ -57,14 +57,14 @@ while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 def pyflakes():
     with open('.flakesignore') as f:
         ignores = [re.compile(l.strip()) for l in f]
-    paths = []
+    command = ['pyflakes']
     for path in findfiles('.py'):
         for pattern in ignores:
             if pattern.search(path) is not None:
                 break # Next path.
         else:
-            paths.append(path)
-    subprocess.check_call(['pyflakes'] + paths)
+            command.append(path)
+    subprocess.check_call(command)
 
 def main():
     subprocess.check_call(['bash', '-c', bashscript])
