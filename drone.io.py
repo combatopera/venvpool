@@ -41,7 +41,7 @@ def main():
     subprocess.check_call(command)
     os.environ['MINICONDA_HOME'] = os.path.join(os.getcwd(), 'miniconda')
     os.chdir(projectdir)
-    sys.exit(subprocess.call(['tests']))
+    sys.exit(subprocess.call(['tests.py']))
 
 if '__main__' == __name__:
     main()
