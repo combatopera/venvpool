@@ -32,20 +32,16 @@ bashscript = '''set -e
 
 while ! [[ -e .hg || -e .svn ]]; do cd ..; done
 
-(
+IFS=$'\n'
 
-    IFS=$'\n'
-
-    for script in licheck nlcheck; do
-        $script.py $(
-            find '(' -name '*.py' -or -name '*.pyx' -or -name '*.s' -or -name '*.sh' ')' -exec hg st -A '{}' + |
-            grep -v '^[IR ]' |
-            cut -c 3-
-        )
-        echo $script: OK >&2
-    done
-
-)
+for script in licheck nlcheck; do
+    $script.py $(
+        find '(' -name '*.py' -or -name '*.pyx' -or -name '*.s' -or -name '*.sh' ')' -exec hg st -A '{}' + |
+        grep -v '^[IR ]' |
+        cut -c 3-
+    )
+    echo $script: OK >&2
+done
 '''
 
 def divcheck():
