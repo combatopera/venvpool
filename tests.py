@@ -19,6 +19,10 @@
 
 import subprocess, sys, os, re
 
+def stripeol(line):
+    line, = line.splitlines()
+    return line
+
 def findfiles(*suffixes):
     for dirpath, dirnames, filenames in os.walk('.'):
         for name in sorted(filenames):
@@ -28,28 +32,18 @@ def findfiles(*suffixes):
                     break # Next name.
         dirnames.sort()
 
-bashscript = '''set -e
+def filterfiles(*suffixes):
+    badstatuses = set('IR ')
+    for line in subprocess.Popen(['hg', 'st', '-A'] + list(findfiles(*suffixes)), stdout = subprocess.PIPE).stdout:
+        line = stripeol(line)
+        if line[0] not in badstatuses:
+            yield line[2:]
 
-IFS=$'\n'
-
-for script in licheck; do
-    $script.py $(
-        find '(' -name '*.py' -or -name '*.pyx' -or -name '*.s' -or -name '*.sh' ')' -exec hg st -A '{}' + |
-        grep -v '^[IR ]' |
-        cut -c 3-
-    )
-    echo $script: OK >&2
-done
-'''
+def licheck():
+    subprocess.check_call(['licheck.py'] + list(filterfiles('.py', '.pyx', '.s', '.sh')))
 
 def nlcheck():
-    command = ['nlcheck.py']
-    badstatuses = set('IR ')
-    for line in subprocess.Popen(['hg', 'st', '-A'] + list(findfiles('.py', '.pyx', '.s', '.sh')), stdout = subprocess.PIPE).stdout:
-        line, = line.splitlines()
-        if line[0] not in badstatuses:
-            command.append(line[2:])
-    subprocess.check_call(command)
+    subprocess.check_call(['nlcheck.py'] + list(filterfiles('.py', '.pyx', '.s', '.sh')))
 
 def divcheck():
     subprocess.check_call(['divcheck.py'] + list(findfiles('.py')))
@@ -59,7 +53,7 @@ def execcheck():
 
 def pyflakes():
     with open('.flakesignore') as f:
-        ignores = [re.compile(l.strip()) for l in f]
+        ignores = [re.compile(stripeol(l)) for l in f]
     command = ['pyflakes']
     for path in findfiles('.py'):
         for pattern in ignores:
@@ -72,8 +66,7 @@ def pyflakes():
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn')):
         os.chdir('..')
-    subprocess.check_call(['bash', '-c', bashscript])
-    for f in nlcheck, divcheck, execcheck, pyflakes:
+    for f in licheck, nlcheck, divcheck, execcheck, pyflakes:
         f()
         print >> sys.stderr, "%s: OK" % f.__name__
     sys.exit(subprocess.call(['nosetests', '--exe', '-v']))
