@@ -24,7 +24,7 @@ def main():
         with open(path, 'rb') as f:
             text = f.read()
         eols = set(re.findall(r'\r\n|[\r\n]', text))
-        if 1 != len(eols):
+        if len(eols) > 1:
             raise Exception(path)
 
 if '__main__' == __name__:

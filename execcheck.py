@@ -49,8 +49,8 @@ def main():
             lines = f.read().splitlines()
         finally:
             f.close()
-        hashbang = lines[0] in ('#!/usr/bin/env python', '#!/usr/bin/env runpy')
-        main = endswithifmain(istest, lines)
+        hashbang = bool(lines) and lines[0] in ('#!/usr/bin/env python', '#!/usr/bin/env runpy')
+        main = bool(lines) and endswithifmain(istest, lines)
         if 1 != len(set([hashbang, main, executable])):
             raise Exception(path) # Want all or nothing.
 

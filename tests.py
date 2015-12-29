@@ -40,7 +40,11 @@ def filterfiles(*suffixes):
             yield line[2:]
 
 def licheck():
-    subprocess.check_call(['licheck.py'] + list(filterfiles('.py', '.pyx', '.s', '.sh')))
+    def g():
+        for path in filterfiles('.py', '.pyx', '.s', '.sh'):
+            if not os.path.basename(os.path.dirname(path)).endswith('_turbo'):
+                yield path
+    subprocess.check_call(['licheck.py'] + list(g()))
 
 def nlcheck():
     subprocess.check_call(['nlcheck.py'] + list(filterfiles('.py', '.pyx', '.s', '.sh')))
