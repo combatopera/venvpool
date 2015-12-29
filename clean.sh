@@ -27,7 +27,7 @@ find -name '*.dsd' -exec rm -fv '{}' +
 
 find -name '*.c' -exec rm -fv '{}' +
 
-find -name 'turbo_*.pyx' -exec rm -fv '{}' +
+find -name '*_turbo' -exec rm -rfv '{}' +
 
 rm -fv pym2149/cpaste?*.pyx
 
