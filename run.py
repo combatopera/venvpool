@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with runpy.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, subprocess
+import os, sys
 
 workspace = os.path.dirname(os.path.dirname(sys.argv[0]))
 
@@ -40,7 +40,7 @@ def main():
     execfile(confpath, conf)
     prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
     prepend([os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']], 'PYTHONPATH')
-    sys.exit(subprocess.call(['python'] + sys.argv[1:]))
+    os.execvp('python', ['python'] + sys.argv[1:])
 
 if '__main__' == __name__:
     main()
