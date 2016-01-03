@@ -23,7 +23,7 @@ from tests import findfiles
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn')):
         os.chdir('..')
-    paths = list(findfiles('.py', '.pyx'))
+    paths = list(findfiles('.py', '.pyx', '.h', '.cpp', '.ui'))
     for tag in 'XXX', 'TODO', 'FIXME':
         subprocess.call(['pcregrep', '--color=always', tag + ' LATER'] + paths)
         subprocess.call(['pcregrep', '--color=always', tag + '(?! LATER)'] + paths)
