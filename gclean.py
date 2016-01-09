@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with runpy.  If not, see <http://www.gnu.org/licenses/>.
 
-import re, os, sys
+import re, os, sys, shutil
 
 def main():
     ignorename = '.hgignore'
@@ -31,17 +31,20 @@ def main():
         for line in f:
             line, = line.splitlines()
             patterns.append(re.compile(line))
+    def tryremovepath(path, remove):
+        path = path[len(root + os.sep):]
+        for pattern in patterns:
+            if pattern.search(path) is not None:
+                print >> sys.stderr, path
+                remove(path)
+                break
     root = '.'
     for dirpath, dirnames, filenames in os.walk(root):
-        for name in sorted(filenames):
-            path = os.path.join(dirpath, name)
-            path = path[len(root + os.sep):]
-            for pattern in patterns:
-                if pattern.search(path) is not None:
-                    print >> sys.stderr, path
-                    os.remove(path)
-                    break
         dirnames.sort()
+        for name in dirnames:
+            tryremovepath(os.path.join(dirpath, name), shutil.rmtree)
+        for name in sorted(filenames):
+            tryremovepath(os.path.join(dirpath, name), os.remove)
 
 if '__main__' == __name__:
     main()
