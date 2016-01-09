@@ -19,6 +19,12 @@
 
 import re, os, sys, shutil
 
+def removedir(path):
+    if os.path.islink(path):
+        os.remove(path)
+    else:
+        shutil.rmtree(path)
+
 def main():
     ignorename = '.hgignore'
     while not os.path.exists(ignorename):
@@ -42,7 +48,7 @@ def main():
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames.sort()
         for name in dirnames:
-            tryremovepath(os.path.join(dirpath, name), shutil.rmtree)
+            tryremovepath(os.path.join(dirpath, name), removedir)
         for name in sorted(filenames):
             tryremovepath(os.path.join(dirpath, name), os.remove)
 
