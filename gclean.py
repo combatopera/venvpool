@@ -34,9 +34,13 @@ def main():
             raise Exception(ignorename)
     patterns = []
     with open(ignorename) as f:
+        armed = False
         for line in f:
             line, = line.splitlines()
-            patterns.append(re.compile(line))
+            if armed:
+                patterns.append(re.compile(line))
+            else:
+                armed = '#gclean' == line
     def tryremovepath(path, remove):
         path = path[len(root + os.sep):]
         for pattern in patterns:
