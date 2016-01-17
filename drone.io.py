@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyrform.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, subprocess, itertools
+import os, sys, subprocess, itertools, tests
 
 condaversion = '3.16.0'
 
@@ -41,7 +41,7 @@ def main():
     subprocess.check_call(command)
     os.environ['MINICONDA_HOME'] = os.path.join(os.getcwd(), 'miniconda')
     os.chdir(projectdir)
-    sys.exit(subprocess.call(['tests.py']))
+    tests.main()
 
 if '__main__' == __name__:
     main()
