@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyrform.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, subprocess, itertools, pyrform, tests
+import os, subprocess, itertools, pyrform, tests
 
 condaversion = '3.16.0'
 
