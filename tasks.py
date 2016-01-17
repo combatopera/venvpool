@@ -18,12 +18,12 @@
 # along with pyrform.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, subprocess
-from tests import findfiles
+from tests import Files
 
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn')):
         os.chdir('..')
-    paths = list(findfiles('.py', '.pyx', '.h', '.cpp', '.ui'))
+    paths = list(Files.findfiles('.py', '.pyx', '.h', '.cpp', '.ui'))
     for tag in 'XXX', 'TODO', 'FIXME':
         subprocess.call(['pcregrep', '--color=always', tag + ' LATER'] + paths)
         subprocess.call(['pcregrep', '--color=always', tag + '(?! LATER)'] + paths)
