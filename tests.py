@@ -23,56 +23,63 @@ def stripeol(line):
     line, = line.splitlines()
     return line
 
-def findfiles(*suffixes):
-    for dirpath, dirnames, filenames in os.walk('.'):
-        for name in sorted(filenames):
-            for suffix in suffixes:
-                if name.endswith(suffix):
-                    yield os.path.join(dirpath, name)
-                    break # Next name.
-        dirnames.sort()
+class Files:
 
-def filterfiles(*suffixes):
-    badstatuses = set('IR ')
-    for line in subprocess.Popen(['hg', 'st', '-A'] + list(findfiles(*suffixes)), stdout = subprocess.PIPE).stdout:
-        line = stripeol(line)
-        if line[0] not in badstatuses:
-            yield line[2:]
+    @staticmethod
+    def findfiles(*suffixes):
+        for dirpath, dirnames, filenames in os.walk('.'):
+            for name in sorted(filenames):
+                for suffix in suffixes:
+                    if name.endswith(suffix):
+                        yield os.path.join(dirpath, name)
+                        break # Next name.
+            dirnames.sort()
 
-def licheck():
+    @classmethod
+    def filterfiles(cls, *suffixes):
+        badstatuses = set('IR ')
+        for line in subprocess.Popen(['hg', 'st', '-A'] + list(cls.findfiles(*suffixes)), stdout = subprocess.PIPE).stdout:
+            line = stripeol(line)
+            if line[0] not in badstatuses:
+                yield line[2:]
+
+    def __init__(self):
+        self.pypaths = list(self.findfiles('.py'))
+        self.allsrcpaths = list(self.filterfiles('.py', '.pyx', '.s', '.sh'))
+
+def licheck(files):
     def g():
-        for path in filterfiles('.py', '.pyx', '.s', '.sh'):
+        for path in files.allsrcpaths:
             if not os.path.basename(os.path.dirname(path)).endswith('_turbo'):
                 yield path
     licheckimpl.mainimpl(list(g()))
 
-def nlcheck():
-    nlcheckimpl.mainimpl(list(filterfiles('.py', '.pyx', '.s', '.sh')))
+def nlcheck(files):
+    nlcheckimpl.mainimpl(files.allsrcpaths)
 
-def divcheck():
-    divcheckimpl.mainimpl(list(findfiles('.py')))
+def divcheck(files):
+    divcheckimpl.mainimpl(files.pypaths)
 
-def execcheck():
-    execcheckimpl.mainimpl(list(findfiles('.py')))
+def execcheck(files):
+    execcheckimpl.mainimpl(files.pypaths)
 
-def pyflakes():
+def pyflakes(files):
     with open('.flakesignore') as f:
         ignores = [re.compile(stripeol(l)) for l in f]
-    command = ['pyflakes']
-    for path in findfiles('.py'):
+    def accept(path):
         for pattern in ignores:
             if pattern.search(path) is not None:
-                break # Next path.
-        else:
-            command.append(path)
-    subprocess.check_call(command)
+                return False
+        return True
+    subprocess.check_call(['pyflakes'] + [p for p in files.pypaths if accept(p)])
 
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn')):
         os.chdir('..')
-    for f in licheck, nlcheck, divcheck, execcheck, pyflakes:
-        f()
-        print >> sys.stderr, "%s: OK" % f.__name__
+    files = Files()
+    for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
+        check(files)
+        print >> sys.stderr, "%s: OK" % check.__name__
     sys.exit(subprocess.call(['nosetests', '--exe', '-v']))
 
 if '__main__' == __name__:
