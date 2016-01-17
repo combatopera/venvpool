@@ -26,6 +26,9 @@ def prepend(paths, envkey):
     os.environ[envkey] = os.pathsep.join(paths + current)
 
 def main():
+    mainimpl(sys.argv[1:])
+
+def mainimpl(args):
     confname = 'project.info'
     context = os.getcwd()
     while True:
@@ -41,7 +44,7 @@ def main():
     prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
     # XXX: Also add absolute path of context project so manually-executed tests can find e.g. turboconf?
     prepend([os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']], 'PYTHONPATH')
-    os.execvp('python', ['python'] + sys.argv[1:])
+    os.execvp('python', ['python'] + args)
 
 if '__main__' == __name__:
     main()
