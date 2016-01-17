@@ -1,21 +1,21 @@
-#!/usr/bin/env pyrform
+#!/usr/bin/env pyven
 
 # Copyright 2014 Andrzej Cichocki
 
-# This file is part of pyrform.
+# This file is part of pyven.
 #
-# pyrform is free software: you can redistribute it and/or modify
+# pyven is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# pyrform is distributed in the hope that it will be useful,
+# pyven is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with pyrform.  If not, see <http://www.gnu.org/licenses/>.
+# along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess, sys, os, re, licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl
 
