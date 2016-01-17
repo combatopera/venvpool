@@ -42,19 +42,22 @@ def main():
             else:
                 armed = '#gclean' == line
     def tryremovepath(path, remove):
-        path = path[len(root + os.sep):]
+        path = os.path.normpath(path)
         for pattern in patterns:
             if pattern.search(path) is not None:
                 print >> sys.stderr, path
                 remove(path)
                 break
-    root = '.'
-    for dirpath, dirnames, filenames in os.walk(root):
-        dirnames.sort()
-        for name in dirnames:
-            tryremovepath(os.path.join(dirpath, name), removedir)
-        for name in sorted(filenames):
-            tryremovepath(os.path.join(dirpath, name), os.remove)
+    args = sys.argv[1:]
+    if not args:
+        args = ['.']
+    for root in args:
+        for dirpath, dirnames, filenames in os.walk(root):
+            dirnames.sort()
+            for name in dirnames:
+                tryremovepath(os.path.join(dirpath, name), removedir)
+            for name in sorted(filenames):
+                tryremovepath(os.path.join(dirpath, name), os.remove)
 
 if '__main__' == __name__:
     main()
