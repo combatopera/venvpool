@@ -19,8 +19,8 @@
 
 import sys, re, ast
 
-def main():
-    for path in sys.argv[1:]:
+def mainimpl(args):
+    for path in args:
         with open(path) as f:
             text = f.read()
         for node in ast.walk(ast.parse(text)):
@@ -31,6 +31,9 @@ def main():
             hasdiv = False
         if hasdiv == (re.search('^from __future__ import division(?: # .+)?$', text, flags = re.MULTILINE) is None):
             raise Exception(path)
+
+def main():
+    mainimpl(sys.argv[1:])
 
 if '__main__' == __name__:
     main()

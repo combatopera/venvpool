@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyrform.  If not, see <http://www.gnu.org/licenses/>.
 
-import subprocess, sys, os, re
+import subprocess, sys, os, re, licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl
 
 def stripeol(line):
     line, = line.splitlines()
@@ -44,16 +44,16 @@ def licheck():
         for path in filterfiles('.py', '.pyx', '.s', '.sh'):
             if not os.path.basename(os.path.dirname(path)).endswith('_turbo'):
                 yield path
-    subprocess.check_call(['licheck.py'] + list(g()))
+    licheckimpl.mainimpl(list(g()))
 
 def nlcheck():
-    subprocess.check_call(['nlcheck.py'] + list(filterfiles('.py', '.pyx', '.s', '.sh')))
+    nlcheckimpl.mainimpl(list(filterfiles('.py', '.pyx', '.s', '.sh')))
 
 def divcheck():
-    subprocess.check_call(['divcheck.py'] + list(findfiles('.py')))
+    divcheckimpl.mainimpl(list(findfiles('.py')))
 
 def execcheck():
-    subprocess.check_call(['execcheck.py'] + list(findfiles('.py')))
+    execcheckimpl.mainimpl(list(findfiles('.py')))
 
 def pyflakes():
     with open('.flakesignore') as f:

@@ -38,9 +38,9 @@ template="""# Copyright 2014 %(author)s
 
 """ # Check it ends with 2 newlines.
 
-def main():
+def mainimpl(args):
     infoname = 'project.info'
-    projectpath = os.path.abspath(sys.argv[1])
+    projectpath = os.path.abspath(args[0])
     while True:
         parent = os.path.dirname(projectpath)
         if parent == projectpath:
@@ -52,7 +52,7 @@ def main():
     info = {}
     execfile(infopath, info)
     master = template % info
-    for path in sys.argv[1:]:
+    for path in args:
         with open(path) as f:
             text = f.read()
         if text.startswith('#!'):
@@ -69,6 +69,9 @@ def main():
         md5.update(f.read())
     if 'd32239bcb673463ab874e80d47fae504' != md5.hexdigest():
         raise Exception(gplpath)
+
+def main():
+    mainimpl(sys.argv[1:])
 
 if '__main__' == __name__:
     main()

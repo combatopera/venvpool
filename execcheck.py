@@ -29,8 +29,8 @@ def endswithifmain(istest, lines):
             return False
     return False
 
-def main():
-    for path in sys.argv[1:]:
+def mainimpl(args):
+    for path in args:
         executable = os.stat(path).st_mode & 0x49
         if 0 == executable:
             executable = False
@@ -53,6 +53,9 @@ def main():
         main = bool(lines) and endswithifmain(istest, lines)
         if 1 != len(set([hashbang, main, executable])):
             raise Exception(path) # Want all or nothing.
+
+def main():
+    mainimpl(sys.argv[1:])
 
 if '__main__' == __name__:
     main()

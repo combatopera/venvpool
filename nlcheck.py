@@ -19,13 +19,16 @@
 
 import sys, re
 
-def main():
-    for path in sys.argv[1:]:
+def mainimpl(args):
+    for path in args:
         with open(path, 'rb') as f:
             text = f.read()
         eols = set(re.findall(r'\r\n|[\r\n]', text))
         if len(eols) > 1:
             raise Exception(path)
+
+def main():
+    mainimpl(sys.argv[1:])
 
 if '__main__' == __name__:
     main()
