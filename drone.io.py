@@ -41,6 +41,7 @@ def main():
     subprocess.check_call(command)
     os.environ['MINICONDA_HOME'] = os.path.join(os.getcwd(), 'miniconda')
     os.chdir(projectdir)
+    # Equivalent to running tests.py directly but with one fewer process launch:
     pyrform.mainimpl([tests.__file__])
 
 if '__main__' == __name__:
