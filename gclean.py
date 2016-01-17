@@ -26,12 +26,14 @@ def removedir(path):
         shutil.rmtree(path)
 
 def main():
+    roots = sys.argv[1:]
     ignorename = '.hgignore'
     while not os.path.exists(ignorename):
         oldpwd = os.getcwd()
         os.chdir('..')
         if oldpwd == os.getcwd():
             raise Exception(ignorename)
+        roots = [os.path.join(os.path.basename(oldpwd), root) for root in roots]
     patterns = []
     with open(ignorename) as f:
         armed = False
@@ -48,10 +50,7 @@ def main():
                 print >> sys.stderr, path
                 remove(path)
                 break
-    args = sys.argv[1:]
-    if not args:
-        args = ['.']
-    for root in args:
+    for root in (roots if roots else ['.']):
         for dirpath, dirnames, filenames in os.walk(root):
             dirnames.sort()
             for name in dirnames:
