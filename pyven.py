@@ -42,8 +42,9 @@ def mainimpl(args):
     conf = {}
     execfile(confpath, conf)
     prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
-    # XXX: Also add absolute path of context project so manually-executed tests can find e.g. turboconf?
-    prepend([os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']], 'PYTHONPATH')
+    pythonpath = [context]
+    pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
+    prepend(pythonpath, 'PYTHONPATH')
     os.execvp('python', ['python'] + args)
 
 if '__main__' == __name__:
