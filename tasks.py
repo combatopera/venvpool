@@ -23,10 +23,11 @@ from tests import Files
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn')):
         os.chdir('..')
+    agcommand = ['ag', '--noheading', '--nobreak']
     paths = list(Files.findfiles('.py', '.pyx', '.h', '.cpp', '.ui'))
     for tag in 'XXX', 'TODO', 'FIXME':
-        subprocess.call(['pcregrep', '--color=always', tag + ' LATER'] + paths)
-        subprocess.call(['pcregrep', '--color=always', tag + '(?! LATER)'] + paths)
+        subprocess.call(agcommand + [tag + ' LATER'] + paths)
+        subprocess.call(agcommand + [tag + '(?! LATER)'] + paths)
 
 if '__main__' == __name__:
     main()
