@@ -27,7 +27,7 @@ def main():
     projectdir = os.getcwd()
     os.chdir(os.path.dirname(projectdir))
     for project in itertools.chain(['pyven'], conf['projects']):
-        if not os.path.exists(project.replace('/', os.sep)):
+        if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['hg', 'clone', "https://bitbucket.org/combatopera/%s" % project])
     os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
     subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/Miniconda-%s-Linux-x86_64.sh" % condaversion])
