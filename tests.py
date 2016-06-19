@@ -44,7 +44,7 @@ class Files:
                 yield line[2:]
 
     def __init__(self):
-        self.allsrcpaths = list(self.filterfiles('.py', '.pyx', '.s', '.sh'))
+        self.allsrcpaths = list(self.filterfiles('.py', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx'))
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
 
 def licheck(files):
