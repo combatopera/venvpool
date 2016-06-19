@@ -71,7 +71,9 @@ def pyflakes(files):
             if pattern.search(path) is not None:
                 return False
         return True
-    subprocess.check_call(['pyflakes'] + [p for p in files.pypaths if accept(p)])
+    paths = [p for p in files.pypaths if accept(p)]
+    if paths:
+        subprocess.check_call(['pyflakes'] + paths)
 
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn')):
