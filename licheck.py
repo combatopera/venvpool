@@ -19,7 +19,7 @@
 
 import sys, re, os, hashlib
 
-template="""# Copyright 2014 %(author)s
+template="""# Copyright %(years)s %(author)s
 
 # This file is part of %(name)s.
 #
@@ -51,6 +51,7 @@ def mainimpl(args):
             break
     info = {}
     execfile(infopath, info)
+    info['years'] = ', '.join(str(y) for y in info['years'])
     master = template % info
     for path in args:
         with open(path) as f:
@@ -58,9 +59,11 @@ def mainimpl(args):
         if text.startswith('#!'):
             for _ in xrange(2):
                 text = text[text.index('\n') + 1:]
-        text = text[:len(master)]
         if path.endswith('.s'):
             text = re.sub('^;', '#', text, flags = re.MULTILINE)
+        elif path.endswith('.h') or path.endswith('.cpp') or path.endswith('.cxx'):
+            text = re.sub('^//', '#', text, flags = re.MULTILINE)
+        text = text[:len(master)]
         if master != text:
             raise Exception(path)
     gplpath = os.path.join(projectpath, 'COPYING')
