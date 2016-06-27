@@ -40,7 +40,7 @@ def mainimpl(args):
             raise Exception(path) # Should be all or nothing.
         basename = os.path.basename(path)
         istest = basename.startswith('test_')
-        if 'tests.py' != basename and basename.lower().startswith('test') and not istest:
+        if basename not in ('tests.py', 'Test.py') and basename.lower().startswith('test') and not istest:
             raise Exception(path) # Catch bad naming.
         if istest and not executable:
             raise Exception(path) # All tests should be executable.
