@@ -82,7 +82,7 @@ def main():
     for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
         check(files)
         print >> sys.stderr, "%s: OK" % check.__name__
-    sys.exit(subprocess.call(['nosetests', '--exe', '-v']))
+    sys.exit(subprocess.call(['nosetests', '--exe', '-v', '-m', '^test_']))
 
 if '__main__' == __name__:
     main()
