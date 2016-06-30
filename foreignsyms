@@ -1,0 +1,3 @@
+#!/bin/bash
+
+nm -D "$1" | grep ' U ' | sed 's/.* U //' | c++filt | egrep -v '^(operator |vtable |std::|__|_Unwind_Resume$)'
