@@ -37,11 +37,14 @@ class Files:
 
     @classmethod
     def filterfiles(cls, *suffixes):
-        badstatuses = set('IR ')
-        for line in subprocess.Popen(['hg', 'st', '-A'] + list(cls.findfiles(*suffixes)), stdout = subprocess.PIPE).stdout:
-            line = stripeol(line)
-            if line[0] not in badstatuses:
-                yield line[2:]
+        if os.path.exists('.hg'):
+            badstatuses = set('IR ')
+            for line in subprocess.Popen(['hg', 'st', '-A'] + list(cls.findfiles(*suffixes)), stdout = subprocess.PIPE).stdout:
+                line = stripeol(line)
+                if line[0] not in badstatuses:
+                    yield line[2:]
+        else:
+            for x in cls.findfiles(*suffixes): yield x
 
     def __init__(self):
         self.allsrcpaths = list(self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx'))
@@ -76,7 +79,7 @@ def pyflakes(files):
         subprocess.check_call(['pyflakes'] + paths)
 
 def main():
-    while not (os.path.exists('.hg') or os.path.exists('.svn')):
+    while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
         os.chdir('..')
     files = Files()
     for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
