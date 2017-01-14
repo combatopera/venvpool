@@ -27,11 +27,13 @@ class Files:
 
     @staticmethod
     def findfiles(*suffixes):
-        for dirpath, dirnames, filenames in os.walk('.'):
+        walkpath = '.'
+        prefixlen = len(walkpath + os.sep)
+        for dirpath, dirnames, filenames in os.walk(walkpath):
             for name in sorted(filenames):
                 for suffix in suffixes:
                     if name.endswith(suffix):
-                        yield os.path.join(dirpath, name)
+                        yield os.path.join(dirpath, name)[prefixlen:]
                         break # Next name.
             dirnames.sort()
 
