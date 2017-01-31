@@ -31,11 +31,8 @@ def main():
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
     os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
     subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/Miniconda-%s-Linux-x86_64.sh" % condaversion])
-    command = ['bash', "Miniconda-%s-Linux-x86_64.sh" % condaversion]
-    process = subprocess.Popen(command, stdin = subprocess.PIPE)
-    process.communicate(input = '\nyes\nminiconda\nno\n')
-    if process.wait():
-        raise subprocess.CalledProcessError(process.returncode, command)
+    command = ['bash', "Miniconda-%s-Linux-x86_64.sh" % condaversion, '-b', '-p', 'miniconda']
+    subprocess.check_call(command)
     command = [os.path.join('miniconda', 'bin', 'conda'), 'install', '-q', 'pyflakes', 'nose']
     command.extend(conf['deps'])
     subprocess.check_call(command)
