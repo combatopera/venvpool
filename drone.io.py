@@ -33,7 +33,7 @@ def main():
     subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/Miniconda-%s-Linux-x86_64.sh" % condaversion])
     command = ['bash', "Miniconda-%s-Linux-x86_64.sh" % condaversion, '-b', '-p', 'miniconda']
     subprocess.check_call(command)
-    command = [os.path.join('miniconda', 'bin', 'conda'), 'install', '-q', 'pyflakes', 'nose']
+    command = [os.path.join('miniconda', 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
     command.extend(conf['deps'])
     subprocess.check_call(command)
     os.environ['MINICONDA_HOME'] = os.path.join(os.getcwd(), 'miniconda')
