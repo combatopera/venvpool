@@ -20,8 +20,13 @@
 import os, subprocess
 from tests import Files
 
+def isproject():
+    for name in '.hg', '.svn', '.git':
+        if os.path.exists(name):
+            return True
+
 def main():
-    while not (os.path.exists('.hg') or os.path.exists('.svn')):
+    while not isproject():
         os.chdir('..')
     agcommand = ['ag', '--noheading', '--nobreak']
     paths = list(Files.findfiles('.py', '.pyx', '.h', '.cpp', '.ui'))
