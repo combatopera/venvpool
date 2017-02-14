@@ -25,23 +25,42 @@ def removedir(path):
     else:
         shutil.rmtree(path)
 
+class Pattern:
+
+    def __init__(self, regex, dironly):
+        self.regex = re.compile(regex)
+        self.dironly = dironly
+
+    def accept(self, path, isdir):
+        if self.dironly and not isdir:
+            return False
+        return self.regex.search(path) is not None
+
+    def __repr__(self):
+        return "%s(%r, %r)" % (self.__class__.__name__, self.regex.pattern, self.dironly)
+
 class HgStyle:
 
     name = '.hgignore'
 
-    def regex(self, line):
-        return line
+    def pattern(self, line):
+        return Pattern(line, False)
 
 class GitStyle:
 
     name = '.gitignore'
 
-    def regex(self, line):
+    def pattern(self, line):
         if line.startswith('/'):
             anchor = '^'
             line = line[1:]
         else:
             anchor = '(?:^|/)'
+        if line.endswith('/'):
+            dironly = True
+            line = line[:-1]
+        else:
+            dironly = False
         def repl(m):
             text = m.group()
             if '*' not in text:
@@ -50,7 +69,7 @@ class GitStyle:
                 return '[^/]*'
             else:
                 raise Exception("Unsupported glob: " % text)
-        return "%s%s$" % (anchor, re.sub('[*]+|[^*]+', repl, line))
+        return Pattern("%s%s$" % (anchor, re.sub('[*]+|[^*]+', repl, line)), dironly)
 
 def styleornone():
     for style in HgStyle, GitStyle:
@@ -75,24 +94,24 @@ def main():
         for line in f:
             line, = line.splitlines()
             if armed:
-                patterns.append(re.compile(style.regex(line)))
-                print >> sys.stderr, '>', patterns[-1].pattern
+                patterns.append(style.pattern(line))
+                print >> sys.stderr, patterns[-1]
             else:
                 armed = '#gclean' == line
-    def tryremovepath(path, remove):
+    def tryremovepath(path, isdir):
         path = os.path.normpath(path)
         for pattern in patterns:
-            if pattern.search(path) is not None:
+            if pattern.accept(path, isdir):
                 print >> sys.stderr, path
-                remove(path)
+                (removedir if isdir else os.remove)(path)
                 break
     for root in (roots if roots else ['.']):
         for dirpath, dirnames, filenames in os.walk(root):
             dirnames.sort()
             for name in dirnames:
-                tryremovepath(os.path.join(dirpath, name), removedir)
+                tryremovepath(os.path.join(dirpath, name), True)
             for name in sorted(filenames):
-                tryremovepath(os.path.join(dirpath, name), os.remove)
+                tryremovepath(os.path.join(dirpath, name), False)
 
 if '__main__' == __name__:
     main()
