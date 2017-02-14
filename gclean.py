@@ -25,22 +25,58 @@ def removedir(path):
     else:
         shutil.rmtree(path)
 
+class HgStyle:
+
+    name = '.hgignore'
+
+    def regex(self, line):
+        return line
+
+class GitStyle:
+
+    name = '.gitignore'
+
+    def regex(self, line):
+        if line.startswith('/'):
+            anchor = '^'
+            line = line[1:]
+        else:
+            anchor = '(?:^|/)'
+        def repl(m):
+            text = m.group()
+            if '*' not in text:
+                return re.escape(text)
+            elif '*' == text:
+                return '[^/]*'
+            else:
+                raise Exception("Unsupported glob: " % text)
+        return "%s%s$" % (anchor, re.sub('[*]+|[^*]+', repl, line))
+
+def styleornone():
+    for style in HgStyle, GitStyle:
+        if os.path.exists(style.name):
+            return style()
+
 def main():
     roots = sys.argv[1:]
-    ignorename = '.hgignore'
-    while not os.path.exists(ignorename):
+    while True:
+        style = styleornone()
+        if style is not None:
+            print >> sys.stderr, style
+            break
         oldpwd = os.getcwd()
         os.chdir('..')
         if oldpwd == os.getcwd():
-            raise Exception(ignorename)
+            raise Exception('No style found.')
         roots = [os.path.join(os.path.basename(oldpwd), root) for root in roots]
     patterns = []
-    with open(ignorename) as f:
+    with open(style.name) as f:
         armed = False
         for line in f:
             line, = line.splitlines()
             if armed:
-                patterns.append(re.compile(line))
+                patterns.append(re.compile(style.regex(line)))
+                print >> sys.stderr, '>', patterns[-1].pattern
             else:
                 armed = '#gclean' == line
     def tryremovepath(path, remove):
