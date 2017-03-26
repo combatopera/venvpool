@@ -4,8 +4,8 @@ import sys
 from util import stderr
 
 def main():
-    for code in 'sys.path', 'sys.executable', 'sys.argv':
-        stderr("%s: %s" % (code, eval(code)))
+    for code in 'path', 'executable', 'argv':
+        stderr("%s: %s" % (name, getattr(sys, name)))
 
 if '__main__' == __name__:
     main()
