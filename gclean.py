@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
