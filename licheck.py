@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
@@ -50,14 +50,14 @@ def mainimpl(args):
         if os.path.exists(infopath):
             break
     info = {}
-    execfile(infopath, info)
+    exec(compile(open(infopath).read(), infopath, 'exec'), info)
     info['years'] = ', '.join(str(y) for y in info['years'])
     master = template % info
     for path in args:
         with open(path) as f:
             text = f.read()
         if text.startswith('#!'):
-            for _ in xrange(2):
+            for _ in range(2):
                 text = text[text.index('\n') + 1:]
         if path.endswith('.s'):
             text = re.sub('^;', '#', text, flags = re.MULTILINE)
@@ -69,7 +69,7 @@ def mainimpl(args):
     gplpath = os.path.join(projectpath, 'COPYING')
     md5 = hashlib.md5()
     with open(gplpath) as f:
-        md5.update(f.read())
+        md5.update(f.read().encode('utf_8'))
     if 'd32239bcb673463ab874e80d47fae504' != md5.hexdigest():
         raise Exception(gplpath)
 

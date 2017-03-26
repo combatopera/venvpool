@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
@@ -22,7 +22,7 @@ import sys, re
 def mainimpl(args):
     for path in args:
         with open(path, 'rb') as f:
-            text = f.read()
+            text = f.read().decode()
         eols = set(re.findall(r'\r\n|[\r\n]', text))
         if len(eols) > 1:
             raise Exception(path)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
@@ -22,7 +22,7 @@ import sys, os
 def endswithifmain(istest, lines):
     if ('    unittest.main()' if istest else '    main()') != lines[-1]:
         return False
-    for i in xrange(len(lines) - 2, -1, -1):
+    for i in range(len(lines) - 2, -1, -1):
         if '''if '__main__' == __name__:''' == lines[i]:
             return True
         if not lines[i].startswith('    '):
@@ -49,7 +49,11 @@ def mainimpl(args):
             lines = f.read().splitlines()
         finally:
             f.close()
-        hashbang = bool(lines) and lines[0] in ('#!/usr/bin/env python', '#!/usr/bin/env pyven')
+        hashbang = bool(lines) and lines[0] in (
+            '#!/usr/bin/env python',
+            '#!/usr/bin/env python3',
+            '#!/usr/bin/env pyven',
+        )
         main = bool(lines) and endswithifmain(istest, lines)
         if 1 != len(set([hashbang, main, executable])):
             raise Exception(path) # Want all or nothing.

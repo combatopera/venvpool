@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
@@ -23,7 +23,7 @@ condaversion = '3.16.0'
 
 def main():
     conf = {}
-    execfile('project.info', conf)
+    exec(compile(open('project.info').read(), 'project.info', 'exec'), conf)
     projectdir = os.getcwd()
     os.chdir(os.path.dirname(projectdir))
     for project in itertools.chain(['pyven'], conf['projects']):

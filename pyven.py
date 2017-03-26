@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
@@ -40,7 +40,7 @@ def mainimpl(args):
             raise Exception(confname)
         context = parent
     conf = {}
-    execfile(confpath, conf)
+    exec(compile(open(confpath).read(), confpath, 'exec'), conf)
     prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
     pythonpath = [context]
     pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])

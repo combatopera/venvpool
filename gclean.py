@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
@@ -81,7 +81,7 @@ def main():
     while True:
         style = styleornone()
         if style is not None:
-            print >> sys.stderr, style
+            print(style, file=sys.stderr)
             break
         oldpwd = os.getcwd()
         os.chdir('..')
@@ -95,14 +95,14 @@ def main():
             line, = line.splitlines()
             if armed:
                 patterns.append(style.pattern(line))
-                print >> sys.stderr, patterns[-1]
+                print(patterns[-1], file=sys.stderr)
             else:
                 armed = '#gclean' == line
     def tryremovepath(path, isdir):
         path = os.path.normpath(path)
         for pattern in patterns:
             if pattern.accept(path, isdir):
-                print >> sys.stderr, path
+                print(path, file=sys.stderr)
                 (removedir if isdir else os.remove)(path)
                 break
     for root in (roots if roots else ['.']):
