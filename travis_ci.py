@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, itertools, pyven, tests, sys, licheck
+import os, subprocess, itertools, pyven, tests, licheck
 
 class MinicondaInfo:
 
@@ -59,7 +59,7 @@ def main():
     os.chdir(projectdir)
     for info in minicondainfos:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.mainimpl(projectdir, conf, sys.executable, [tests.__file__])
+        pyven.mainimpl(projectdir, conf, [tests.__file__])
 
 if '__main__' == __name__:
     main()

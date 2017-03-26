@@ -36,14 +36,14 @@ def main():
             raise Exception(licheck.infoname)
         context = parent
     conf = licheck.loadprojectinfo(confpath)
-    mainimpl(context, conf, 'python', sys.argv[1:])
+    mainimpl(context, conf, sys.argv[1:])
 
-def mainimpl(projectdir, conf, python, args):
+def mainimpl(projectdir, conf, args):
     prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
     pythonpath = [projectdir]
     pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
     prepend(pythonpath, 'PYTHONPATH')
-    os.execvp(python, ['python'] + args)
+    os.execvp('python', ['python'] + args)
 
 if '__main__' == __name__:
     main()
