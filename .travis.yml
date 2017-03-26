@@ -1,1 +1,1 @@
-script: travis_ci.py
+script: ./travis_ci.py
