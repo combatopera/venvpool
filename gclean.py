@@ -18,6 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import re, os, sys, shutil
+from util import stderr
 
 def removedir(path):
     if os.path.islink(path):
@@ -81,7 +82,7 @@ def main():
     while True:
         style = styleornone()
         if style is not None:
-            print(style, file=sys.stderr)
+            stderr(style)
             break
         oldpwd = os.getcwd()
         os.chdir('..')
@@ -95,14 +96,14 @@ def main():
             line, = line.splitlines()
             if armed:
                 patterns.append(style.pattern(line))
-                print(patterns[-1], file=sys.stderr)
+                stderr(patterns[-1])
             else:
                 armed = '#gclean' == line
     def tryremovepath(path, isdir):
         path = os.path.normpath(path)
         for pattern in patterns:
             if pattern.accept(path, isdir):
-                print(path, file=sys.stderr)
+                stderr(path)
                 (removedir if isdir else os.remove)(path)
                 break
     for root in (roots if roots else ['.']):

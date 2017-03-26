@@ -18,6 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess, sys, os, re, licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl
+from util import stderr
 
 def stripeol(line):
     line, = line.splitlines()
@@ -86,7 +87,7 @@ def main():
     files = Files()
     for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
         check(files)
-        print("%s: OK" % check.__name__, file=sys.stderr)
+        stderr("%s: OK" % check.__name__)
     sys.exit(subprocess.call(['nosetests', '--exe', '-v', '-m', '^test_']))
 
 if '__main__' == __name__:
