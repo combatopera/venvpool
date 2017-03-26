@@ -57,7 +57,6 @@ def main():
         if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
     os.chdir(projectdir)
-    os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
     minicondainfos = [pyversiontominicondainfo[v] for v in conf['pyversions']]
     for info in minicondainfos:
         info.installifnecessary(conf['deps'])
