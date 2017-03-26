@@ -26,9 +26,9 @@ def prepend(paths, envkey):
     os.environ[envkey] = os.pathsep.join(paths + current)
 
 def main():
-    mainimpl(sys.argv[1:])
+    mainimpl('python', sys.argv[1:])
 
-def mainimpl(args):
+def mainimpl(python, args):
     confname = 'project.info'
     context = os.getcwd()
     while True:
@@ -45,7 +45,7 @@ def mainimpl(args):
     pythonpath = [context]
     pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
     prepend(pythonpath, 'PYTHONPATH')
-    os.execvp('python', ['python'] + args)
+    os.execvp(python, ['python'] + args)
 
 if '__main__' == __name__:
     main()

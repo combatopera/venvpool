@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, itertools, pyven, tests
+import os, subprocess, itertools, pyven, tests, sys
 
 pyversiontominiconda = {2: 'Miniconda', 3: 'Miniconda3'}
 condaversion = '3.16.0'
@@ -41,7 +41,7 @@ def main():
     os.environ['MINICONDA_HOME'] = os.path.join(os.getcwd(), 'miniconda')
     os.chdir(projectdir)
     # Equivalent to running tests.py directly but with one fewer process launch:
-    pyven.mainimpl([tests.__file__])
+    pyven.mainimpl(sys.executable, [tests.__file__])
 
 if '__main__' == __name__:
     main()
