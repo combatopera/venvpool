@@ -36,6 +36,8 @@ pyversiontominicondainfo = {
 def installminicondas(pyversions, deps):
     for pyversion in pyversions:
         info = pyversiontominicondainfo[pyversion]
+        if info.envkey in os.environ:
+            continue
         scriptname = "%s-%s-Linux-x86_64.sh" % (info.title, info.condaversion)
         subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % scriptname])
         command = ['bash', scriptname, '-b', '-p', info.dirname]
