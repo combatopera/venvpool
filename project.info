@@ -3,4 +3,4 @@ name = 'pyven'
 years = range(2013, 2017)
 projects = ()
 deps = ()
-pyversion = 3
+pyversions = 2, 3

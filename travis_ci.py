@@ -19,18 +19,31 @@
 
 import os, subprocess, itertools, pyven, tests, sys
 
-pyversiontominiconda = {2: 'Miniconda', 3: 'Miniconda3'}
-condaversion = '3.16.0'
+class MinicondaInfo:
 
-def installminiconda(pyversion, deps):
-    scriptname = "%s-%s-Linux-x86_64.sh" % (pyversiontominiconda[pyversion], condaversion)
-    subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % scriptname])
-    command = ['bash', scriptname, '-b', '-p', 'miniconda']
-    subprocess.check_call(command)
-    command = [os.path.join('miniconda', 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
-    command.extend(deps)
-    subprocess.check_call(command)
-    os.environ['MINICONDA_HOME'] = os.path.join(os.getcwd(), 'miniconda')
+    condaversion = '3.16.0'
+
+    def __init__(self, title, dirname, envkey):
+        self.title = title
+        self.dirname = dirname
+        self.envkey = envkey
+
+pyversiontominicondainfo = {
+    2: MinicondaInfo('Miniconda', 'miniconda', 'MINICONDA_HOME'),
+    3: MinicondaInfo('Miniconda3', 'miniconda3', 'MINICONDA3_HOME'),
+}
+
+def installminicondas(pyversions, deps):
+    for pyversion in pyversions:
+        info = pyversiontominicondainfo[pyversion]
+        scriptname = "%s-%s-Linux-x86_64.sh" % (info.title, info.condaversion)
+        subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % scriptname])
+        command = ['bash', scriptname, '-b', '-p', info.dirname]
+        subprocess.check_call(command)
+        command = [os.path.join(info.dirname, 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
+        command.extend(deps)
+        subprocess.check_call(command)
+        os.environ[info.envkey] = os.path.join(os.getcwd(), info.dirname)
 
 def main():
     conf = {}
@@ -41,7 +54,7 @@ def main():
         if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
     os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
-    installminiconda(conf['pyversion'], conf['deps'])
+    installminicondas(conf['pyversions'], conf['deps'])
     os.chdir(projectdir)
     # Equivalent to running tests.py directly but with one fewer process launch:
     pyven.mainimpl(sys.executable, [tests.__file__])
