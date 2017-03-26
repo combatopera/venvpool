@@ -33,9 +33,8 @@ pyversiontominicondainfo = {
     3: MinicondaInfo('Miniconda3', 'miniconda3', 'MINICONDA3_HOME'),
 }
 
-def installminicondas(pyversions, deps):
-    for pyversion in pyversions:
-        info = pyversiontominicondainfo[pyversion]
+def installminicondas(infos, deps):
+    for info in infos:
         if info.envkey in os.environ:
             continue
         scriptname = "%s-%s-Linux-x86_64.sh" % (info.title, info.condaversion)
@@ -56,10 +55,12 @@ def main():
         if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
     os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
-    installminicondas(conf['pyversions'], conf['deps'])
+    minicondainfos = [pyversiontominicondainfo[v] for v in conf['pyversions']]
+    installminicondas(minicondainfos, conf['deps'])
     os.chdir(projectdir)
-    # Equivalent to running tests.py directly but with one fewer process launch:
-    pyven.mainimpl(sys.executable, [tests.__file__])
+    for info in minicondainfos:
+        # Equivalent to running tests.py directly but with one fewer process launch:
+        pyven.mainimpl(sys.executable, [tests.__file__])
 
 if '__main__' == __name__:
     main()
