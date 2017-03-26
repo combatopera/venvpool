@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, licheck, miniconda
+import os, sys, licheck, miniconda, subprocess
 
 def prepend(paths, envkey):
     current = [os.environ[envkey]] if envkey in os.environ else []
@@ -35,15 +35,18 @@ def main():
         context = parent
     conf = licheck.loadprojectinfo(confpath)
     pyversion = conf['pyversions'][0]
-    mainimpl(context, conf, pyversion, sys.argv[1:])
+    mainimpl(context, conf, pyversion, sys.argv[1:], True)
 
-def mainimpl(projectdir, conf, pyversion, args):
+def mainimpl(projectdir, conf, pyversion, args, replace):
     prepend([os.path.join(miniconda.pyversiontominicondainfo[pyversion].path(), 'bin')], 'PATH')
     pythonpath = [projectdir]
     workspace = os.path.dirname(projectdir)
     pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
     prepend(pythonpath, 'PYTHONPATH')
-    os.execvp('python', ['python'] + args)
+    if replace:
+        os.execvp('python', ['python'] + args)
+    else:
+        subprocess.check_call(['python'] + args)
 
 if '__main__' == __name__:
     main()

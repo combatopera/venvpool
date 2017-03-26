@@ -32,7 +32,7 @@ def main():
         info.installifnecessary(conf['deps'])
     for info in minicondainfos:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.mainimpl(projectdir, conf, info.pyversion, [tests.__file__])
+        pyven.mainimpl(projectdir, conf, info.pyversion, [tests.__file__], False)
 
 if '__main__' == __name__:
     main()
