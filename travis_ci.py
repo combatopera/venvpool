@@ -32,11 +32,13 @@ class MinicondaInfo:
     def installifnecessary(self, deps):
         if self.envkey in os.environ:
             return # Already installed.
-        if os.path.exists(self.home):
-            raise Exception(self.home) # Panic.
+        for path in self.scriptname, self.home:
+            if os.path.exists(path):
+                raise Exception(path) # Panic.
         subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % self.scriptname])
         command = ['bash', self.scriptname, '-b', '-p', self.home]
         subprocess.check_call(command)
+        os.remove(self.scriptname)
         command = [os.path.join(self.home, 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
         command.extend(deps)
         subprocess.check_call(command)
