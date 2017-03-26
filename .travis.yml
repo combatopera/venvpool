@@ -1,1 +1,1 @@
-script: ./drone.io.py
+script: python drone.io.py
