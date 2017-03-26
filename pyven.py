@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys
+import os, sys, licheck
 
 workspace = os.path.dirname(os.path.dirname(sys.argv[0]))
 
@@ -29,18 +29,16 @@ def main():
     mainimpl('python', sys.argv[1:])
 
 def mainimpl(python, args):
-    confname = 'project.info'
     context = os.getcwd()
     while True:
-        confpath = os.path.join(context, confname)
+        confpath = os.path.join(context, licheck.infoname)
         if os.path.exists(confpath):
             break
         parent = os.path.dirname(context)
         if parent == context:
-            raise Exception(confname)
+            raise Exception(licheck.infoname)
         context = parent
-    conf = {}
-    exec(compile(open(confpath).read(), confpath, 'exec'), conf)
+    conf = licheck.loadprojectinfo(confpath)
     prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
     pythonpath = [context]
     pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, itertools, pyven, tests, sys
+import os, subprocess, itertools, pyven, tests, sys, licheck
 
 class MinicondaInfo:
 
@@ -47,8 +47,7 @@ def installminicondas(infos, deps):
         os.environ[info.envkey] = os.path.join(os.getcwd(), info.dirname)
 
 def main():
-    conf = {}
-    exec(compile(open('project.info').read(), 'project.info', 'exec'), conf)
+    conf = licheck.loadprojectinfo(licheck.infoname)
     projectdir = os.getcwd()
     os.chdir('..')
     for project in itertools.chain(['pyven'], conf['projects']):

@@ -35,9 +35,14 @@ template="""# Copyright %(years)s %(author)s
 # along with %(name)s.  If not, see <http://www.gnu.org/licenses/>.
 
 """ # Check it ends with 2 newlines.
+infoname = 'project.info'
+
+def loadprojectinfo(path):
+    info = {}
+    exec(compile(open(path).read(), path, 'exec'), info)
+    return info
 
 def mainimpl(args):
-    infoname = 'project.info'
     projectpath = os.path.abspath(args[0])
     while True:
         parent = os.path.dirname(projectpath)
@@ -47,8 +52,7 @@ def mainimpl(args):
         infopath = os.path.join(projectpath, infoname)
         if os.path.exists(infopath):
             break
-    info = {}
-    exec(compile(open(infopath).read(), infopath, 'exec'), info)
+    info = loadprojectinfo(infopath)
     info['years'] = ', '.join(str(y) for y in info['years'])
     master = template % info
     for path in args:
