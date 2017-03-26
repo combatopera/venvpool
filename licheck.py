@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, re, os, hashlib
+import re, os, hashlib
 
 template="""# Copyright %(years)s %(author)s
 

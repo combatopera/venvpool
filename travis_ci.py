@@ -22,23 +22,26 @@ import os, subprocess, itertools, pyven, tests, sys
 pyversiontominiconda = {2: 'Miniconda', 3: 'Miniconda3'}
 condaversion = '3.16.0'
 
-def main():
-    conf = {}
-    exec(compile(open('project.info').read(), 'project.info', 'exec'), conf)
-    projectdir = os.getcwd()
-    os.chdir(os.path.dirname(projectdir))
-    for project in itertools.chain(['pyven'], conf['projects']):
-        if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
-            subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
-    os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
-    scriptname = "%s-%s-Linux-x86_64.sh" % (pyversiontominiconda[conf['pyversion']], condaversion)
+def installminiconda(pyversion, deps):
+    scriptname = "%s-%s-Linux-x86_64.sh" % (pyversiontominiconda[pyversion], condaversion)
     subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % scriptname])
     command = ['bash', scriptname, '-b', '-p', 'miniconda']
     subprocess.check_call(command)
     command = [os.path.join('miniconda', 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
-    command.extend(conf['deps'])
+    command.extend(deps)
     subprocess.check_call(command)
     os.environ['MINICONDA_HOME'] = os.path.join(os.getcwd(), 'miniconda')
+
+def main():
+    conf = {}
+    exec(compile(open('project.info').read(), 'project.info', 'exec'), conf)
+    projectdir = os.getcwd()
+    os.chdir('..')
+    for project in itertools.chain(['pyven'], conf['projects']):
+        if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
+            subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
+    os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
+    installminiconda(conf['pyversion'], conf['deps'])
     os.chdir(projectdir)
     # Equivalent to running tests.py directly but with one fewer process launch:
     pyven.mainimpl(sys.executable, [tests.__file__])
