@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -57,9 +55,3 @@ def mainimpl(args):
         main = bool(lines) and endswithifmain(istest, lines)
         if 1 != len(set([hashbang, main, executable])):
             raise Exception(path) # Want all or nothing.
-
-def main():
-    mainimpl(sys.argv[1:])
-
-if '__main__' == __name__:
-    main()

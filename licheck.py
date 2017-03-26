@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -72,9 +70,3 @@ def mainimpl(args):
         md5.update(f.read().encode('utf_8'))
     if 'd32239bcb673463ab874e80d47fae504' != md5.hexdigest():
         raise Exception(gplpath)
-
-def main():
-    mainimpl(sys.argv[1:])
-
-if '__main__' == __name__:
-    main()

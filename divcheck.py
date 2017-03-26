@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -31,9 +29,3 @@ def mainimpl(args):
             hasdiv = False
         if hasdiv == (re.search('^from __future__ import division(?: # .+)?$', text, flags = re.MULTILINE) is None):
             raise Exception(path)
-
-def main():
-    mainimpl(sys.argv[1:])
-
-if '__main__' == __name__:
-    main()
