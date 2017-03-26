@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, itertools, pyven, tests, licheck
+import os, subprocess, pyven, tests, licheck
 
 class MinicondaInfo:
 
@@ -31,7 +31,7 @@ class MinicondaInfo:
 
     def installifnecessary(self, deps):
         if self.envkey in os.environ:
-            continue # Already installed.
+            return # Already installed.
         if os.path.exists(self.home):
             raise Exception(self.home) # Panic.
         subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % self.scriptname])
@@ -51,14 +51,14 @@ def main():
     conf = licheck.loadprojectinfo(licheck.infoname)
     projectdir = os.getcwd()
     os.chdir('..')
-    for project in itertools.chain(['pyven'], conf['projects']):
+    for project in conf['projects']:
         if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
+    os.chdir(projectdir)
     os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
     minicondainfos = [pyversiontominicondainfo[v] for v in conf['pyversions']]
     for info in minicondainfos:
         info.installifnecessary(conf['deps'])
-    os.chdir(projectdir)
     for info in minicondainfos:
         # Equivalent to running tests.py directly but with one fewer process launch:
         pyven.mainimpl(projectdir, conf, [tests.__file__])
