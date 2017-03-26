@@ -17,16 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, licheck
-
-workspace = os.path.dirname(os.path.dirname(sys.argv[0]))
+import os, sys, licheck, miniconda
 
 def prepend(paths, envkey):
     current = [os.environ[envkey]] if envkey in os.environ else []
     os.environ[envkey] = os.pathsep.join(paths + current)
 
 def main():
-    context = os.getcwd()
+    context = os.path.dirname(os.path.realpath(sys.argv[1]))
     while True:
         confpath = os.path.join(context, licheck.infoname)
         if os.path.exists(confpath):
@@ -36,11 +34,13 @@ def main():
             raise Exception(licheck.infoname)
         context = parent
     conf = licheck.loadprojectinfo(confpath)
-    mainimpl(context, conf, sys.argv[1:])
+    pyversion = conf['pyversions'][0]
+    mainimpl(context, conf, pyversion, sys.argv[1:])
 
-def mainimpl(projectdir, conf, args):
-    prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
+def mainimpl(projectdir, conf, pyversion, args):
+    prepend([os.path.join(miniconda.pyversiontominicondainfo[pyversion].path(), 'bin')], 'PATH')
     pythonpath = [projectdir]
+    workspace = os.path.dirname(projectdir)
     pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
     prepend(pythonpath, 'PYTHONPATH')
     os.execvp('python', ['python'] + args)
