@@ -19,6 +19,7 @@
 
 import os, subprocess, itertools, pyven, tests
 
+pyversiontominiconda = {2: 'Miniconda', 3: 'Miniconda3'}
 condaversion = '3.16.0'
 
 def main():
@@ -30,8 +31,9 @@ def main():
         if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
     os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
-    subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/Miniconda-%s-Linux-x86_64.sh" % condaversion])
-    command = ['bash', "Miniconda-%s-Linux-x86_64.sh" % condaversion, '-b', '-p', 'miniconda']
+    scriptname = "%s-%s-Linux-x86_64.sh" % (pyversiontominiconda[conf['pyversion']], condaversion)
+    subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % scriptname])
+    command = ['bash', scriptname, '-b', '-p', 'miniconda']
     subprocess.check_call(command)
     command = [os.path.join('miniconda', 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
     command.extend(conf['deps'])
