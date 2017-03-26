@@ -26,9 +26,6 @@ def prepend(paths, envkey):
     os.environ[envkey] = os.pathsep.join(paths + current)
 
 def main():
-    mainimpl('python', sys.argv[1:])
-
-def mainimpl(python, args):
     context = os.getcwd()
     while True:
         confpath = os.path.join(context, licheck.infoname)
@@ -39,8 +36,11 @@ def mainimpl(python, args):
             raise Exception(licheck.infoname)
         context = parent
     conf = licheck.loadprojectinfo(confpath)
+    mainimpl(context, conf, 'python', sys.argv[1:])
+
+def mainimpl(projectdir, conf, python, args):
     prepend([os.path.join(os.environ['MINICONDA_HOME'], 'bin')], 'PATH')
-    pythonpath = [context]
+    pythonpath = [projectdir]
     pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
     prepend(pythonpath, 'PYTHONPATH')
     os.execvp(python, ['python'] + args)

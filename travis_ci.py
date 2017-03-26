@@ -59,7 +59,7 @@ def main():
     os.chdir(projectdir)
     for info in minicondainfos:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.mainimpl(sys.executable, [tests.__file__])
+        pyven.mainimpl(projectdir, conf, sys.executable, [tests.__file__])
 
 if '__main__' == __name__:
     main()
