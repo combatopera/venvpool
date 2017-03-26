@@ -25,29 +25,27 @@ class MinicondaInfo:
     opt = os.path.join(os.path.expanduser('~'), 'opt')
 
     def __init__(self, title, dirname, envkey):
-        self.title = title
+        self.scriptname = "%s-%s-Linux-x86_64.sh" % (title, self.condaversion)
         self.home = os.path.join(self.opt, dirname)
         self.envkey = envkey
+
+    def installifnecessary(self, deps):
+        if self.envkey in os.environ:
+            continue # Already installed.
+        if os.path.exists(self.home):
+            raise Exception(self.home) # Panic.
+        subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % self.scriptname])
+        command = ['bash', self.scriptname, '-b', '-p', self.home]
+        subprocess.check_call(command)
+        command = [os.path.join(self.home, 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
+        command.extend(deps)
+        subprocess.check_call(command)
+        os.environ[self.envkey] = self.home
 
 pyversiontominicondainfo = {
     2: MinicondaInfo('Miniconda', 'miniconda', 'MINICONDA_HOME'),
     3: MinicondaInfo('Miniconda3', 'miniconda3', 'MINICONDA3_HOME'),
 }
-
-def installminicondas(infos, deps):
-    for info in infos:
-        if info.envkey in os.environ:
-            continue # Already installed.
-        if os.path.exists(info.home):
-            raise Exception(info.home) # Panic.
-        scriptname = "%s-%s-Linux-x86_64.sh" % (info.title, info.condaversion)
-        subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % scriptname])
-        command = ['bash', scriptname, '-b', '-p', info.home]
-        subprocess.check_call(command)
-        command = [os.path.join(info.home, 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
-        command.extend(deps)
-        subprocess.check_call(command)
-        os.environ[info.envkey] = info.home
 
 def main():
     conf = licheck.loadprojectinfo(licheck.infoname)
@@ -58,7 +56,8 @@ def main():
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
     os.environ['PATH'] = "%s%s%s" % (os.path.join(os.getcwd(), 'pyven'), os.pathsep, os.environ['PATH'])
     minicondainfos = [pyversiontominicondainfo[v] for v in conf['pyversions']]
-    installminicondas(minicondainfos, conf['deps'])
+    for info in minicondainfos:
+        info.installifnecessary(conf['deps'])
     os.chdir(projectdir)
     for info in minicondainfos:
         # Equivalent to running tests.py directly but with one fewer process launch:
