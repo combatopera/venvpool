@@ -22,10 +22,11 @@ import os, subprocess, itertools, pyven, tests, licheck
 class MinicondaInfo:
 
     condaversion = '3.16.0'
+    opt = os.path.join(os.path.expanduser('~'), 'opt')
 
     def __init__(self, title, dirname, envkey):
         self.title = title
-        self.dirname = dirname
+        self.home = os.path.join(self.opt, dirname)
         self.envkey = envkey
 
 pyversiontominicondainfo = {
@@ -36,15 +37,17 @@ pyversiontominicondainfo = {
 def installminicondas(infos, deps):
     for info in infos:
         if info.envkey in os.environ:
-            continue
+            continue # Already installed.
+        if os.path.exists(info.home):
+            raise Exception(info.home) # Panic.
         scriptname = "%s-%s-Linux-x86_64.sh" % (info.title, info.condaversion)
         subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % scriptname])
-        command = ['bash', scriptname, '-b', '-p', info.dirname]
+        command = ['bash', scriptname, '-b', '-p', info.home]
         subprocess.check_call(command)
-        command = [os.path.join(info.dirname, 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
+        command = [os.path.join(info.home, 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose']
         command.extend(deps)
         subprocess.check_call(command)
-        os.environ[info.envkey] = os.path.join(os.getcwd(), info.dirname)
+        os.environ[info.envkey] = info.home
 
 def main():
     conf = licheck.loadprojectinfo(licheck.infoname)
