@@ -42,8 +42,8 @@ def mainimpl(args):
         istest = basename.startswith('test_')
         if basename not in ('tests.py', 'Test.py') and basename.lower().startswith('test') and not istest:
             raise Exception(path) # Catch bad naming.
-        if istest and not executable:
-            raise Exception(path) # All tests should be executable.
+        if istest and executable:
+            raise Exception(path) # All tests should be non-executable.
         f = open(path)
         try:
             lines = f.read().splitlines()
