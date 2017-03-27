@@ -27,8 +27,8 @@ def endswithifmain(istest, lines):
             return False
     return False
 
-def mainimpl(args):
-    for path in args:
+def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-executable.
+    for path in paths:
         executable = os.stat(path).st_mode & 0x49
         if 0 == executable:
             executable = False

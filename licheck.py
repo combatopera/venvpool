@@ -42,8 +42,8 @@ def loadprojectinfo(path):
     exec(compile(open(path).read(), path, 'exec'), info)
     return info
 
-def mainimpl(args):
-    projectpath = os.path.abspath(args[0])
+def mainimpl(paths):
+    projectpath = os.path.abspath(paths[0])
     while True:
         parent = os.path.dirname(projectpath)
         if parent == projectpath:
@@ -52,10 +52,10 @@ def mainimpl(args):
         infopath = os.path.join(projectpath, infoname)
         if os.path.exists(infopath):
             break
-    info = loadprojectinfo(infopath)
+    info = loadprojectinfo(infopath) # TODO: Pass this in (and don't modify it).
     info['years'] = ', '.join(str(y) for y in info['years'])
     master = template % info
-    for path in args:
+    for path in paths:
         with open(path) as f:
             text = f.read()
         if text.startswith('#!'):

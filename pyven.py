@@ -37,16 +37,16 @@ def main():
     pyversion = conf['pyversions'][0]
     mainimpl(context, conf, pyversion, sys.argv[1:], True)
 
-def mainimpl(projectdir, conf, pyversion, args, replace):
+def mainimpl(projectdir, conf, pyversion, pythonargs, replace):
     prepend([os.path.join(miniconda.pyversiontominicondainfo[pyversion].path(), 'bin')], 'PATH')
     pythonpath = [projectdir]
     workspace = os.path.dirname(projectdir)
     pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
     prepend(pythonpath, 'PYTHONPATH')
     if replace:
-        os.execvp('python', ['python'] + args)
+        os.execvp('python', ['python'] + pythonargs)
     else:
-        subprocess.check_call(['python'] + args)
+        subprocess.check_call(['python'] + pythonargs)
 
 if '__main__' == __name__:
     main()

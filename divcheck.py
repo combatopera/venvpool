@@ -17,8 +17,8 @@
 
 import re, ast
 
-def mainimpl(args):
-    for path in args:
+def mainimpl(paths): # TODO: Skip in Python 3.
+    for path in paths:
         with open(path) as f:
             text = f.read()
         for node in ast.walk(ast.parse(text)):

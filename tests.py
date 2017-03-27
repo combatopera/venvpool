@@ -86,8 +86,9 @@ def main():
         os.chdir('..')
     files = Files()
     for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
+        sys.stderr.write("%s: " % check.__name__)
         check(files)
-        stderr("%s: OK" % check.__name__)
+        stderr('OK')
     sys.exit(subprocess.call(['nosetests', '--exe', '-v', '-m', '^test_']))
 
 if '__main__' == __name__:

@@ -17,10 +17,12 @@
 
 import re
 
-def mainimpl(args):
-    for path in args:
+class MoreThanOneEolStyleException(Exception): pass
+
+def mainimpl(paths):
+    for path in paths:
         with open(path, 'rb') as f:
             text = f.read().decode()
         eols = set(re.findall(r'\r\n|[\r\n]', text))
         if len(eols) > 1:
-            raise Exception(path)
+            raise MoreThanOneEolStyleException(path)

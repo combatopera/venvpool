@@ -17,7 +17,9 @@
 
 import os, subprocess
 
-class MinicondaInfo:
+class PathExistsException(Exception): pass
+
+class Miniconda:
 
     condaversion = '3.16.0'
     opt = os.path.join(os.path.expanduser('~'), 'opt')
@@ -33,7 +35,7 @@ class MinicondaInfo:
             return # Already installed.
         for path in self.scriptname, self.target:
             if os.path.exists(path):
-                raise Exception(path) # Panic.
+                raise PathExistsException(path) # Panic.
         subprocess.check_call(['wget', '--no-verbose', "http://repo.continuum.io/miniconda/%s" % self.scriptname])
         command = ['bash', self.scriptname, '-b', '-p', self.target]
         subprocess.check_call(command)
@@ -47,6 +49,6 @@ class MinicondaInfo:
         return os.environ[self.envkey]
 
 pyversiontominicondainfo = {info.pyversion: info for info in [
-    MinicondaInfo(2, 'Miniconda', 'miniconda', 'MINICONDA_HOME'),
-    MinicondaInfo(3, 'Miniconda3', 'miniconda3', 'MINICONDA3_HOME'),
+    Miniconda(2, 'Miniconda', 'miniconda', 'MINICONDA_HOME'),
+    Miniconda(3, 'Miniconda3', 'miniconda3', 'MINICONDA3_HOME'),
 ]}
