@@ -33,9 +33,10 @@ class Launcher:
         env[key] = os.pathsep.join(itertools.chain(projectpaths, currentpaths))
         return env
 
-    def __init__(self, pyversion, projectpaths):
+    def __init__(self, info, pyversion):
+        workspace = os.path.dirname(info.projectdir)
+        self.env = self.getenv(os.path.join(workspace, project.replace('/', os.sep)) for project in info['projects'])
         self.pathtopython = os.path.join(miniconda.pyversiontominiconda[pyversion].home(), 'bin', 'python')
-        self.env = self.getenv(projectpaths)
 
     def replace(self, args):
         os.execvpe(self.pathtopython, [self.pathtopython] + args, self.env)
@@ -44,12 +45,8 @@ class Launcher:
         subprocess.check_call([self.pathtopython] + args, env = self.env)
 
 def main():
-    conf = projectinfo.ProjectInfo(os.path.dirname(os.path.realpath(sys.argv[1])))
-    getlauncher(conf.projectdir, conf['projects'], conf['pyversions'][0]).replace(sys.argv[1:])
-
-def getlauncher(projectdir, projects, pyversion):
-    workspace = os.path.dirname(projectdir)
-    return Launcher(pyversion, (os.path.join(workspace, project.replace('/', os.sep)) for project in projects))
+    info = projectinfo.ProjectInfo(os.path.dirname(os.path.realpath(sys.argv[1])))
+    Launcher(info, info['pyversions'][0]).replace(sys.argv[1:])
 
 if '__main__' == __name__:
     main()
