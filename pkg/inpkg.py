@@ -1,6 +1,6 @@
 #!/usr/bin/env pyven
 
-# Copyright 2013, 2014, 2015, 2016 Andrzej Cichocki
+# Copyright 2013, 2014, 2015, 2016, 2017 Andrzej Cichocki
 
 # This file is part of pyven.
 #
