@@ -47,9 +47,12 @@ def mainimpl(paths):
         infopath = os.path.join(projectpath, ProjectInfo.infoname)
         if os.path.exists(infopath):
             break
-    info = ProjectInfo(infopath).info # TODO: Pass this in (and don't modify it).
-    info['years'] = ', '.join(str(y) for y in info['years'])
-    master = template % info
+    info = ProjectInfo(infopath) # TODO: Pass this in.
+    master = template % {
+        'years': ', '.join(str(y) for y in info['years']),
+        'author': info['author'],
+        'name': info['name'],
+    }
     for path in paths:
         with open(path) as f:
             text = f.read()
