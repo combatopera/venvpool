@@ -18,7 +18,10 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-from .util import stderr
+if '__main__' == __name__:
+    from util import stderr
+else:
+    from .util import stderr
 
 def main():
     for name in 'path', 'executable', 'argv':
