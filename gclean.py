@@ -18,7 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import re, os, sys, shutil
-from util import stderr
+from pyvenimpl.util import stderr
 
 def removedir(path):
     if os.path.islink(path):

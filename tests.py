@@ -18,7 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess, sys, os, re, licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl
-from util import stderr
+from pyvenimpl.util import stderr
 
 def stripeol(line):
     line, = line.splitlines()
