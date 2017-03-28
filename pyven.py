@@ -39,9 +39,8 @@ def main():
 
 def mainimpl(projectdir, conf, pyversion, pythonargs, replace):
     prepend([os.path.join(miniconda.pyversiontominicondainfo[pyversion].path(), 'bin')], 'PATH')
-    pythonpath = [projectdir]
     workspace = os.path.dirname(projectdir)
-    pythonpath.extend(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
+    pythonpath = [os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']]
     prepend(pythonpath, 'PYTHONPATH')
     if replace:
         os.execvp('python', ['python'] + pythonargs)
