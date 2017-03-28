@@ -19,9 +19,15 @@
 
 import os, sys, licheck, miniconda, subprocess, itertools
 
-def prepend(paths, envkey):
-    current = [os.environ[envkey]] if envkey in os.environ else []
-    os.environ[envkey] = os.pathsep.join(itertools.chain(paths, current))
+def getenv(projectpaths):
+    key = 'PYTHONPATH'
+    env = os.environ.copy()
+    try:
+        currentpaths = [env[key]] # No need to actually split.
+    except KeyError:
+        currentpaths = []
+    env[key] = os.pathsep.join(itertools.chain(projectpaths, currentpaths))
+    return env
 
 def main():
     context = os.path.dirname(os.path.realpath(sys.argv[1]))
@@ -40,11 +46,11 @@ def main():
 def mainimpl(projectdir, conf, pyversion, pythonargs, replace):
     pathtopython = os.path.join(miniconda.pyversiontominiconda[pyversion].home(), 'bin', 'python')
     workspace = os.path.dirname(projectdir)
-    prepend((os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']), 'PYTHONPATH')
+    env = getenv(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
     if replace:
-        os.execvp(pathtopython, [pathtopython] + pythonargs)
+        os.execvpe(pathtopython, [pathtopython] + pythonargs, env)
     else:
-        subprocess.check_call([pathtopython] + pythonargs)
+        subprocess.check_call([pathtopython] + pythonargs, env = env)
 
 if '__main__' == __name__:
     main()
