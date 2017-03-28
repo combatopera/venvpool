@@ -27,7 +27,7 @@ def main():
         if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
     os.chdir(projectdir)
-    minicondainfos = [miniconda.pyversiontominicondainfo[v] for v in conf['pyversions']]
+    minicondainfos = [miniconda.pyversiontominiconda[v] for v in conf['pyversions']]
     for info in minicondainfos:
         info.installifnecessary(conf['deps'])
     for info in minicondainfos:

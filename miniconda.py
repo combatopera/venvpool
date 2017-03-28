@@ -48,7 +48,7 @@ class Miniconda:
     def home(self):
         return os.environ[self.envkey]
 
-pyversiontominicondainfo = {info.pyversion: info for info in [
+pyversiontominiconda = {info.pyversion: info for info in [
     Miniconda(2, 'Miniconda', 'miniconda', 'MINICONDA_HOME'),
     Miniconda(3, 'Miniconda3', 'miniconda3', 'MINICONDA3_HOME'),
 ]}
