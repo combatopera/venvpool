@@ -55,15 +55,11 @@ def main():
         context = parent
     conf = licheck.loadprojectinfo(confpath)
     pyversion = conf['pyversions'][0]
-    mainimpl(context, conf, pyversion, sys.argv[1:], True)
+    getlauncher(context, conf, pyversion).replace(sys.argv[1:])
 
-def mainimpl(projectdir, conf, pyversion, pythonargs, replace):
+def getlauncher(projectdir, conf, pyversion):
     workspace = os.path.dirname(projectdir)
-    launcher = Launcher(pyversion, (os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']))
-    if replace:
-        launcher.replace(pythonargs)
-    else:
-        launcher.check_call(pythonargs)
+    return Launcher(pyversion, (os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']))
 
 if '__main__' == __name__:
     main()
