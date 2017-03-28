@@ -45,7 +45,7 @@ class Miniconda:
         subprocess.check_call(command)
         os.environ[self.envkey] = self.target
 
-    def path(self):
+    def home(self):
         return os.environ[self.envkey]
 
 pyversiontominicondainfo = {info.pyversion: info for info in [
