@@ -39,14 +39,6 @@ template="""# Copyright %(years)s %(author)s
 
 def mainimpl(paths):
     projectpath = os.path.abspath(paths[0])
-    while True:
-        parent = os.path.dirname(projectpath)
-        if parent == projectpath:
-            raise Exception(ProjectInfo.infoname)
-        projectpath = parent
-        infopath = os.path.join(projectpath, ProjectInfo.infoname)
-        if os.path.exists(infopath):
-            break
     info = ProjectInfo(projectpath) # TODO: Pass this in.
     master = template % {
         'years': ', '.join(str(y) for y in info['years']),

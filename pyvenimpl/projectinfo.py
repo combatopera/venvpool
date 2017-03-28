@@ -17,15 +17,23 @@
 
 import os
 
+class ProjectInfoNotFoundException(Exception): pass
+
 class ProjectInfo:
 
-    infoname = 'project.info'
-
-    def __init__(self, projectdir):
+    def __init__(self, realdir):
+        self.projectdir = realdir
+        while True:
+            infopath = os.path.join(self.projectdir, 'project.info')
+            if os.path.exists(infopath):
+                break
+            parent = os.path.dirname(self.projectdir)
+            if parent == self.projectdir:
+                raise ProjectInfoNotFoundException(realdir)
+            self.projectdir = parent
         self.info = {}
-        path = os.path.join(projectdir, self.infoname)
-        exec(compile(open(path).read(), path, 'exec'), self.info)
-        self.projectdir = projectdir
+        with open(infopath) as f:
+            exec(compile(f.read(), infopath, 'exec'), self.info)
 
     def __getitem__(self, key):
         return self.info[key]

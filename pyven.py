@@ -44,16 +44,7 @@ class Launcher:
         subprocess.check_call([self.pathtopython] + args, env = self.env)
 
 def main():
-    context = os.path.dirname(os.path.realpath(sys.argv[1]))
-    while True:
-        confpath = os.path.join(context, projectinfo.ProjectInfo.infoname)
-        if os.path.exists(confpath):
-            break
-        parent = os.path.dirname(context)
-        if parent == context:
-            raise Exception(projectinfo.ProjectInfo.infoname)
-        context = parent
-    conf = projectinfo.ProjectInfo(context)
+    conf = projectinfo.ProjectInfo(os.path.dirname(os.path.realpath(sys.argv[1])))
     getlauncher(conf.projectdir, conf['projects'], conf['pyversions'][0]).replace(sys.argv[1:])
 
 def getlauncher(projectdir, projects, pyversion):
