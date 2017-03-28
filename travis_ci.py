@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, pyven, tests, miniconda
-from pyvenimpl import licheck
+import os, subprocess, pyven, tests
+from pyvenimpl import licheck, miniconda
 
 def main():
     conf = licheck.loadprojectinfo(licheck.infoname)
