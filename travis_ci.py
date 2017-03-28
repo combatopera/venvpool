@@ -21,7 +21,7 @@ import os, subprocess, pyven, tests
 from pyvenimpl import projectinfo, miniconda
 
 def main():
-    conf = projectinfo.ProjectInfo(projectinfo.ProjectInfo.infoname).info
+    conf = projectinfo.ProjectInfo(projectinfo.ProjectInfo.infoname)
     projectdir = os.getcwd()
     os.chdir('..')
     for project in conf['projects']:

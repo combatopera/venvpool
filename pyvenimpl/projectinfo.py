@@ -22,3 +22,6 @@ class ProjectInfo:
     def __init__(self, path):
         self.info = {}
         exec(compile(open(path).read(), path, 'exec'), self.info)
+
+    def __getitem__(self, key):
+        return self.info[key]

@@ -53,7 +53,7 @@ def main():
         if parent == context:
             raise Exception(projectinfo.ProjectInfo.infoname)
         context = parent
-    conf = projectinfo.ProjectInfo(confpath).info
+    conf = projectinfo.ProjectInfo(confpath)
     getlauncher(context, conf['projects'], conf['pyversions'][0]).replace(sys.argv[1:])
 
 def getlauncher(projectdir, projects, pyversion):
