@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import subprocess, sys, os, re, licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl
+import subprocess, sys, os, re
+from pyvenimpl import licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl
 from pyvenimpl.util import stderr
 
 def stripeol(line):

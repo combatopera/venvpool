@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, licheck, miniconda, subprocess, itertools
+import os, sys, miniconda, subprocess, itertools
+from pyvenimpl import licheck
 
 def getenv(projectpaths):
     key = 'PYTHONPATH'
