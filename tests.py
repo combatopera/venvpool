@@ -79,7 +79,10 @@ def pyflakes(files):
         return True
     paths = [p for p in files.pypaths if accept(p)]
     if paths:
-        subprocess.check_call(['pyflakes'] + paths)
+        subprocess.check_call([pathto('pyflakes')] + paths)
+
+def pathto(executable):
+    return os.path.join(os.path.dirname(os.path.realpath(sys.executable)), executable)
 
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
@@ -89,7 +92,7 @@ def main():
         sys.stderr.write("%s: " % check.__name__)
         check(files)
         stderr('OK')
-    sys.exit(subprocess.call(['nosetests', '--exe', '-v', '-m', '^test_']))
+    sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '-m', '^test_']))
 
 if '__main__' == __name__:
     main()
