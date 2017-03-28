@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-infoname = 'project.info'
+class ProjectInfo:
 
-def loadprojectinfo(path):
-    info = {}
-    exec(compile(open(path).read(), path, 'exec'), info)
-    return info
+    infoname = 'project.info'
+
+    def __init__(self, path):
+        self.info = {}
+        exec(compile(open(path).read(), path, 'exec'), self.info)

@@ -18,10 +18,10 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, subprocess, pyven, tests
-from pyvenimpl import licheck, miniconda
+from pyvenimpl import projectinfo, miniconda
 
 def main():
-    conf = licheck.loadprojectinfo(licheck.infoname)
+    conf = projectinfo.ProjectInfo(projectinfo.ProjectInfo.infoname).info
     projectdir = os.getcwd()
     os.chdir('..')
     for project in conf['projects']:

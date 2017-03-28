@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import re, os, hashlib
-from .projectinfo import infoname, loadprojectinfo
+from .projectinfo import ProjectInfo
 
 template="""# Copyright %(years)s %(author)s
 
@@ -42,12 +42,12 @@ def mainimpl(paths):
     while True:
         parent = os.path.dirname(projectpath)
         if parent == projectpath:
-            raise Exception(infoname)
+            raise Exception(ProjectInfo.infoname)
         projectpath = parent
-        infopath = os.path.join(projectpath, infoname)
+        infopath = os.path.join(projectpath, ProjectInfo.infoname)
         if os.path.exists(infopath):
             break
-    info = loadprojectinfo(infopath) # TODO: Pass this in (and don't modify it).
+    info = ProjectInfo(infopath).info # TODO: Pass this in (and don't modify it).
     info['years'] = ', '.join(str(y) for y in info['years'])
     master = template % info
     for path in paths:

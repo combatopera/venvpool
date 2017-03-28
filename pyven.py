@@ -18,7 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, sys, subprocess, itertools
-from pyvenimpl import licheck, miniconda
+from pyvenimpl import projectinfo, miniconda
 
 class Launcher:
 
@@ -46,14 +46,14 @@ class Launcher:
 def main():
     context = os.path.dirname(os.path.realpath(sys.argv[1]))
     while True:
-        confpath = os.path.join(context, licheck.infoname)
+        confpath = os.path.join(context, projectinfo.ProjectInfo.infoname)
         if os.path.exists(confpath):
             break
         parent = os.path.dirname(context)
         if parent == context:
-            raise Exception(licheck.infoname)
+            raise Exception(projectinfo.ProjectInfo.infoname)
         context = parent
-    conf = licheck.loadprojectinfo(confpath)
+    conf = projectinfo.ProjectInfo(confpath).info
     getlauncher(context, conf['projects'], conf['pyversions'][0]).replace(sys.argv[1:])
 
 def getlauncher(projectdir, projects, pyversion):
