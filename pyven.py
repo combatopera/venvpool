@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, licheck, miniconda, subprocess
+import os, sys, licheck, miniconda, subprocess, itertools
 
 def prepend(paths, envkey):
     current = [os.environ[envkey]] if envkey in os.environ else []
-    os.environ[envkey] = os.pathsep.join(paths + current)
+    os.environ[envkey] = os.pathsep.join(itertools.chain(paths, current))
 
 def main():
     context = os.path.dirname(os.path.realpath(sys.argv[1]))
@@ -40,8 +40,7 @@ def main():
 def mainimpl(projectdir, conf, pyversion, pythonargs, replace):
     pathtopython = os.path.join(miniconda.pyversiontominiconda[pyversion].home(), 'bin', 'python')
     workspace = os.path.dirname(projectdir)
-    pythonpath = [os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']]
-    prepend(pythonpath, 'PYTHONPATH')
+    prepend((os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']), 'PYTHONPATH')
     if replace:
         os.execvp(pathtopython, [pathtopython] + pythonargs)
     else:
