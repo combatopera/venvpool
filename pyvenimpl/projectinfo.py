@@ -15,13 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 class ProjectInfo:
 
     infoname = 'project.info'
 
-    def __init__(self, path):
+    def __init__(self, projectdir):
         self.info = {}
+        path = os.path.join(projectdir, self.infoname)
         exec(compile(open(path).read(), path, 'exec'), self.info)
+        self.projectdir = projectdir
 
     def __getitem__(self, key):
         return self.info[key]

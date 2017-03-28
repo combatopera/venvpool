@@ -47,7 +47,7 @@ def mainimpl(paths):
         infopath = os.path.join(projectpath, ProjectInfo.infoname)
         if os.path.exists(infopath):
             break
-    info = ProjectInfo(infopath) # TODO: Pass this in.
+    info = ProjectInfo(projectpath) # TODO: Pass this in.
     master = template % {
         'years': ', '.join(str(y) for y in info['years']),
         'author': info['author'],
@@ -66,7 +66,7 @@ def mainimpl(paths):
         text = text[:len(master)]
         if master != text:
             raise Exception(path)
-    gplpath = os.path.join(projectpath, 'COPYING')
+    gplpath = os.path.join(info.projectdir, 'COPYING')
     md5 = hashlib.md5()
     with open(gplpath) as f:
         md5.update(f.read().encode('utf_8'))

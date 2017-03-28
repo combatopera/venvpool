@@ -21,19 +21,18 @@ import os, subprocess, pyven, tests
 from pyvenimpl import projectinfo, miniconda
 
 def main():
-    conf = projectinfo.ProjectInfo(projectinfo.ProjectInfo.infoname)
-    projectdir = os.getcwd()
+    conf = projectinfo.ProjectInfo(os.getcwd())
     os.chdir('..')
     for project in conf['projects']:
         if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
-    os.chdir(projectdir)
+    os.chdir(conf.projectdir)
     minicondainfos = [miniconda.pyversiontominiconda[v] for v in conf['pyversions']]
     for info in minicondainfos:
         info.installifnecessary(conf['deps'])
     for info in minicondainfos:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.getlauncher(projectdir, conf['projects'], info.pyversion).check_call([tests.__file__])
+        pyven.getlauncher(conf.projectdir, conf['projects'], info.pyversion).check_call([tests.__file__])
 
 if '__main__' == __name__:
     main()
