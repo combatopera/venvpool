@@ -20,15 +20,28 @@
 import os, sys, subprocess, itertools
 from pyvenimpl import licheck, miniconda
 
-def getenv(projectpaths):
-    key = 'PYTHONPATH'
-    env = os.environ.copy()
-    try:
-        currentpaths = [env[key]] # No need to actually split.
-    except KeyError:
-        currentpaths = []
-    env[key] = os.pathsep.join(itertools.chain(projectpaths, currentpaths))
-    return env
+class Launcher:
+
+    @staticmethod
+    def getenv(projectpaths):
+        key = 'PYTHONPATH'
+        env = os.environ.copy()
+        try:
+            currentpaths = [env[key]] # No need to actually split.
+        except KeyError:
+            currentpaths = []
+        env[key] = os.pathsep.join(itertools.chain(projectpaths, currentpaths))
+        return env
+
+    def __init__(self, pyversion, projectpaths):
+        self.pathtopython = os.path.join(miniconda.pyversiontominiconda[pyversion].home(), 'bin', 'python')
+        self.env = self.getenv(projectpaths)
+
+    def replace(self, args):
+        os.execvpe(self.pathtopython, [self.pathtopython] + args, self.env)
+
+    def check_call(self, args):
+        subprocess.check_call([self.pathtopython] + args, env = self.env)
 
 def main():
     context = os.path.dirname(os.path.realpath(sys.argv[1]))
@@ -45,13 +58,12 @@ def main():
     mainimpl(context, conf, pyversion, sys.argv[1:], True)
 
 def mainimpl(projectdir, conf, pyversion, pythonargs, replace):
-    pathtopython = os.path.join(miniconda.pyversiontominiconda[pyversion].home(), 'bin', 'python')
     workspace = os.path.dirname(projectdir)
-    env = getenv(os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects'])
+    launcher = Launcher(pyversion, (os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']))
     if replace:
-        os.execvpe(pathtopython, [pathtopython] + pythonargs, env)
+        launcher.replace(pythonargs)
     else:
-        subprocess.check_call([pathtopython] + pythonargs, env = env)
+        launcher.check_call(pythonargs)
 
 if '__main__' == __name__:
     main()
