@@ -16,7 +16,6 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import re, os, hashlib
-from .projectinfo import ProjectInfo
 
 template="""# Copyright %(years)s %(author)s
 
@@ -37,9 +36,7 @@ template="""# Copyright %(years)s %(author)s
 
 """ # Check it ends with 2 newlines.
 
-def mainimpl(paths):
-    projectpath = os.path.abspath(paths[0])
-    info = ProjectInfo(projectpath) # TODO: Pass this in.
+def mainimpl(info, paths):
     master = template % {
         'years': ', '.join(str(y) for y in info['years']),
         'author': info['author'],

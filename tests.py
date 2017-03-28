@@ -18,7 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess, sys, os, re
-from pyvenimpl import licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl
+from pyvenimpl import licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl, projectinfo
 from pyvenimpl.util import stderr
 
 def stripeol(line):
@@ -54,23 +54,23 @@ class Files:
         self.allsrcpaths = list(self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx'))
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
 
-def licheck(files):
+def licheck(info, files):
     def g():
         for path in files.allsrcpaths:
             if not os.path.basename(os.path.dirname(path)).endswith('_turbo'):
                 yield path
-    licheckimpl.mainimpl(list(g()))
+    licheckimpl.mainimpl(info, list(g()))
 
-def nlcheck(files):
+def nlcheck(info, files):
     nlcheckimpl.mainimpl(files.allsrcpaths)
 
-def divcheck(files):
+def divcheck(info, files):
     divcheckimpl.mainimpl(files.pypaths)
 
-def execcheck(files):
+def execcheck(info, files):
     execcheckimpl.mainimpl(files.pypaths)
 
-def pyflakes(files):
+def pyflakes(info, files):
     with open('.flakesignore') as f:
         ignores = [re.compile(stripeol(l)) for l in f]
     def accept(path):
@@ -88,10 +88,11 @@ def pathto(executable):
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
         os.chdir('..')
+    info = projectinfo.ProjectInfo(os.getcwd())
     files = Files()
     for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
         sys.stderr.write("%s: " % check.__name__)
-        check(files)
+        check(info, files)
         stderr('OK')
     sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '-m', '^test_']))
 
