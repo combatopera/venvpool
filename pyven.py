@@ -54,12 +54,11 @@ def main():
             raise Exception(licheck.infoname)
         context = parent
     conf = licheck.loadprojectinfo(confpath)
-    pyversion = conf['pyversions'][0]
-    getlauncher(context, conf, pyversion).replace(sys.argv[1:])
+    getlauncher(context, conf['projects'], conf['pyversions'][0]).replace(sys.argv[1:])
 
-def getlauncher(projectdir, conf, pyversion):
+def getlauncher(projectdir, projects, pyversion):
     workspace = os.path.dirname(projectdir)
-    return Launcher(pyversion, (os.path.join(workspace, project.replace('/', os.sep)) for project in conf['projects']))
+    return Launcher(pyversion, (os.path.join(workspace, project.replace('/', os.sep)) for project in projects))
 
 if '__main__' == __name__:
     main()
