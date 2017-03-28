@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import re, os, hashlib
+from .projectinfo import infoname, loadprojectinfo
 
 template="""# Copyright %(years)s %(author)s
 
@@ -35,12 +36,6 @@ template="""# Copyright %(years)s %(author)s
 # along with %(name)s.  If not, see <http://www.gnu.org/licenses/>.
 
 """ # Check it ends with 2 newlines.
-infoname = 'project.info'
-
-def loadprojectinfo(path):
-    info = {}
-    exec(compile(open(path).read(), path, 'exec'), info)
-    return info
 
 def mainimpl(paths):
     projectpath = os.path.abspath(paths[0])
