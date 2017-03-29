@@ -44,7 +44,7 @@ class Files:
         if os.path.exists('.hg'):
             badstatuses = set('IR ')
             for line in subprocess.Popen(['hg', 'st', '-A'] + list(cls.findfiles(*suffixes)), stdout = subprocess.PIPE).stdout:
-                line = stripeol(line)
+                line = stripeol(line).decode()
                 if line[0] not in badstatuses:
                     yield line[2:]
         else:
