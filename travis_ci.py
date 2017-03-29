@@ -30,9 +30,12 @@ def main():
     minicondas = [mc.pyversiontominiconda[v] for v in info['pyversions']]
     for miniconda in minicondas:
         miniconda.installifnecessary(info['deps'])
+    testspath = tests.__file__
+    if testspath.endswith('.pyc'):
+        testspath = testspath[:-1]
     for miniconda in minicondas:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.Launcher(info, miniconda.pyversion).check_call([tests.__file__])
+        pyven.Launcher(info, miniconda.pyversion).check_call([testspath])
 
 if '__main__' == __name__:
     main()
