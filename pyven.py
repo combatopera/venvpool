@@ -46,7 +46,7 @@ class Launcher:
 
 def main():
     info = projectinfo.ProjectInfo(os.path.dirname(os.path.realpath(sys.argv[1])))
-    Launcher(info, next(iter(info['pyversions'].values()))).replace(sys.argv[1:])
+    Launcher(info, info['pyversions'][0]).replace(sys.argv[1:])
 
 if '__main__' == __name__:
     main()
