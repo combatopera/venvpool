@@ -30,7 +30,7 @@ class ProjectInfo:
     def __init__(self, realdir):
         self.projectdir = realdir
         while True:
-            infopath = os.path.join(self.projectdir, 'project.info')
+            infopath = os.path.join(self.projectdir, 'project.arid')
             if os.path.exists(infopath):
                 break
             parent = os.path.dirname(self.projectdir)
