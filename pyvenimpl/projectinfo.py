@@ -40,6 +40,7 @@ class ProjectInfo:
         self.info = aridity.Context()
         with aridity.Repl(self.info) as repl:
             repl.printf('projects = $list()')
+            repl.printf('deps = $list()')
             repl.printf('pyversions = $list()')
             repl.printf("source %s", infopath)
 
