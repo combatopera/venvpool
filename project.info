@@ -5,6 +5,5 @@ years#2014 = 2014
 years#2015 = 2015
 years#2016 = 2016
 years#2017 = 2017
-deps#pyparsing = pyparsing
 pyversions#3 = 3
 pyversions#2 = 2
