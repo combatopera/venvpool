@@ -22,7 +22,7 @@ from pyvenimpl import projectinfo, miniconda as mc
 
 def gettransitivedeps(info, deps):
     deps.update(info['deps'])
-    workspace = os.dirname(os.getcwd())
+    workspace = os.path.dirname(os.getcwd())
     for projectname in info['projects']:
         gettransitivedeps(projectinfo.ProjectInfo(os.path.join(workspace, projectname)), deps)
 
