@@ -20,16 +20,24 @@
 import os, subprocess, pyven, tests
 from pyvenimpl import projectinfo, miniconda as mc
 
+def gettransitivedeps(info, deps):
+    deps.update(info['deps'])
+    workspace = os.dirname(os.getcwd())
+    for projectname in info['projects']:
+        gettransitivedeps(projectinfo.ProjectInfo(os.path.join(workspace, projectname)), deps)
+
 def main():
     info = projectinfo.ProjectInfo(os.getcwd())
     os.chdir('..')
-    for project in info['projects']:
+    for project in info['projects']: # TODO LATER: Also install transitive projects.
         if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
             subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
     os.chdir(info.projectdir)
     minicondas = [mc.pyversiontominiconda[v] for v in info['pyversions']]
+    deps = set()
+    gettransitivedeps(info, deps)
     for miniconda in minicondas:
-        miniconda.installifnecessary(info['deps'])
+        miniconda.installifnecessary(deps)
     testspath = tests.__file__
     if testspath.endswith('.pyc'):
         testspath = testspath[:-1]
