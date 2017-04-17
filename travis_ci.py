@@ -33,14 +33,16 @@ class Workspace:
         for projectname in info['projects']:
             self.gettransitivedeps(self.info(projectname), deps)
 
+    def checkoutifnecessary(self, project):
+        path = os.path.join(self.workspace, project.replace('/', os.sep))
+        if not os.path.exists(path): # Allow a project to depend on a subdirectory of itself.
+            subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project], cwd = self.workspace)
+
 def main():
     workspace = Workspace()
     info = projectinfo.ProjectInfo(os.getcwd())
-    os.chdir('..')
     for project in info['projects']: # TODO LATER: Also install transitive projects.
-        if not os.path.exists(project.replace('/', os.sep)): # Allow a project to depend on a subdirectory of itself.
-            subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project])
-    os.chdir(info.projectdir)
+        workspace.checkoutifnecessary(project)
     minicondas = [mc.pyversiontominiconda[v] for v in info['pyversions']]
     deps = set()
     workspace.gettransitivedeps(info, deps)
