@@ -20,14 +20,21 @@
 import os, subprocess, pyven, tests
 from pyvenimpl import projectinfo, miniconda as mc
 
-def gettransitivedeps(info, deps):
-    deps.update(info['deps'])
-    workspace = os.path.dirname(os.getcwd())
-    for projectname in info['projects']:
-        gettransitivedeps(projectinfo.ProjectInfo(os.path.join(workspace, projectname)), deps)
+class Workspace:
+
+    def __init__(self):
+        self.workspace = os.path.dirname(os.getcwd())
+
+    def info(self, projectname):
+        return projectinfo.ProjectInfo(os.path.join(self.workspace, projectname))
+
+    def gettransitivedeps(self, info, deps):
+        deps.update(info['deps'])
+        for projectname in info['projects']:
+            self.gettransitivedeps(self.info(projectname), deps)
 
 def main():
-    workspace = os.path.dirname(os.getcwd())
+    workspace = Workspace()
     info = projectinfo.ProjectInfo(os.getcwd())
     os.chdir('..')
     for project in info['projects']: # TODO LATER: Also install transitive projects.
@@ -36,8 +43,8 @@ def main():
     os.chdir(info.projectdir)
     minicondas = [mc.pyversiontominiconda[v] for v in info['pyversions']]
     deps = set()
-    gettransitivedeps(info, deps)
-    gettransitivedeps(projectinfo.ProjectInfo(os.path.join(workspace, 'pyven')), deps)
+    workspace.gettransitivedeps(info, deps)
+    workspace.gettransitivedeps(workspace.info('pyven'), deps)
     for miniconda in minicondas:
         miniconda.installifnecessary(deps)
     testspath = tests.__file__
