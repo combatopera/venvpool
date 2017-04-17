@@ -27,6 +27,7 @@ def gettransitivedeps(info, deps):
         gettransitivedeps(projectinfo.ProjectInfo(os.path.join(workspace, projectname)), deps)
 
 def main():
+    workspace = os.path.dirname(os.getcwd())
     info = projectinfo.ProjectInfo(os.getcwd())
     os.chdir('..')
     for project in info['projects']: # TODO LATER: Also install transitive projects.
