@@ -39,6 +39,7 @@ class ProjectInfo:
             self.projectdir = parent
         self.info = aridity.Context()
         with aridity.Repl(self.info) as repl:
+            repl.printf('projects = $list()')
             repl.printf("source %s", infopath)
 
     def __getitem__(self, key):
