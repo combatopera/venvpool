@@ -15,7 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+import os, sys
+d = os.path.dirname(os.path.realpath(__file__)) # pyvenimpl
+d = os.path.dirname(d) # pyven
+d = os.path.dirname(d) # workspace
+sys.path.append(os.path.join(d, 'aridity'))
+del d
+import aridity
 
 class ProjectInfoNotFoundException(Exception): pass
 
@@ -31,9 +37,9 @@ class ProjectInfo:
             if parent == self.projectdir:
                 raise ProjectInfoNotFoundException(realdir)
             self.projectdir = parent
-        self.info = {}
-        with open(infopath) as f:
-            exec(compile(f.read(), infopath, 'exec'), self.info)
+        self.info = aridity.Context()
+        with aridity.Repl(self.info) as repl:
+            repl.printf("source %s", infopath)
 
     def __getitem__(self, key):
-        return self.info[key]
+        return self.info.resolved(key).unravel()
