@@ -36,6 +36,7 @@ def main():
     minicondas = [mc.pyversiontominiconda[v] for v in info['pyversions']]
     deps = set()
     gettransitivedeps(info, deps)
+    gettransitivedeps(projectinfo.ProjectInfo(os.path.join(workspace, 'pyven')), deps)
     for miniconda in minicondas:
         miniconda.installifnecessary(deps)
     testspath = tests.__file__
