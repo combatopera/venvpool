@@ -10,3 +10,4 @@ projects += aridity
 pyversions
     += 3
     += 2
+executable = true
