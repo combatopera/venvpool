@@ -42,7 +42,7 @@ class ProjectInfo:
             repl.printf('projects = $list()')
             repl.printf('deps = $list()')
             repl.printf('pyversions = $list()')
-            repl.printf("source %s", infopath)
+            repl.printf(". %s", infopath)
 
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()
