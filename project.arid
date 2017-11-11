@@ -1,13 +1,13 @@
 author = Andrzej Cichocki
 name = pyven
-years
-    += 2013
-    += 2014
-    += 2015
-    += 2016
-    += 2017
+years +=
+    2013
+    2014
+    2015
+    2016
+    2017
 projects += aridity
-pyversions
-    += 3
-    += 2
+pyversions +=
+    3
+    2
 executable = true
