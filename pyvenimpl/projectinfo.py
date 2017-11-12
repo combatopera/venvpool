@@ -53,5 +53,5 @@ class ProjectInfo:
 class Project:
 
     def __init__(self, text):
-        self.cloneargs = re.split(r'\s+', text)
+        self.cloneargs = re.split(r'\s+', text) # XXX: Can't aridity do this?
         self.name = self.cloneargs.pop(-1)
