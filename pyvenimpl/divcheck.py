@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import re, ast
+import re, ast, sys
 
-def mainimpl(paths): # TODO: Skip in Python 3.
+def mainimpl(paths):
+    if sys.version_info[0] < 3:
+        sys.stderr.write('SKIP ')
+        return
     for path in paths:
         with open(path) as f:
             text = f.read()
