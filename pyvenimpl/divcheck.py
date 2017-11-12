@@ -18,7 +18,7 @@
 import re, ast, sys
 
 def mainimpl(paths):
-    if sys.version_info[0] < 3:
+    if sys.version_info[0] >= 3:
         sys.stderr.write('SKIP ')
         return
     for path in paths:
