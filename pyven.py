@@ -35,7 +35,7 @@ class Launcher:
 
     def __init__(self, info, pyversion):
         workspace = os.path.dirname(info.projectdir)
-        self.env = self.getenv(os.path.join(workspace, project.replace('/', os.sep)) for project in info['projects'])
+        self.env = self.getenv(os.path.join(workspace, project.name.replace('/', os.sep)) for project in info['projects'])
         self.pathtopython = os.path.join(miniconda.pyversiontominiconda[pyversion].home(), 'bin', 'python')
 
     def replace(self, args):

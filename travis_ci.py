@@ -30,13 +30,13 @@ class Workspace:
 
     def gettransitivedeps(self, info, deps):
         deps.update(info['deps'])
-        for projectname in info['projects']:
-            self.gettransitivedeps(self.info(projectname), deps)
+        for project in info['projects']:
+            self.gettransitivedeps(self.info(project.name), deps)
 
     def checkoutifnecessary(self, project):
-        path = os.path.join(self.workspace, project.replace('/', os.sep))
+        path = os.path.join(self.workspace, project.name.replace('/', os.sep))
         if not os.path.exists(path): # Allow a project to depend on a subdirectory of itself.
-            subprocess.check_call(['git', 'clone', "https://github.com/combatopera/%s.git" % project], cwd = self.workspace)
+            subprocess.check_call(['git', 'clone'] + project.cloneargs + ["https://github.com/combatopera/%s.git" % project.name], cwd = self.workspace)
 
 def main():
     workspace = Workspace()
