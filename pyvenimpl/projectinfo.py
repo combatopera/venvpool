@@ -42,6 +42,7 @@ class ProjectInfo:
             repl.printf('projects := $list()')
             repl.printf('deps := $list()')
             repl.printf('pyversions := $list()')
+            repl.printf('proprietary = false')
             repl.printf(". %s", infopath)
 
     def __getitem__(self, key):

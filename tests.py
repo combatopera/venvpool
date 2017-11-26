@@ -90,7 +90,7 @@ def main():
         os.chdir('..')
     info = projectinfo.ProjectInfo(os.getcwd())
     files = Files()
-    for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
+    for check in (() if info['proprietary'] else (licheck,)) + (nlcheck, divcheck, execcheck, pyflakes):
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
