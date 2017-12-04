@@ -34,14 +34,19 @@ class Workspace:
             self.gettransitivedeps(self.info(project.name), deps)
 
     def checkoutifnecessary(self, project):
-        path = os.path.join(self.workspace, project.name.replace('/', os.sep))
-        if not os.path.exists(path): # Allow a project to depend on a subdirectory of itself.
+        if '/' in project.name:
+            return # Assume it's a subdirectory of the context project.
+        path = os.path.join(self.workspace, project.name)
+        if not os.path.exists(path): # Allow for diamond dependencies.
             subprocess.check_call(['git', 'clone'] + project.cloneargs + ["https://github.com/combatopera/%s.git" % project.name], cwd = self.workspace)
+        info2 = projectinfo.ProjectInfo(path)
+        for project2 in info2['projects']:
+            self.checkoutifnecessary(project2)
 
 def main():
     workspace = Workspace()
     info = projectinfo.ProjectInfo(os.getcwd())
-    for project in info['projects']: # TODO LATER: Also install transitive projects.
+    for project in info['projects']:
         workspace.checkoutifnecessary(project)
     minicondas = [mc.pyversiontominiconda[v] for v in info['pyversions']]
     deps = set()
