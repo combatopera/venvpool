@@ -22,6 +22,20 @@ from pyvenimpl import projectinfo, miniconda
 
 class Launcher:
 
+    @classmethod
+    def projectpaths(cls, workspace, info, seenpaths = set()):
+        for project in info['projects']:
+            path = os.path.join(workspace, project.name.replace('/', os.sep))
+            if path in seenpaths:
+                continue
+            seenpaths.add(path)
+            yield path
+            if '/' in project.name:
+                continue
+            info2 = projectinfo.ProjectInfo(path)
+            for path2 in cls.projectpaths(workspace, info2, seenpaths):
+                yield path2
+
     @staticmethod
     def getenv(projectpaths):
         key = 'PYTHONPATH'
@@ -35,7 +49,7 @@ class Launcher:
 
     def __init__(self, info, pyversion):
         workspace = os.path.dirname(info.projectdir)
-        self.env = self.getenv(os.path.join(workspace, project.name.replace('/', os.sep)) for project in info['projects'])
+        self.env = self.getenv(self.projectpaths(workspace, info))
         self.pathtopython = os.path.join(miniconda.pyversiontominiconda[pyversion].home(), 'bin', 'python')
 
     def replace(self, args):
