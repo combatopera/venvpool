@@ -53,5 +53,7 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
             '#!/usr/bin/env pyven',
         )
         main = bool(lines) and endswithifmain(istest, lines)
-        if 1 != len(set([hashbang, main, executable])):
-            raise Exception(path) # Want all or nothing.
+        if hashbang and main and executable: return
+        # An otherwise non-executable file may have a main if it's always passed to an interpreter:
+        if (not hashbang) and (not executable): return
+        raise Exception(path)
