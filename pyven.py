@@ -20,17 +20,23 @@
 import os, sys, subprocess, itertools
 from pyvenimpl import projectinfo, miniconda
 
+class WrongBranchException(Exception): pass
+
 class Launcher:
 
     @classmethod
     def projectpaths(cls, workspace, info, seenpaths = set()):
         for project in info['projects']:
-            path = os.path.join(workspace, project.name.replace('/', os.sep))
+            path = os.path.join(workspace, project.replace('/', os.sep))
             if path in seenpaths:
                 continue
+            expectedbranch = info['branch'].get(project, 'master')
+            actualbranch, = subprocess.Popen(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd = path, stdout = subprocess.PIPE).communicate()[0].decode().splitlines()
+            if actualbranch != expectedbranch:
+                raise WrongBranchException("For %s expected %s but branch is: %s" % (project, expectedbranch, actualbranch))
             seenpaths.add(path)
             yield path
-            if '/' in project.name:
+            if '/' in project:
                 continue
             info2 = projectinfo.ProjectInfo(path)
             for path2 in cls.projectpaths(workspace, info2, seenpaths):
