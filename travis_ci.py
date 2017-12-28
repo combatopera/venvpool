@@ -42,7 +42,7 @@ class Workspace:
             subprocess.check_call(['git', 'clone'] + cloneargs + ["https://github.com/combatopera/%s.git" % project], cwd = self.workspace)
         info2 = projectinfo.ProjectInfo(path)
         for project2 in info2['projects']:
-            self.checkoutifnecessary(project2)
+            self.checkoutifnecessary(info2, project2)
 
 def main():
     workspace = Workspace()
