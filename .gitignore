@@ -1,3 +1,4 @@
 #gclean
 *.pyc
 __pycache__/
+*.class

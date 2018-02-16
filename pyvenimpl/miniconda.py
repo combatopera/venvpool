@@ -45,10 +45,18 @@ class Miniconda:
         subprocess.check_call(command)
         os.environ[self.envkey] = self.target
 
-    def home(self):
-        return os.environ[self.envkey]
+    def executable(self):
+        return os.path.join(os.environ[self.envkey], 'bin', 'python')
+
+class Jython:
+
+    pyversion = 'jython'
+
+    def executable(self):
+        return 'jython'
 
 pyversiontominiconda = {info.pyversion: info for info in [
     Miniconda(2, 'Miniconda', 'miniconda', 'MINICONDA_HOME'),
     Miniconda(3, 'Miniconda3', 'miniconda3', 'MINICONDA3_HOME'),
+    Jython(),
 ]}
