@@ -25,7 +25,7 @@ class WrongBranchException(Exception): pass
 class Launcher:
 
     @classmethod
-    def projectpaths(cls, workspace, info, seenpaths = set()):
+    def projectpaths(cls, workspace, info, seenpaths):
         for project in info['projects']:
             path = os.path.join(workspace, project.replace('/', os.sep))
             if path in seenpaths:
@@ -55,7 +55,7 @@ class Launcher:
 
     def __init__(self, info, pyversion):
         workspace = os.path.dirname(info.projectdir)
-        self.env = self.getenv(self.projectpaths(workspace, info))
+        self.env = self.getenv(self.projectpaths(workspace, info, set()))
         self.pathtopython = miniconda.pyversiontominiconda[pyversion].executable()
 
     def replace(self, args):
