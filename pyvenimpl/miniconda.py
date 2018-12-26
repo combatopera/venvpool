@@ -40,7 +40,7 @@ class Miniconda:
         command = ['bash', self.scriptname, '-b', '-p', self.target]
         subprocess.check_call(command)
         os.remove(self.scriptname)
-        command = [os.path.join(self.target, 'bin', 'conda'), 'install', '-yq', 'pyflakes', 'nose'] # XXX: Why not pyparsing?
+        command = [os.path.join(self.target, 'bin', 'pip'), 'install', 'pyflakes', 'nose'] # XXX: Why not pyparsing?
         command.extend(deps)
         subprocess.check_call(command)
         os.environ[self.envkey] = self.target
