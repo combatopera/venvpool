@@ -56,7 +56,7 @@ class Jython:
         return 'jython'
 
 pyversiontominiconda = {info.pyversion: info for info in [
-    Miniconda(2, 'Miniconda', 'miniconda', 'MINICONDA_HOME'),
+    Miniconda(2, 'Miniconda2', 'miniconda', 'MINICONDA_HOME'),
     Miniconda(3, 'Miniconda3', 'miniconda3', 'MINICONDA3_HOME'),
     Jython(),
 ]}
