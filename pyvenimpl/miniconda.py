@@ -21,7 +21,7 @@ class PathExistsException(Exception): pass
 
 class Miniconda:
 
-    condaversion = '3.16.0'
+    condaversion = '4.3.21'
     opt = os.path.join(os.path.expanduser('~'), 'opt')
 
     def __init__(self, pyversion, title, dirname, envkey):
