@@ -50,7 +50,7 @@ class Files:
             for x in cls.findfiles(*suffixes): yield x
 
     def __init__(self):
-        self.allsrcpaths = list(self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx'))
+        self.allsrcpaths = list(self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'))
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
 
 def licheck(info, files):

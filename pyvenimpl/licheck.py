@@ -53,6 +53,8 @@ def mainimpl(info, paths):
             text = re.sub('^;', '#', text, flags = re.MULTILINE)
         elif path.endswith('.h') or path.endswith('.cpp') or path.endswith('.cxx'):
             text = re.sub('^//', '#', text, flags = re.MULTILINE)
+        elif path.endswith('.arid'):
+            text = re.sub('^:', '#', text, flags = re.MULTILINE)
         text = text[:len(master)]
         if master != text:
             raise Exception(path)
