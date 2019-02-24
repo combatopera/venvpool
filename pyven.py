@@ -22,6 +22,13 @@ from pyvenimpl import projectinfo, miniconda
 
 class WrongBranchException(Exception): pass
 
+def branchornone(path):
+    process = subprocess.Popen(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd = path, stdout = subprocess.PIPE)
+    lines = process.communicate()[0].decode().splitlines()
+    if not process.wait():
+        branch, = lines
+        return branch
+
 class Launcher:
 
     @classmethod
@@ -31,7 +38,7 @@ class Launcher:
             if path in seenpaths:
                 continue
             expectedbranch = info['branch'].get(project, 'master')
-            actualbranch, = subprocess.Popen(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd = path, stdout = subprocess.PIPE).communicate()[0].decode().splitlines()
+            actualbranch = branchornone(path)
             if actualbranch != expectedbranch:
                 raise WrongBranchException("For %s expected %s but branch is: %s" % (project, expectedbranch, actualbranch))
             seenpaths.add(path)
