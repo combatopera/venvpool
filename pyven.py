@@ -17,8 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, sys, subprocess, itertools
 from pyvenimpl import projectinfo, miniconda
+from warnings import warn
+import os, sys, subprocess, itertools
 
 class WrongBranchException(Exception): pass
 
@@ -39,7 +40,9 @@ class Launcher:
                 continue
             expectedbranch = info['branch'].get(project, 'master')
             actualbranch = branchornone(path)
-            if actualbranch != expectedbranch:
+            if actualbranch is None:
+                warn("Unknown branch: %s", path)
+            elif actualbranch != expectedbranch:
                 raise WrongBranchException("For %s expected %s but branch is: %s" % (project, expectedbranch, actualbranch))
             seenpaths.add(path)
             yield path
