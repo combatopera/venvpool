@@ -41,7 +41,7 @@ class Launcher:
             expectedbranch = info['branch'].get(project, 'master')
             actualbranch = branchornone(path)
             if actualbranch is None:
-                warn("Unknown branch: %s", path)
+                warn("Unknown branch: %s" % path)
             elif actualbranch != expectedbranch:
                 raise WrongBranchException("For %s expected %s but branch is: %s" % (project, expectedbranch, actualbranch))
             seenpaths.add(path)
