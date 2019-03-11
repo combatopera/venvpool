@@ -56,7 +56,8 @@ class Files:
 def licheck(info, files):
     def g():
         for path in files.allsrcpaths:
-            if not os.path.basename(os.path.dirname(path)).endswith('_turbo'):
+            parentname = os.path.basename(os.path.dirname(path))
+            if parentname != 'contrib' and not parentname.endswith('_turbo'):
                 yield path
     licheckimpl.mainimpl(info, list(g()))
 
