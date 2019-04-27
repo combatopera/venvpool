@@ -23,12 +23,15 @@ import os, sys, subprocess, itertools
 
 class WrongBranchException(Exception): pass
 
-def branchornone(path):
-    process = subprocess.Popen(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd = path, stdout = subprocess.PIPE)
+def branchornone(projectpath):
+    if not os.path.exists(os.path.join(projectpath, '.git')):
+        return
+    process = subprocess.Popen(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd = projectpath, stdout = subprocess.PIPE)
     lines = process.communicate()[0].decode().splitlines()
-    if not process.wait():
-        branch, = lines
-        return branch
+    if process.wait():
+        raise Exception
+    branch, = lines
+    return branch
 
 class Launcher:
 
@@ -39,7 +42,7 @@ class Launcher:
             if path in seenpaths:
                 continue
             expectedbranch = info['branch'].get(project, 'master')
-            actualbranch = branchornone(path)
+            actualbranch = branchornone(os.path.join(workspace, project.split('/', 1)[0]))
             if actualbranch is None:
                 warn("Unknown branch: %s" % path)
             elif actualbranch != expectedbranch:
