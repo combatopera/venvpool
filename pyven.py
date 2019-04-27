@@ -19,19 +19,24 @@
 
 from pyvenimpl import projectinfo, miniconda
 from warnings import warn
-import os, sys, subprocess, itertools
+import os, sys, subprocess, itertools, aridity
 
 class WrongBranchException(Exception): pass
 
 def branchornone(projectpath):
-    if not os.path.exists(os.path.join(projectpath, '.git')):
-        return
-    process = subprocess.Popen(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd = projectpath, stdout = subprocess.PIPE)
-    lines = process.communicate()[0].decode().splitlines()
-    if process.wait():
-        raise Exception
-    branch, = lines
-    return branch
+    if os.path.exists(os.path.join(projectpath, '.git')):
+        process = subprocess.Popen(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd = projectpath, stdout = subprocess.PIPE)
+        lines = process.communicate()[0].decode().splitlines()
+        if process.wait():
+            raise Exception
+        branch, = lines
+        return branch
+    infopath = os.path.join(projectpath, '.pyven.arid')
+    if os.path.exists(infopath):
+        context = aridity.Context()
+        with aridity.Repl(context) as repl:
+            repl.printf(". %s", infopath)
+        return context.resolved('branch').value
 
 class Launcher:
 
