@@ -71,7 +71,7 @@ def main():
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
         f.write(setupformat % (info['name'], str(last + 1), info['deps'] + info['projects'], py_modules, scripts))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
-        f.write(cfgformat % ({2, 3} <= set(info['pyversions'])))
+        f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
     dist = os.path.join(info.projectdir, 'dist')
     if os.path.isdir(dist):
         shutil.rmtree(dist)
