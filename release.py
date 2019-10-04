@@ -19,7 +19,7 @@
 
 from pyvenimpl.projectinfo import ProjectInfo
 from urllib.error import HTTPError
-import urllib.request, xml.dom.minidom as dom, re, os, sys, subprocess
+import urllib.request, xml.dom.minidom as dom, re, os, sys, subprocess, stat, shutil
 
 def textcontent(node):
     def iterparts(node):
@@ -38,11 +38,17 @@ setuptools.setup(
         name = %r,
         version = %r,
         install_requires = %r,
-        packages = setuptools.find_packages())
+        packages = setuptools.find_packages(),
+        py_modules = %r,
+        scripts = %r)
 """
 cfgformat = """[bdist_wheel]
 universal=%s
 """
+xmask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+
+def isscript(path):
+    return os.stat(path).st_mode & xmask and not os.path.isdir(path)
 
 def main():
     args = sys.argv[1:]
@@ -60,12 +66,16 @@ def main():
         if 404 != e.code:
             raise
         last = 0
+    py_modules = [name[:-len('.py')] for name in os.listdir(info.projectdir) if name.endswith('.py') and 'setup.py' != name]
+    scripts = [name for name in os.listdir(info.projectdir) if isscript(os.path.join(info.projectdir, name))]
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
-        f.write(setupformat % (info['name'], str(last + 1), info['deps'] + info['projects']))
+        f.write(setupformat % (info['name'], str(last + 1), info['deps'] + info['projects'], py_modules, scripts))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % ({2, 3} <= set(info['pyversions'])))
-    subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     dist = os.path.join(info.projectdir, 'dist')
+    if os.path.isdir(dist):
+        shutil.rmtree(dist)
+    subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     command = [sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)]
     print(command)
     return
