@@ -65,6 +65,11 @@ def main():
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % ({2, 3} <= set(info['pyversions'])))
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
+    dist = os.path.join(info.projectdir, 'dist')
+    command = [sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)]
+    print(command)
+    return
+    subprocess.check_call(command)
 
 if '__main__' == __name__:
     main()
