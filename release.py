@@ -19,7 +19,7 @@
 
 from pyvenimpl.projectinfo import ProjectInfo
 from urllib.error import HTTPError
-import urllib.request, xml.dom.minidom as dom, re, os, sys
+import urllib.request, xml.dom.minidom as dom, re, os, sys, subprocess
 
 def textcontent(node):
     def iterparts(node):
@@ -31,6 +31,18 @@ def textcontent(node):
         else:
             yield value
     return ''.join(iterparts(node))
+
+setupformat = """import setuptools
+
+setuptools.setup(
+        name = %r,
+        version = %r,
+        install_requires = %r,
+        packages = setuptools.find_packages())
+"""
+cfgformat = """[bdist_wheel]
+universal=%s
+"""
 
 def main():
     args = sys.argv[1:]
@@ -48,7 +60,11 @@ def main():
         if 404 != e.code:
             raise
         last = 0
-    print(last)
+    with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
+        f.write(setupformat % (info['name'], str(last + 1), info['deps'] + info['projects']))
+    with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
+        f.write(cfgformat % ({2, 3} <= set(info['pyversions'])))
+    subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
 
 if '__main__' == __name__:
     main()
