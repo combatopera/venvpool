@@ -56,6 +56,7 @@ class ProjectInfo:
             repl.printf('deps := $list()')
             repl.printf('pyversions := $list()')
             repl.printf('proprietary = false')
+            repl.printf('executable = false')
             repl.printf(". %s", infopath)
 
     def __getitem__(self, key):
@@ -79,6 +80,8 @@ class ProjectInfo:
         return [name[:-len(suffix)] for name in os.listdir(self.projectdir) if name.endswith(suffix) and 'setup.py' != name]
 
     def scripts(self):
+        if not self['executable']:
+            return []
         xmask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         def isscript(path):
             return os.stat(path).st_mode & xmask and not os.path.isdir(path)
