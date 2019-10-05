@@ -77,7 +77,7 @@ class ProjectInfo:
 
     def py_modules(self):
         suffix = '.py'
-        return [name[:-len(suffix)] for name in os.listdir(self.projectdir) if name.endswith(suffix) and 'setup.py' != name]
+        return [name[:-len(suffix)] for name in os.listdir(self.projectdir) if name.endswith(suffix) and 'setup.py' != name and not name.startswith('test_')]
 
     def scripts(self):
         if not self['executable']:
