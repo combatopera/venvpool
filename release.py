@@ -28,7 +28,7 @@ setuptools.setup(
         version = %r,
         install_requires = %r,
         packages = setuptools.find_packages(),
-        package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld']},
+        package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld', '*.arid']},
         py_modules = %r,
         scripts = %r)
 """
