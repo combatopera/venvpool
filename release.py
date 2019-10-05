@@ -18,7 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyvenimpl.projectinfo import ProjectInfo
-import os, sys, subprocess, stat, shutil
+import os, sys, subprocess, shutil
 
 setupformat = """import setuptools
 
@@ -33,10 +33,6 @@ setuptools.setup(
 cfgformat = """[bdist_wheel]
 universal=%s
 """
-xmask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-
-def isscript(path):
-    return os.stat(path).st_mode & xmask and not os.path.isdir(path)
 
 def getinfo():
     args = sys.argv[1:]
@@ -49,10 +45,8 @@ def getinfo():
 
 def main():
     info = getinfo()
-    py_modules = [name[:-len('.py')] for name in os.listdir(info.projectdir) if name.endswith('.py') and 'setup.py' != name]
-    scripts = [name for name in os.listdir(info.projectdir) if isscript(os.path.join(info.projectdir, name))]
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
-        f.write(setupformat % (info['name'], info.nextversion(), info['deps'] + info['projects'], py_modules, scripts))
+        f.write(setupformat % (info['name'], info.nextversion(), info['deps'] + info['projects'], info.py_modules(), info.scripts()))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
     dist = os.path.join(info.projectdir, 'dist')

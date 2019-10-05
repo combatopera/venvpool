@@ -22,7 +22,7 @@ d = os.path.dirname(d) # pyven
 d = os.path.dirname(d) # workspace
 sys.path.append(os.path.join(d, 'aridity'))
 del d
-import aridity
+import aridity, stat
 
 class ProjectInfoNotFoundException(Exception): pass
 
@@ -78,3 +78,13 @@ class ProjectInfo:
                 raise
             last = 0
         return roman.toRoman(last + 1)
+
+    def py_modules(self):
+        suffix = '.py'
+        return [name[:-len(suffix)] for name in os.listdir(self.projectdir) if name.endswith(suffix) and 'setup.py' != name]
+
+    def scripts(self):
+        xmask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        def isscript(path):
+            return os.stat(path).st_mode & xmask and not os.path.isdir(path)
+        return [name for name in os.listdir(self.projectdir) if isscript(os.path.join(self.projectdir, name))]
