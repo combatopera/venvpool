@@ -18,19 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyvenimpl.projectinfo import ProjectInfo
-from urllib.error import HTTPError
-import urllib.request, xml.dom.minidom as dom, re, os, sys, subprocess, stat, shutil
-
-def textcontent(node):
-    def iterparts(node):
-        value = node.nodeValue
-        if value is None:
-            for child in node.childNodes:
-                for part in iterparts(child):
-                    yield part
-        else:
-            yield value
-    return ''.join(iterparts(node))
+import os, sys, subprocess, stat, shutil
 
 setupformat = """import setuptools
 
@@ -50,26 +38,21 @@ xmask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
 def isscript(path):
     return os.stat(path).st_mode & xmask and not os.path.isdir(path)
 
-def main():
+def getinfo():
     args = sys.argv[1:]
     if args:
         path, = args
         path = os.path.abspath(path)
     else:
         path = os.getcwd()
-    info = ProjectInfo(path)
-    try:
-        with urllib.request.urlopen("https://pypi.org/simple/%s/" % info['name']) as f:
-            doc = dom.parseString(f.read())
-        last = max(int(re.search('[0-9]+', textcontent(a)).group()) for a in doc.getElementsByTagName('a'))
-    except HTTPError as e:
-        if 404 != e.code:
-            raise
-        last = 0
+    return ProjectInfo(path)
+
+def main():
+    info = getinfo()
     py_modules = [name[:-len('.py')] for name in os.listdir(info.projectdir) if name.endswith('.py') and 'setup.py' != name]
     scripts = [name for name in os.listdir(info.projectdir) if isscript(os.path.join(info.projectdir, name))]
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
-        f.write(setupformat % (info['name'], str(last + 1), info['deps'] + info['projects'], py_modules, scripts))
+        f.write(setupformat % (info['name'], info.nextversion(), info['deps'] + info['projects'], py_modules, scripts))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
     dist = os.path.join(info.projectdir, 'dist')

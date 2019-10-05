@@ -26,6 +26,17 @@ import aridity
 
 class ProjectInfoNotFoundException(Exception): pass
 
+def textcontent(node):
+    def iterparts(node):
+        value = node.nodeValue
+        if value is None:
+            for child in node.childNodes:
+                for text in iterparts(child):
+                    yield text
+        else:
+            yield value
+    return ''.join(iterparts(node))
+
 class ProjectInfo:
 
     def __init__(self, realdir):
@@ -49,3 +60,21 @@ class ProjectInfo:
 
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()
+
+    def nextversion(self):
+        import urllib.request, urllib.error, roman, re, xml.dom.minidom as dom
+        pattern = re.compile('-([0-9]+|[IVXLCDM]+)[-.]')
+        def toint(version):
+            try:
+                return int(version)
+            except ValueError:
+                return roman.fromRoman(version)
+        try:
+            with urllib.request.urlopen("https://pypi.org/simple/%s/" % self['name']) as f:
+                doc = dom.parseString(f.read())
+            last = max(toint(pattern.search(textcontent(a)).group(1)) for a in doc.getElementsByTagName('a'))
+        except urllib.error.HTTPError as e:
+            if 404 != e.code:
+                raise
+            last = 0
+        return roman.toRoman(last + 1)
