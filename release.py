@@ -51,7 +51,7 @@ def main():
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
     dist = os.path.join(info.projectdir, 'dist')
     if os.path.isdir(dist):
-        shutil.rmtree(dist)
+        shutil.rmtree(dist) # Remove any previous versions.
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     command = [sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)]
     print(command)
