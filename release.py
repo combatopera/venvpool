@@ -18,8 +18,9 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyvenimpl.projectinfo import ProjectInfo
-import os, sys, subprocess, shutil
+import os, sys, subprocess, shutil, argparse, logging
 
+log = logging.getLogger(__name__)
 setupformat = """import setuptools
 
 setuptools.setup(
@@ -34,17 +35,13 @@ cfgformat = """[bdist_wheel]
 universal=%s
 """
 
-def getinfo():
-    args = sys.argv[1:]
-    if args:
-        path, = args
-        path = os.path.abspath(path)
-    else:
-        path = os.getcwd()
-    return ProjectInfo(path)
-
 def main():
-    info = getinfo()
+    logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--upload', action = 'store_true')
+    parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
+    config = parser.parse_args()
+    info = ProjectInfo(config.path)
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
         f.write(setupformat % (info['name'], info.nextversion(), info['deps'] + info['projects'], info.py_modules(), info.scripts()))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
@@ -53,7 +50,10 @@ def main():
     if os.path.isdir(dist):
         shutil.rmtree(dist) # Remove any previous versions.
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
-    subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
+    if config.upload:
+        subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
+    else:
+        log.warning('Upload skipped, use --upload to upload.')
 
 if '__main__' == __name__:
     main()
