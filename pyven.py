@@ -83,7 +83,10 @@ class Launcher:
         subprocess.check_call([self.pathtopython] + args, env = self.env)
 
 def main():
-    info = projectinfo.ProjectInfo(os.path.dirname(os.path.realpath(sys.argv[1])))
+    try:
+        info = projectinfo.ProjectInfo(os.path.dirname(os.path.realpath(sys.argv[1])))
+    except projectinfo.ProjectInfoNotFoundException:
+        os.execvp(sys.executable, sys.argv)
     Launcher(info, info['pyversions'][0]).replace(sys.argv[1:])
 
 if '__main__' == __name__:
