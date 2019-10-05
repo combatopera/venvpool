@@ -62,22 +62,17 @@ class ProjectInfo:
         return self.info.resolved(key).unravel()
 
     def nextversion(self):
-        import urllib.request, urllib.error, roman, re, xml.dom.minidom as dom
-        pattern = re.compile('-([0-9]+|[IVXLCDM]+)[-.]')
-        def toint(version):
-            try:
-                return int(version)
-            except ValueError:
-                return roman.fromRoman(version)
+        import urllib.request, urllib.error, re, xml.dom.minidom as dom
+        pattern = re.compile('-([0-9]+)[-.]')
         try:
             with urllib.request.urlopen("https://pypi.org/simple/%s/" % self['name']) as f:
                 doc = dom.parseString(f.read())
-            last = max(toint(pattern.search(textcontent(a)).group(1)) for a in doc.getElementsByTagName('a'))
+            last = max(int(pattern.search(textcontent(a)).group(1)) for a in doc.getElementsByTagName('a'))
         except urllib.error.HTTPError as e:
             if 404 != e.code:
                 raise
             last = 0
-        return roman.toRoman(last + 1)
+        return str(last + 1)
 
     def py_modules(self):
         suffix = '.py'

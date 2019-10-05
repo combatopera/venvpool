@@ -53,10 +53,7 @@ def main():
     if os.path.isdir(dist):
         shutil.rmtree(dist) # Remove any previous versions.
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
-    command = [sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)]
-    print(command)
-    return
-    subprocess.check_call(command)
+    subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
 
 if '__main__' == __name__:
     main()
