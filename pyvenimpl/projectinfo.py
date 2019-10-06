@@ -75,6 +75,11 @@ class ProjectInfo:
             last = 0
         return str(last + 1)
 
+    def description(self):
+        import urllib.request, json
+        with urllib.request.urlopen("https://api.github.com/repos/combatopera/%s" % self['name']) as f:
+            return json.loads(f.read().decode())['description']
+
     def py_modules(self):
         suffix = '.py'
         return [name[:-len(suffix)] for name in os.listdir(self.projectdir) if name.endswith(suffix) and 'setup.py' != name and not name.startswith('test_')]

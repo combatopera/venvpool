@@ -26,6 +26,7 @@ setupformat = """import setuptools
 setuptools.setup(
         name = %r,
         version = %r,
+        description = %r,
         install_requires = %r,
         packages = setuptools.find_packages(),
         package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld', '*.arid', '*.aridt']},
@@ -44,7 +45,7 @@ def main():
     config = parser.parse_args()
     info = ProjectInfo(config.path)
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
-        f.write(setupformat % (info['name'], info.nextversion(), info['deps'] + info['projects'], info.py_modules(), info.scripts()))
+        f.write(setupformat % (info['name'], info.nextversion(), info.description(), info['deps'] + info['projects'], info.py_modules(), info.scripts()))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
     dist = os.path.join(info.projectdir, 'dist')
