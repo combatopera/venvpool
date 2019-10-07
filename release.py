@@ -26,13 +26,13 @@ setupformat = """import setuptools
 setuptools.setup(
         name = %r,
         version = %r,
-        author = %r,
         description = %r,
         url = %r,
-        install_requires = %r,
+        author = %r,
         packages = setuptools.find_packages(),
-        package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld', '*.arid', '*.aridt']},
         py_modules = %r,
+        install_requires = %r,
+        package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld', '*.arid', '*.aridt']},
         scripts = %r)
 """
 cfgformat = """[bdist_wheel]
@@ -46,9 +46,8 @@ def main():
     parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
     config = parser.parse_args()
     info = ProjectInfo(config.path)
-    description, url = info.descriptionandurl()
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
-        f.write(setupformat % (info['name'], info.nextversion(), info['author'], description, url, info['deps'] + info['projects'], info.py_modules(), info.scripts()))
+        f.write(setupformat % ((info['name'], info.nextversion()) + info.descriptionandurl() + (info['author'], info.py_modules(), info['deps'] + info['projects'], info.scripts())))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
     dist = os.path.join(info.projectdir, 'dist')
