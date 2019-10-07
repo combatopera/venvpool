@@ -75,11 +75,11 @@ class ProjectInfo:
             last = 0
         return str(last + 1)
 
-    def description(self):
+    def descriptionandurl(self):
         import urllib.request, json, re, subprocess
         urlpath = re.search('^git@github[.]com:(.+/.+)[.]git$', subprocess.check_output(['git', 'remote', 'get-url', 'origin'], cwd = self.projectdir).decode()).group(1)
         with urllib.request.urlopen("https://api.github.com/repos/%s" % urlpath) as f:
-            return json.loads(f.read().decode())['description']
+            return json.loads(f.read().decode())['description'], "https://github.com/%s" % urlpath
 
     def py_modules(self):
         suffix = '.py'
