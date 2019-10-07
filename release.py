@@ -23,10 +23,16 @@ import os, sys, subprocess, shutil, argparse, logging
 log = logging.getLogger(__name__)
 setupformat = """import setuptools
 
+def long_description():
+    with open('README.md') as f:
+        return f.read()
+
 setuptools.setup(
         name = %r,
         version = %r,
         description = %r,
+        long_description = long_description(),
+        long_description_content_type = 'text/markdown',
         url = %r,
         author = %r,
         packages = setuptools.find_packages(),
