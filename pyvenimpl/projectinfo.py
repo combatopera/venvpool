@@ -76,8 +76,9 @@ class ProjectInfo:
         return str(last + 1)
 
     def description(self):
-        import urllib.request, json
-        with urllib.request.urlopen("https://api.github.com/repos/combatopera/%s" % self['name']) as f:
+        import urllib.request, json, re, subprocess
+        urlpath = re.search('^git@github[.]com:(.+/.+)[.]git$', subprocess.check_output(['git', 'remote', 'get-url', 'origin'], cwd = self.projectdir).decode()).group(1)
+        with urllib.request.urlopen("https://api.github.com/repos/%s" % urlpath) as f:
             return json.loads(f.read().decode())['description']
 
     def py_modules(self):
