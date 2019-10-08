@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess
 from tests import Files
+import os, subprocess
 
 def isproject():
     for name in '.hg', '.svn', '.git':
@@ -30,6 +30,8 @@ def main():
         os.chdir('..')
     agcommand = ['ag', '--noheading', '--nobreak']
     paths = list(Files.findfiles('.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh'))
+    ignored = set(subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE).communicate()[0].decode().splitlines())
+    paths = [p for p in paths if p not in ignored]
     for tag in 'XXX', 'TODO', 'FIXME':
         subprocess.call(agcommand + [tag + ' LATER'] + paths)
         subprocess.call(agcommand + [tag + '(?! LATER)'] + paths)
