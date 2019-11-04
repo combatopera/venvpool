@@ -83,7 +83,7 @@ def pyflakes(info, files):
         subprocess.check_call([pathto('pyflakes')] + paths)
 
 def pathto(executable):
-    return os.path.join(os.path.dirname(os.path.realpath(sys.executable)), executable)
+    return os.path.join(os.path.dirname(sys.executable), executable)
 
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
