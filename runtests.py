@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, pyven, tests
 from pyvenimpl import projectinfo, miniconda as mc
+import os, pyven, tests, sys
 
 def main():
     info = projectinfo.ProjectInfo(os.getcwd())
@@ -28,7 +28,7 @@ def main():
         testspath = testspath[:-1]
     for miniconda in minicondas:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.Launcher(info, miniconda.pyversion).check_call([testspath])
+        pyven.Launcher(info, miniconda.pyversion).check_call([testspath] + sys.argv[1:])
 
 if '__main__' == __name__:
     main()

@@ -116,7 +116,7 @@ def main():
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
-    sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit'] + files.testpaths()))
+    sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit'] + files.testpaths() + sys.argv[1:]))
 
 if '__main__' == __name__:
     main()
