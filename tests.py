@@ -16,15 +16,17 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-import subprocess, sys, os, re
 from pyvenimpl import licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl, projectinfo
 from pyvenimpl.util import stderr
+import subprocess, sys, os, re, xml.dom.minidom as dom, collections
 
 def stripeol(line):
     line, = line.splitlines()
     return line
 
 class Files:
+
+    reportpath = 'nosetests.xml'
 
     @staticmethod
     def findfiles(*suffixes):
@@ -52,7 +54,26 @@ class Files:
     def __init__(self):
         self.allsrcpaths = list(p for p in self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid') if 'setup.py' != os.path.basename(p))
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
-        self.testpaths = [p for p in self.pypaths if os.path.basename(p).startswith('test_')]
+
+    def testpaths(self):
+        paths = [p for p in self.pypaths if os.path.basename(p).startswith('test_')]
+        if os.path.exists(self.reportpath):
+            with open(self.reportpath) as f:
+                doc = dom.parse(f)
+            nametopath = dict([p[:-len('.py')].replace(os.sep, '.'), p] for p in paths)
+            pathtotime = collections.defaultdict(lambda: 0)
+            for e in doc.getElementsByTagName('testcase'):
+                name = e.getAttribute('classname')
+                while True:
+                    i = name.rfind('.')
+                    if -1 == i:
+                        break
+                    name = name[:i]
+                    if name in nametopath:
+                        pathtotime[nametopath[name]] += float(e.getAttribute('time'))
+                        break
+            paths.sort(key = lambda p: pathtotime.get(p, float('inf')))
+        return paths
 
 def licheck(info, files):
     def g():
@@ -95,7 +116,7 @@ def main():
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
-    sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit'] + files.testpaths))
+    sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit'] + files.testpaths()))
 
 if '__main__' == __name__:
     main()

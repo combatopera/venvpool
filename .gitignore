@@ -7,3 +7,4 @@ __pycache__/
 /pyven.egg-info/
 /setup.cfg
 /setup.py
+/nosetests.xml
