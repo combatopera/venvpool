@@ -52,6 +52,7 @@ class Files:
     def __init__(self):
         self.allsrcpaths = list(p for p in self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid') if 'setup.py' != os.path.basename(p))
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
+        self.testpaths = [p for p in self.pypaths if os.path.basename(p).startswith('test_')]
 
 def licheck(info, files):
     def g():
@@ -94,7 +95,7 @@ def main():
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
-    sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '-m', '^test_']))
+    sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit'] + files.testpaths))
 
 if '__main__' == __name__:
     main()
