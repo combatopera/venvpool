@@ -42,17 +42,21 @@ class Files:
 
     @classmethod
     def filterfiles(cls, *suffixes):
+        paths = list(cls.findfiles(*suffixes))
         if os.path.exists('.hg'):
             badstatuses = set('IR ')
-            for line in subprocess.Popen(['hg', 'st', '-A'] + list(cls.findfiles(*suffixes)), stdout = subprocess.PIPE).stdout:
+            for line in subprocess.Popen(['hg', 'st', '-A'] + paths, stdout = subprocess.PIPE).stdout:
                 line = stripeol(line).decode()
                 if line[0] not in badstatuses:
                     yield line[2:]
         else:
-            for x in cls.findfiles(*suffixes): yield x
+            ignored = set(subprocess.check_output(['git', 'check-ignore'] + paths).decode().splitlines())
+            for path in paths:
+                if path not in ignored:
+                    yield path
 
     def __init__(self):
-        self.allsrcpaths = list(p for p in self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid') if 'setup.py' != os.path.basename(p))
+        self.allsrcpaths = list(p for p in self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'))
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
 
     def testpaths(self):
