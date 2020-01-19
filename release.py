@@ -17,33 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from pyvenimpl.pipify import pipify
 from pyvenimpl.projectinfo import ProjectInfo
 import os, sys, subprocess, shutil, argparse, logging
 
 log = logging.getLogger(__name__)
-setupformat = """import setuptools
-
-def long_description():
-    with open('README.md') as f:
-        return f.read()
-
-setuptools.setup(
-        name = %r,
-        version = %r,
-        description = %r,
-        long_description = long_description(),
-        long_description_content_type = 'text/markdown',
-        url = %r,
-        author = %r,
-        packages = setuptools.find_packages(),
-        py_modules = %r,
-        install_requires = %r,
-        package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld', '*.arid', '*.aridt']},
-        scripts = %r)
-"""
-cfgformat = """[bdist_wheel]
-universal=%s
-"""
 
 def main():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
@@ -52,10 +30,7 @@ def main():
     parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
     config = parser.parse_args()
     info = ProjectInfo(config.path)
-    with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
-        f.write(setupformat % ((info['name'], info.nextversion()) + info.descriptionandurl() + (info['author'], info.py_modules(), info['deps'] + info['projects'], info.scripts())))
-    with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
-        f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
+    pipify(info, True)
     dist = os.path.join(info.projectdir, 'dist')
     if os.path.isdir(dist):
         shutil.rmtree(dist) # Remove any previous versions.
