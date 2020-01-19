@@ -74,7 +74,7 @@ class Launcher:
     def __init__(self, info, pyversion):
         workspace = os.path.dirname(info.projectdir)
         self.env = self.getenv(self.projectpaths(workspace, info, set()))
-        self.pathtopython = miniconda.pyversiontominiconda[pyversion].executable()
+        self.pathtopython = miniconda.executable(info, pyversion)
 
     def replace(self, args):
         os.execvpe(self.pathtopython, [self.pathtopython] + args, self.env)
