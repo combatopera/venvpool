@@ -18,7 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 import os, subprocess, pyven, tests
-from pyvenimpl import projectinfo, miniconda as mc
+from pyvenimpl import projectinfo
 
 class Workspace:
 
@@ -27,11 +27,6 @@ class Workspace:
 
     def info(self, projectname):
         return projectinfo.ProjectInfo(os.path.join(self.workspace, projectname))
-
-    def gettransitivedeps(self, info, deps):
-        deps.update(info['deps'])
-        for project in info['projects']:
-            self.gettransitivedeps(self.info(project), deps)
 
     def checkoutifnecessary(self, info, project):
         if '/' in project:
@@ -49,18 +44,12 @@ def main():
     info = projectinfo.ProjectInfo(os.getcwd())
     for project in info['projects']:
         workspace.checkoutifnecessary(info, project)
-    minicondas = [mc.pyversiontominiconda[v] for v in info['pyversions']]
-    deps = set()
-    workspace.gettransitivedeps(info, deps)
-    workspace.gettransitivedeps(workspace.info('pyven'), deps)
-    for miniconda in minicondas:
-        miniconda.installifnecessary(deps)
     testspath = tests.__file__
     if testspath.endswith('.pyc'):
         testspath = testspath[:-1]
-    for miniconda in minicondas:
+    for pyversion in info['pyversions']:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.Launcher(info, miniconda.pyversion).check_call([testspath])
+        pyven.Launcher(info, pyversion).check_call([testspath])
 
 if '__main__' == __name__:
     main()
