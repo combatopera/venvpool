@@ -27,7 +27,7 @@ setuptools.setup(
         name = %r,
         version = %r,
         description = %r,
-        long_description = long_description(),
+        long_description = %s,
         long_description_content_type = 'text/markdown',
         url = %r,
         author = %r,
@@ -42,7 +42,8 @@ universal=%s
 """
 
 def pipify(info, release):
+    description, url = info.descriptionandurl() if release else [None, None]
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
-        f.write(setupformat % ((info['name'], info.nextversion() if release else None) + info.descriptionandurl() + (info['author'], info.py_modules(), info['deps'] + (info['projects'] if release else []), info.scripts())))
+        f.write(setupformat % ((info['name'], info.nextversion() if release else None) + (description, 'long_description()' if release else repr(None), url, info['author'] if release else None, info.py_modules(), info['deps'] + (info['projects'] if release else []), info.scripts())))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
