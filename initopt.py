@@ -18,6 +18,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import division
+from aridimpl.util import NoSuchPathException
 from pathlib import Path
 from pyvenimpl.pipify import pipify
 from pyvenimpl.projectinfo import ProjectInfo
@@ -25,14 +26,28 @@ import logging, subprocess
 
 log = logging.getLogger(__name__)
 
+def hasname(info):
+    try:
+        info['name']
+        return True
+    except NoSuchPathException:
+        pass
+
 def main():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     versiontoinfos = {version: set() for version in [3, 2]}
-    allinfos = [ProjectInfo(configpath) for configpath in Path.home().glob('projects/*/project.arid')]
-    for info in allinfos:
+    allinfos = {i['name']: i
+            for i in (ProjectInfo(configpath) for configpath in Path.home().glob('projects/*/project.arid'))
+            if hasname(i)}
+    def add(infos, i):
+        if i not in infos:
+            infos.add(i)
+            for p in i['projects']:
+                add(infos, allinfos[p])
+    for info in allinfos.values():
         if info['executable']:
             for pyversion in info['pyversions']:
-                versiontoinfos[pyversion].add(info)
+                add(versiontoinfos[pyversion], info)
     for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir):
         log.debug("Prepare: %s", info.projectdir)
         pipify(info, False)
