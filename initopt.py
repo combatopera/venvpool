@@ -21,29 +21,26 @@ from __future__ import division
 from pathlib import Path
 from pyvenimpl.pipify import pipify
 from pyvenimpl.projectinfo import ProjectInfo
-import aridity, logging, subprocess
+import logging, subprocess
 
 log = logging.getLogger(__name__)
 
 def main():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
-    versiontoprojectpaths = {version: set() for version in [3, 2]}
-    for configpath in Path.home().glob('projects/*/project.arid'):
-        context = aridity.Context()
-        with aridity.Repl(context) as repl:
-            repl.printf('executable = false')
-            repl.printf(". %s", configpath)
-        if context.resolved('executable').value:
-            for pyversionobj in context.resolved('pyversions'):
-                versiontoprojectpaths[pyversionobj.value].add(configpath.parent)
-    for projectpath in sorted(set().union(*versiontoprojectpaths.values())):
-        log.debug("Prepare: %s", projectpath)
-        pipify(ProjectInfo(projectpath), False)
-    for pyversion, projectpaths in versiontoprojectpaths.items():
+    versiontoinfos = {version: set() for version in [3, 2]}
+    infos = [ProjectInfo(configpath) for configpath in Path.home().glob('projects/*/project.arid')]
+    for info in infos:
+        if info['executable']:
+            for pyversion in info['pyversions']:
+                versiontoinfos[pyversion].add(info)
+    for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir):
+        log.debug("Prepare: %s", info.projectdir)
+        pipify(info, False)
+    for pyversion, infos in versiontoinfos.items():
         venvpath = Path.home() / 'opt' / ("venv%s" % pyversion)
         if not venvpath.exists():
             subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
-        subprocess.check_call([venvpath / 'bin' / 'pip', 'install'] + sum((['-e', p] for p in projectpaths), []))
+        subprocess.check_call([venvpath / 'bin' / 'pip', 'install'] + sum((['-e', i.projectdir] for i in infos), []))
 
 if '__main__' == __name__:
     main()
