@@ -27,18 +27,18 @@ log = logging.getLogger(__name__)
 
 def main():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
-    versiontoprojectpaths = {version: [] for version in [3, 2]}
+    versiontoprojectpaths = {version: set() for version in [3, 2]}
     for configpath in Path.home().glob('projects/*/project.arid'):
         context = aridity.Context()
         with aridity.Repl(context) as repl:
             repl.printf('executable = false')
             repl.printf(". %s", configpath)
         if context.resolved('executable').value:
-            projectpath = configpath.parent
-            log.debug("Prepare: %s", projectpath)
-            pipify(ProjectInfo(projectpath), False)
             for pyversionobj in context.resolved('pyversions'):
-                versiontoprojectpaths[pyversionobj.value].append(projectpath)
+                versiontoprojectpaths[pyversionobj.value].add(configpath.parent)
+    for projectpath in sorted(set().union(*versiontoprojectpaths.values())):
+        log.debug("Prepare: %s", projectpath)
+        pipify(ProjectInfo(projectpath), False)
     for pyversion, projectpaths in versiontoprojectpaths.items():
         venvpath = Path.home() / 'opt' / ("venv%s" % pyversion)
         if not venvpath.exists():
