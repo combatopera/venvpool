@@ -28,8 +28,8 @@ log = logging.getLogger(__name__)
 def main():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     versiontoinfos = {version: set() for version in [3, 2]}
-    infos = [ProjectInfo(configpath) for configpath in Path.home().glob('projects/*/project.arid')]
-    for info in infos:
+    allinfos = [ProjectInfo(configpath) for configpath in Path.home().glob('projects/*/project.arid')]
+    for info in allinfos:
         if info['executable']:
             for pyversion in info['pyversions']:
                 versiontoinfos[pyversion].add(info)
