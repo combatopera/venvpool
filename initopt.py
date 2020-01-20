@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 def main():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
-    install = {version: [] for version in [3, 2]}
+    versiontoprojectpaths = {version: [] for version in [3, 2]}
     for configpath in Path.home().glob('projects/*/project.arid'):
         context = aridity.Context()
         with aridity.Repl(context) as repl:
@@ -37,9 +37,9 @@ def main():
             projectpath = configpath.parent
             log.debug("Prepare: %s", projectpath)
             pipify(ProjectInfo(projectpath), False)
-            for pyversion in (obj.value for obj in context.resolved('pyversions')):
-                install[pyversion].append(projectpath)
-    for pyversion, projectpaths in install.items():
+            for pyversionobj in context.resolved('pyversions'):
+                versiontoprojectpaths[pyversionobj.value].append(projectpath)
+    for pyversion, projectpaths in versiontoprojectpaths.items():
         venvpath = Path.home() / 'opt' / ("venv%s" % pyversion)
         if not venvpath.exists():
             subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
