@@ -51,6 +51,7 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
             '#!/usr/bin/env python',
             '#!/usr/bin/env python3',
             '#!/usr/bin/env pyven',
+            '#!/bin/null', # TODO: Enforce this as only interpreter.
         )
         main = bool(lines) and endswithifmain(istest, lines)
         if hashbang and main and executable: return
