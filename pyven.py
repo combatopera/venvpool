@@ -1,5 +1,3 @@
-#!/bin/null
-
 # Copyright 2013, 2014, 2015, 2016, 2017 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -82,12 +80,9 @@ class Launcher:
     def check_call(self, args):
         subprocess.check_call([self.pathtopython] + args, env = self.env)
 
-def main():
+def console_main():
     try:
         info = projectinfo.ProjectInfo(os.path.dirname(os.path.realpath(sys.argv[1])))
     except projectinfo.ProjectInfoNotFoundException:
         os.execvp(sys.executable, [sys.executable] + sys.argv[1:])
     Launcher(info, info['pyversions'][0]).replace(sys.argv[1:])
-
-if '__main__' == __name__:
-    main()

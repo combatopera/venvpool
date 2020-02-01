@@ -1,5 +1,3 @@
-#!/bin/null
-
 # Copyright 2013, 2014, 2015, 2016, 2017 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -33,7 +31,7 @@ def hasname(info):
     except NoSuchPathException:
         pass
 
-def main():
+def console_main():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     versiontoinfos = {version: set() for version in [3, 2]}
     allinfos = {i['name']: i
@@ -56,6 +54,3 @@ def main():
         if not venvpath.exists():
             subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
         subprocess.check_call([venvpath / 'bin' / 'pip', 'install'] + sum((['-e', i.projectdir] for i in infos), []))
-
-if '__main__' == __name__:
-    main()

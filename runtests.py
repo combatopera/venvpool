@@ -1,5 +1,3 @@
-#!/bin/null
-
 # Copyright 2013, 2014, 2015, 2016, 2017 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -20,7 +18,7 @@
 from pyvenimpl import projectinfo
 import os, pyven, tests, sys
 
-def main():
+def console_main():
     info = projectinfo.ProjectInfo(os.getcwd())
     testspath = tests.__file__
     if testspath.endswith('.pyc'):
@@ -28,6 +26,3 @@ def main():
     for pyversion in info['pyversions']:
         # Equivalent to running tests.py directly but with one fewer process launch:
         pyven.Launcher(info, pyversion).check_call([testspath] + sys.argv[1:])
-
-if '__main__' == __name__:
-    main()

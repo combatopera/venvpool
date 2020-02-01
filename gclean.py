@@ -1,5 +1,3 @@
-#!/bin/null
-
 # Copyright 2013, 2014, 2015, 2016, 2017 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -77,7 +75,7 @@ def styleornone():
         if os.path.exists(style.name):
             return style()
 
-def main():
+def console_main():
     roots = sys.argv[1:]
     while True:
         style = styleornone()
@@ -113,6 +111,3 @@ def main():
                 tryremovepath(os.path.join(dirpath, name), True)
             for name in sorted(filenames):
                 tryremovepath(os.path.join(dirpath, name), False)
-
-if '__main__' == __name__:
-    main()

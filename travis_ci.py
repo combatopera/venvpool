@@ -1,5 +1,3 @@
-#!/bin/null
-
 # Copyright 2013, 2014, 2015, 2016, 2017 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -39,7 +37,7 @@ class Workspace:
         for project2 in info2['projects']:
             self.checkoutifnecessary(info2, project2)
 
-def main():
+def console_main():
     workspace = Workspace()
     info = projectinfo.ProjectInfo(os.getcwd())
     for project in info['projects']:
@@ -50,6 +48,3 @@ def main():
     for pyversion in info['pyversions']:
         # Equivalent to running tests.py directly but with one fewer process launch:
         pyven.Launcher(info, pyversion).check_call([testspath])
-
-if '__main__' == __name__:
-    main()

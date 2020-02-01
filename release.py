@@ -1,5 +1,3 @@
-#!/bin/null
-
 # Copyright 2013, 2014, 2015, 2016, 2017 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -23,7 +21,7 @@ import os, sys, subprocess, shutil, argparse, logging
 
 log = logging.getLogger(__name__)
 
-def main():
+def console_main():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     parser = argparse.ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')
@@ -39,6 +37,3 @@ def main():
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
     else:
         log.warning('Upload skipped, use --upload to upload.')
-
-if '__main__' == __name__:
-    main()

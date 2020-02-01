@@ -1,5 +1,3 @@
-#!/bin/null
-
 # Copyright 2013, 2014, 2015, 2016, 2017 Andrzej Cichocki
 
 # This file is part of pyven.
@@ -25,7 +23,7 @@ def isproject():
         if os.path.exists(name):
             return True
 
-def main():
+def console_main():
     while not isproject():
         os.chdir('..')
     agcommand = ['ag', '--noheading', '--nobreak']
@@ -35,6 +33,3 @@ def main():
     for tag in 'XXX', 'TODO', 'FIXME':
         subprocess.call(agcommand + [tag + ' LATER'] + paths)
         subprocess.call(agcommand + [tag + '(?! LATER)'] + paths)
-
-if '__main__' == __name__:
-    main()
