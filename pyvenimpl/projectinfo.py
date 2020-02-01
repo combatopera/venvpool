@@ -93,3 +93,19 @@ class ProjectInfo:
         def isscript(path):
             return os.stat(path).st_mode & xmask and not os.path.isdir(path)
         return [name for name in os.listdir(self.projectdir) if isscript(os.path.join(self.projectdir, name))]
+
+    def console_scripts(self):
+        import ast
+        v = []
+        prefix = 'main_'
+        for dirpath, dirnames, filenames in os.walk(self.projectdir):
+            for name in sorted(filenames):
+                if name.endswith('.py'):
+                    path = os.path.join(dirpath, name)
+                    with open(path) as f:
+                        m = ast.parse(f.read())
+                    for obj in m.body:
+                        if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
+                            v.append("%s=%s:%s" % (obj.name[len(prefix):], path, obj.name))
+            dirnames.sort()
+        return v
