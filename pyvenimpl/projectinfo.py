@@ -110,5 +110,11 @@ class ProjectInfo:
                     for obj in m.body:
                         if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
                             v.append("%s=%s:%s" % (obj.name[len(prefix):], path[pathprefixlen:-len(extension)].replace(os.sep, '.'), obj.name))
+            # TODO: Duplicated code.
+            if self.projectdir == dirpath:
+                try:
+                    dirnames.remove('.pyven')
+                except ValueError:
+                    pass
             dirnames.sort()
         return v
