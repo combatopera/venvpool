@@ -112,9 +112,10 @@ class ProjectInfo:
                             v.append("%s=%s:%s" % (obj.name[len(prefix):], path[pathprefixlen:-len(extension)].replace(os.sep, '.'), obj.name))
             # TODO: Duplicated code.
             if self.projectdir == dirpath:
-                try:
-                    dirnames.remove('.pyven')
-                except ValueError:
-                    pass
+                for name in '.pyven', 'build':
+                    try:
+                        dirnames.remove(name)
+                    except ValueError:
+                        pass
             dirnames.sort()
         return v
