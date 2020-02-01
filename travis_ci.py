@@ -37,7 +37,7 @@ class Workspace:
         for project2 in info2['projects']:
             self.checkoutifnecessary(info2, project2)
 
-def console_main():
+def main_travis_ci():
     workspace = Workspace()
     info = projectinfo.ProjectInfo(os.getcwd())
     for project in info['projects']:

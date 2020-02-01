@@ -31,7 +31,7 @@ def hasname(info):
     except NoSuchPathException:
         pass
 
-def console_main():
+def main_initopt():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     versiontoinfos = {version: set() for version in [3, 2]}
     allinfos = {i['name']: i

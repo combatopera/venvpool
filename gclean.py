@@ -75,7 +75,7 @@ def styleornone():
         if os.path.exists(style.name):
             return style()
 
-def console_main():
+def main_gclean():
     roots = sys.argv[1:]
     while True:
         style = styleornone()

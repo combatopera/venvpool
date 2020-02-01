@@ -18,7 +18,7 @@
 from pyvenimpl import projectinfo
 import os, pyven, tests, sys
 
-def console_main():
+def main_tests():
     info = projectinfo.ProjectInfo(os.getcwd())
     testspath = tests.__file__
     if testspath.endswith('.pyc'):

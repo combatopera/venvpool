@@ -21,7 +21,7 @@ import os, sys, subprocess, shutil, argparse, logging
 
 log = logging.getLogger(__name__)
 
-def console_main():
+def main_release():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     parser = argparse.ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')

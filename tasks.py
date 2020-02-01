@@ -23,7 +23,7 @@ def isproject():
         if os.path.exists(name):
             return True
 
-def console_main():
+def main_tasks():
     while not isproject():
         os.chdir('..')
     agcommand = ['ag', '--noheading', '--nobreak']
