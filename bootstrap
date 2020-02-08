@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -ex
+
+tempdir=$(mktemp -d)
+
+trap 'rm -r $tempdir' EXIT
+
+for version in 3 2; do
+
+    venv=$tempdir/$version
+
+    virtualenv -p python$version $venv
+
+    $venv/bin/pip install pyven
+
+    $venv/bin/initopt
+
+done
