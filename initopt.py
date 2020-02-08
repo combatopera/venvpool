@@ -20,7 +20,7 @@ from aridimpl.util import NoSuchPathException
 from pathlib import Path
 from pyvenimpl.pipify import pipify
 from pyvenimpl.projectinfo import ProjectInfo
-import logging, subprocess
+import logging, subprocess, sys
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def hasname(info):
 
 def main_initopt():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
-    versiontoinfos = {version: set() for version in [3, 2]}
+    versiontoinfos = {version: set() for version in [sys.version_info.major]}
     allinfos = {i['name']: i
             for i in (ProjectInfo(configpath) for configpath in Path.home().glob('projects/*/project.arid'))
             if hasname(i)}
