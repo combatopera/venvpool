@@ -45,7 +45,8 @@ def main_initopt():
     for info in allinfos.values():
         if info['executable']:
             for pyversion in info['pyversions']:
-                add(versiontoinfos[pyversion], info)
+                if pyversion in versiontoinfos:
+                    add(versiontoinfos[pyversion], info)
     for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir):
         log.debug("Prepare: %s", info.projectdir)
         pipify(info, False)
