@@ -17,7 +17,7 @@
 
 from pyvenimpl import projectinfo, miniconda
 from warnings import warn
-import os, sys, subprocess, itertools, aridity
+import os, subprocess, itertools, aridity
 
 class WrongBranchException(Exception): pass
 
@@ -79,10 +79,3 @@ class Launcher:
 
     def check_call(self, args):
         subprocess.check_call([self.pathtopython] + args, env = self.env)
-
-def main_pyven():
-    try:
-        info = projectinfo.ProjectInfo(os.path.dirname(os.path.realpath(sys.argv[1])))
-    except projectinfo.ProjectInfoNotFoundException:
-        os.execvp(sys.executable, [sys.executable] + sys.argv[1:])
-    Launcher(info, info['pyversions'][0]).replace(sys.argv[1:])
