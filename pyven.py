@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyvenimpl import projectinfo, miniconda
+from pyvenimpl import projectinfo, minivenv
 from warnings import warn
 import os, subprocess, itertools, aridity
 
@@ -72,7 +72,7 @@ class Launcher:
     def __init__(self, info, pyversion):
         workspace = os.path.dirname(info.projectdir)
         self.env = self.getenv(self.projectpaths(workspace, info, set()))
-        self.pathtopython = miniconda.executable(info, pyversion)
+        self.pathtopython = minivenv.executable(info, pyversion)
 
     def replace(self, args):
         os.execvpe(self.pathtopython, [self.pathtopython] + args, self.env)
