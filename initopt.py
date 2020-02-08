@@ -15,12 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
 from aridimpl.util import NoSuchPathException
-from pathlib import Path
 from pyvenimpl.pipify import pipify
 from pyvenimpl.projectinfo import ProjectInfo
-import logging, subprocess, sys
+import logging, os, subprocess, sys
 
 log = logging.getLogger(__name__)
 
@@ -34,9 +32,14 @@ def hasname(info):
 def main_initopt():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
-    allinfos = {i['name']: i
-            for i in (ProjectInfo(configpath) for configpath in Path.home().glob('projects/*/project.arid'))
-            if hasname(i)}
+    home = os.path.expanduser('~')
+    def configpaths():
+        projectsdir = os.path.join(home, 'projects')
+        for p in sorted(os.listdir(projectsdir)):
+            configpath = os.path.join(projectsdir, p, 'project.arid')
+            if os.path.exists(configpath):
+                yield configpath
+    allinfos = {i['name']: i for i in map(ProjectInfo, configpaths()) if hasname(i)}
     def add(infos, i):
         if i not in infos:
             infos.add(i)
@@ -51,7 +54,7 @@ def main_initopt():
         log.debug("Prepare: %s", info.projectdir)
         pipify(info, False)
     for pyversion, infos in versiontoinfos.items():
-        venvpath = Path.home() / 'opt' / ("venv%s" % pyversion)
-        if not venvpath.exists():
+        venvpath = os.path.join(home, 'opt', "venv%s" % pyversion)
+        if not os.path.exists(venvpath):
             subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
-        subprocess.check_call([venvpath / 'bin' / 'pip', 'install'] + sum((['-e', i.projectdir] for i in infos), []))
+        subprocess.check_call([os.path.join(venvpath, 'bin', 'pip'), 'install'] + sum((['-e', i.projectdir] for i in infos), []))
