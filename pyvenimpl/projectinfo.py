@@ -95,7 +95,6 @@ class ProjectInfo:
         return [name for name in os.listdir(self.projectdir) if isscript(os.path.join(self.projectdir, name))]
 
     def console_scripts(self):
-        # TODO: Wait for all non-daemon threads to finish before returning from main.
         import ast
         v = []
         prefix = 'main_'
