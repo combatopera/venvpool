@@ -1,10 +1,10 @@
+/pyven.egg-info/
 #gclean
 *.pyc
 __pycache__/
 *.class
 /build/
 /dist/
-/pyven.egg-info/
 /setup.cfg
 /setup.py
 /nosetests.xml
