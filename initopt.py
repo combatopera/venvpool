@@ -57,4 +57,8 @@ def main_initopt():
         venvpath = os.path.join(home, 'opt', "venv%s" % pyversion)
         if not os.path.exists(venvpath):
             subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
-        subprocess.check_call([os.path.join(venvpath, 'bin', 'pip'), 'install'] + sum((['-e', i.projectdir] for i in infos), []))
+        binpath = os.path.join(venvpath, 'bin')
+        subprocess.check_call([os.path.join(binpath, 'pip'), 'install'] + sum((['-e', i.projectdir] for i in infos), []))
+        with open(os.path.join(binpath, 'pkg_resources.py'), 'w') as f:
+            f.write('''from pkg_resources_lite import load_entry_point
+''')
