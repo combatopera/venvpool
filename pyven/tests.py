@@ -16,7 +16,11 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-from . import licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl, projectinfo
+from .divcheck import mainimpl as divcheckimpl
+from .execcheck import mainimpl as execcheckimpl
+from .licheck import mainimpl as licheckimpl
+from .nlcheck import mainimpl as nlcheckimpl
+from .projectinfo import ProjectInfo
 from .util import stderr
 import subprocess, sys, os, re, xml.dom.minidom as dom, collections
 
@@ -90,16 +94,16 @@ def licheck(info, files):
             parentname = os.path.basename(os.path.dirname(path))
             if parentname != 'contrib' and not parentname.endswith('_turbo'):
                 yield path
-    licheckimpl.mainimpl(info, list(g()))
+    licheckimpl(info, list(g()))
 
 def nlcheck(info, files):
-    nlcheckimpl.mainimpl(files.allsrcpaths)
+    nlcheckimpl(files.allsrcpaths)
 
 def divcheck(info, files):
-    divcheckimpl.mainimpl(files.pypaths)
+    divcheckimpl(files.pypaths)
 
 def execcheck(info, files):
-    execcheckimpl.mainimpl(files.pypaths)
+    execcheckimpl(files.pypaths)
 
 def pyflakes(info, files):
     with open('.flakesignore') as f:
@@ -119,7 +123,7 @@ def pathto(executable):
 def main():
     while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
         os.chdir('..')
-    info = projectinfo.ProjectInfo(os.getcwd())
+    info = ProjectInfo(os.getcwd())
     files = Files()
     for check in (() if info['proprietary'] else (licheck,)) + (nlcheck, divcheck, execcheck, pyflakes):
         sys.stderr.write("%s: " % check.__name__)
