@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .pipify import pipify
+from .projectinfo import ProjectInfo
 from aridimpl.util import NoSuchPathException
-from pyvenimpl.pipify import pipify
-from pyvenimpl.projectinfo import ProjectInfo
 import logging, os, subprocess, sys
 
 log = logging.getLogger(__name__)
