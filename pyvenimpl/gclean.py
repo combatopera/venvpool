@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .util import stderr
 import re, os, sys, shutil
-from pyvenimpl.util import stderr
 
 def removedir(path):
     if os.path.islink(path):
