@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from pyvenimpl.tests import main
+import sys
 
 if '__main__' == __name__:
-    main()
+    sys.exit(main())

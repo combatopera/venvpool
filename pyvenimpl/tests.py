@@ -125,4 +125,4 @@ def main():
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
-    sys.exit(subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit'] + files.testpaths() + sys.argv[1:]))
+    return subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit'] + files.testpaths() + sys.argv[1:])
