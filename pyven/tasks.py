@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from tests import Files
+from .tests import Files
 import os, subprocess
 
 def isproject():
