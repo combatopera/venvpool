@@ -16,8 +16,8 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-from pyvenimpl import licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl, projectinfo
-from pyvenimpl.util import stderr
+from . import licheck as licheckimpl, nlcheck as nlcheckimpl, divcheck as divcheckimpl, execcheck as execcheckimpl, projectinfo
+from .util import stderr
 import subprocess, sys, os, re, xml.dom.minidom as dom, collections
 
 def stripeol(line):
