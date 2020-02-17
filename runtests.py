@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyvenimpl import projectinfo
-import os, pyven, tests, sys
+from pyvenimpl import minivenv, projectinfo
+import os, subprocess, sys, tests
 
 def main_tests():
     info = projectinfo.ProjectInfo(os.getcwd())
@@ -25,4 +25,4 @@ def main_tests():
         testspath = testspath[:-1]
     for pyversion in info['pyversions']:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.Launcher(info, pyversion).check_call([testspath] + sys.argv[1:])
+        subprocess.check_call([minivenv.executable(info, pyversion), testspath] + sys.argv[1:])
