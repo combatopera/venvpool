@@ -42,4 +42,4 @@ def main_travis_ci():
     info = projectinfo.ProjectInfo(os.getcwd())
     for project in info['projects']:
         workspace.checkoutifnecessary(info, project)
-    runtests(info, [])
+    runtests.runtests(info, [])
