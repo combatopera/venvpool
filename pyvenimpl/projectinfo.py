@@ -16,13 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-import os, sys
-d = os.path.dirname(os.path.realpath(__file__)) # pyvenimpl
-d = os.path.dirname(d) # pyven
-d = os.path.dirname(d) # workspace
-sys.path.append(os.path.join(d, 'aridity'))
-del d
-import aridity, stat
+import aridity, os, stat
 
 class ProjectInfoNotFoundException(Exception): pass
 
