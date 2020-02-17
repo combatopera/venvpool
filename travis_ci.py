@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, subprocess, pyven, tests
 from pyvenimpl import projectinfo
+import os, runtests, subprocess
 
 class Workspace:
 
@@ -42,9 +42,4 @@ def main_travis_ci():
     info = projectinfo.ProjectInfo(os.getcwd())
     for project in info['projects']:
         workspace.checkoutifnecessary(info, project)
-    testspath = tests.__file__
-    if testspath.endswith('.pyc'):
-        testspath = testspath[:-1]
-    for pyversion in info['pyversions']:
-        # Equivalent to running tests.py directly but with one fewer process launch:
-        pyven.Launcher(info, pyversion).check_call([testspath])
+    runtests(info, [])

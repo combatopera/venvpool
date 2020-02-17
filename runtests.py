@@ -19,10 +19,12 @@ from pyvenimpl import minivenv, projectinfo
 import os, subprocess, sys, tests
 
 def main_tests():
-    info = projectinfo.ProjectInfo(os.getcwd())
+    runtests(projectinfo.ProjectInfo(os.getcwd()), sys.argv[1:])
+
+def runtests(info, args):
     testspath = tests.__file__
     if testspath.endswith('.pyc'):
         testspath = testspath[:-1]
     for pyversion in info['pyversions']:
         # Equivalent to running tests.py directly but with one fewer process launch:
-        subprocess.check_call([minivenv.executable(info, pyversion), testspath] + sys.argv[1:])
+        subprocess.check_call([minivenv.executable(info, pyversion), testspath] + args)
