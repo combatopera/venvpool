@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyvenimpl import minivenv, projectinfo
+from . import minivenv, projectinfo
 import os, subprocess, sys, tests
 
 def main_tests():
