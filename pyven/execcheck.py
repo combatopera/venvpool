@@ -39,7 +39,7 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
         basename = os.path.basename(path)
         istest = basename.startswith('test_')
         if basename not in ('tests.py', 'Test.py') and basename.lower().startswith('test') and not istest:
-            raise Exception(path) # Catch bad naming.
+            raise Exception(path) # Catch bad naming. TODO: Also check for duplicate method names.
         if istest and executable:
             raise Exception(path) # All tests should be non-executable.
         f = open(path)
