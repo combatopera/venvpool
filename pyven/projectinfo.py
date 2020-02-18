@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
+from .files import Files
 import aridity, os, stat
 
 class ProjectInfoNotFoundException(Exception): pass
@@ -92,23 +93,11 @@ class ProjectInfo:
         import ast
         v = []
         prefix = 'main_'
-        pathprefixlen = len(self.projectdir + os.sep)
         extension = '.py'
-        for dirpath, dirnames, filenames in os.walk(self.projectdir):
-            for name in sorted(filenames):
-                if name.endswith(extension):
-                    path = os.path.join(dirpath, name)
-                    with open(path) as f:
-                        m = ast.parse(f.read())
-                    for obj in m.body:
-                        if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
-                            v.append("%s=%s:%s" % (obj.name[len(prefix):], path[pathprefixlen:-len(extension)].replace(os.sep, '.'), obj.name))
-            # TODO: Duplicated code.
-            if self.projectdir == dirpath:
-                for name in '.pyven', 'build':
-                    try:
-                        dirnames.remove(name)
-                    except ValueError:
-                        pass
-            dirnames.sort()
+        for path in Files.filterfiles(self.projectdir, [extension]):
+            with open(path) as f:
+                m = ast.parse(f.read())
+            for obj in m.body:
+                if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
+                    v.append("%s=%s:%s" % (obj.name[len(prefix):], path[:-len(extension)].replace(os.sep, '.'), obj.name))
         return v
