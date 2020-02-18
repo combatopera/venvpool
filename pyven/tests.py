@@ -42,11 +42,6 @@ class Files:
                     if name.endswith(suffix):
                         yield os.path.join(dirpath, name)[prefixlen:]
                         break # Next name.
-            if walkpath == dirpath:
-                try:
-                    dirnames.remove('.pyven')
-                except ValueError:
-                    pass
             dirnames.sort()
 
     @classmethod
