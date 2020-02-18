@@ -30,7 +30,7 @@ def stripeol(line):
 
 class Files:
 
-    reportpath = 'nosetests.xml'
+    reportpath = os.path.join(os.path.dirname(sys.executable), '..', 'nosetests.xml')
 
     @staticmethod
     def findfiles(*suffixes):
@@ -129,4 +129,4 @@ def main():
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
-    return subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit'] + files.testpaths() + sys.argv[1:])
+    return subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit', '--xunit-file', files.reportpath] + files.testpaths() + sys.argv[1:])
