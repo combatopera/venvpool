@@ -27,9 +27,7 @@ def main_tasks():
     while not isproject():
         os.chdir('..')
     agcommand = ['ag', '--noheading', '--nobreak']
-    paths = list(Files.findfiles('.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh'))
-    ignored = set(subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE).communicate()[0].decode().splitlines())
-    paths = [p for p in paths if p not in ignored]
+    paths = list(Files.filterfiles('.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh'))
     for tag in 'XXX', 'TODO', 'FIXME':
         subprocess.call(agcommand + [tag + ' LATER'] + paths)
         subprocess.call(agcommand + [tag + '(?! LATER)'] + paths)
