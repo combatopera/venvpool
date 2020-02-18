@@ -21,12 +21,8 @@ from .execcheck import mainimpl as execcheckimpl
 from .licheck import mainimpl as licheckimpl
 from .nlcheck import mainimpl as nlcheckimpl
 from .projectinfo import ProjectInfo
-from .util import stderr
+from .util import stderr, stripeol
 import subprocess, sys, os, re, xml.dom.minidom as dom, collections
-
-def stripeol(line):
-    line, = line.splitlines()
-    return line
 
 class Files:
 
