@@ -27,7 +27,7 @@ def main_tasks():
     while not isproject():
         os.chdir('..')
     agcommand = ['ag', '--noheading', '--nobreak']
-    paths = list(Files.filterfiles('.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh'))
+    paths = list(Files.filterfiles('.', ['.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh']))
     for tag in 'XXX', 'TODO', 'FIXME':
         subprocess.call(agcommand + [tag + ' LATER'] + paths)
         subprocess.call(agcommand + [tag + '(?! LATER)'] + paths)

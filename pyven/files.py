@@ -24,8 +24,7 @@ class Files:
     reportpath = os.path.join(os.path.dirname(sys.executable), '..', 'nosetests.xml')
 
     @staticmethod
-    def findfiles(*suffixes):
-        walkpath = '.'
+    def _findfiles(walkpath, suffixes):
         prefixlen = len(walkpath + os.sep)
         for dirpath, dirnames, filenames in os.walk(walkpath):
             for name in sorted(filenames):
@@ -36,8 +35,8 @@ class Files:
             dirnames.sort()
 
     @classmethod
-    def filterfiles(cls, *suffixes):
-        paths = list(cls.findfiles(*suffixes))
+    def filterfiles(cls, root, suffixes):
+        paths = list(cls._findfiles(root, suffixes))
         if os.path.exists('.hg'):
             badstatuses = set('IR ')
             for line in subprocess.Popen(['hg', 'st', '-A'] + paths, stdout = subprocess.PIPE).stdout:
@@ -51,7 +50,7 @@ class Files:
                     yield path
 
     def __init__(self):
-        self.allsrcpaths = list(p for p in self.filterfiles('.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'))
+        self.allsrcpaths = list(p for p in self.filterfiles('.', ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid']))
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
 
     def testpaths(self):
