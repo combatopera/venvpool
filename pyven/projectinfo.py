@@ -95,7 +95,7 @@ class ProjectInfo:
         prefix = 'main_'
         extension = '.py'
         for path in Files.filterfiles(self.projectdir, [extension]):
-            with open(path) as f:
+            with open(os.path.join(self.projectdir, path)) as f:
                 m = ast.parse(f.read())
             for obj in m.body:
                 if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
