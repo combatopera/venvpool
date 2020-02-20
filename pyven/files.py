@@ -44,7 +44,9 @@ class Files:
                 if line[0] not in badstatuses:
                     yield line[2:]
         else:
-            ignored = set(subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE).communicate()[0].decode().splitlines())
+            p = subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE, cwd = root)
+            ignored = set(p.communicate()[0].decode().splitlines())
+            assert not p.wait()
             for path in paths:
                 if path not in ignored:
                     yield path
