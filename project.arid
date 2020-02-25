@@ -24,7 +24,10 @@ years +=
     2016
     2017
 projects += aridity
-deps += twine
+deps +=
+    nose
+    pyflakes
+    twine
 pyversions +=
     3
     2

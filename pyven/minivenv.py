@@ -30,9 +30,10 @@ def executable(info, pyversion):
                 if name not in editables:
                     editables[name] = j = ProjectInfo(os.path.join(workspace, name))
                     addprojects(j)
-        addprojects(info)
-        addprojects(dict(projects = ['aridity'])) # FIXME: This is a hack.
+        pyveninfo = ProjectInfo(__file__)
+        for i in info, pyveninfo:
+            addprojects(i)
         for i in editables.values():
             pipify(i, False)
-        subprocess.check_call([os.path.join(venvpath, 'bin', 'pip'), 'install', 'pyflakes', 'nose'] + info['deps'] + sum((['-e', i.projectdir] for i in editables.values()), []))
+        subprocess.check_call([os.path.join(venvpath, 'bin', 'pip'), 'install'] + pyveninfo['deps'] + info['deps'] + sum((['-e', i.projectdir] for i in editables.values()), []))
     return os.path.join(venvpath, 'bin', 'python')
