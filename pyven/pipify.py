@@ -59,3 +59,6 @@ def pipify(info, release):
                 info.console_scripts()))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
+
+def main_pipify():
+    pipify(ProjectInfo('.'), False)

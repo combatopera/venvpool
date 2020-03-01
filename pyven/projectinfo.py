@@ -40,8 +40,8 @@ class ProjectInfo:
             infopath = os.path.join(self.projectdir, 'project.arid')
             if os.path.exists(infopath):
                 break
-            parent = os.path.dirname(self.projectdir)
-            if parent == self.projectdir:
+            parent = os.path.join(self.projectdir, '..')
+            if os.path.abspath(parent) == os.path.abspath(self.projectdir):
                 raise ProjectInfoNotFoundException(realdir)
             self.projectdir = parent
         self.info = aridity.Context()
@@ -51,7 +51,7 @@ class ProjectInfo:
             repl.printf('pyversions := $list()')
             repl.printf('proprietary = false')
             repl.printf('executable = false')
-            repl.printf(". %s", infopath)
+            repl.printf(". %s", os.path.abspath(infopath))
 
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()
