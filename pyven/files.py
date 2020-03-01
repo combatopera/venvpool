@@ -37,9 +37,9 @@ class Files:
     @classmethod
     def relpaths(cls, root, suffixes):
         paths = list(cls._findfiles(root, suffixes))
-        if os.path.exists('.hg'):
+        if not subprocess.call(['hg', 'root']):
             badstatuses = set('IR ')
-            for line in subprocess.Popen(['hg', 'st', '-A'] + paths, stdout = subprocess.PIPE).stdout:
+            for line in subprocess.Popen(['hg', 'st', '-A'] + paths, stdout = subprocess.PIPE, cwd = root).stdout:
                 line = stripeol(line).decode()
                 if line[0] not in badstatuses:
                     yield line[2:]
