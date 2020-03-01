@@ -21,7 +21,7 @@ import subprocess, sys, os, xml.dom.minidom as dom, collections
 
 class Files:
 
-    reportpath = os.path.join(os.path.dirname(sys.executable), '..', 'nosetests.xml')
+    reportpath = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'nosetests.xml')
 
     @staticmethod
     def _findfiles(walkpath, suffixes):
