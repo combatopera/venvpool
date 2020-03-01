@@ -65,8 +65,6 @@ def main_checks():
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
-    while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
-        os.chdir('..')
     return subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit', '--xunit-file', files.reportpath] + files.testpaths() + sys.argv[1:])
 
 def everyversion(info, noseargs):
