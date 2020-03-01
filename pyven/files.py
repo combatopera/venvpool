@@ -37,19 +37,20 @@ class Files:
     @classmethod
     def relpaths(cls, root, suffixes):
         paths = list(cls._findfiles(root, suffixes))
-        if not subprocess.call(['hg', 'root']):
-            badstatuses = set('IR ')
-            for line in subprocess.Popen(['hg', 'st', '-A'] + paths, stdout = subprocess.PIPE, cwd = root).stdout:
-                line = stripeol(line).decode()
-                if line[0] not in badstatuses:
-                    yield line[2:]
-        else:
-            p = subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE, cwd = root)
-            ignored = set(p.communicate()[0].decode().splitlines())
-            assert p.wait() in [0, 1]
-            for path in paths:
-                if path not in ignored:
-                    yield path
+        with open(os.devnull) as devnull:
+            if not subprocess.call(['hg', 'root'], stdout = devnull, stderr = devnull):
+                badstatuses = set('IR ')
+                for line in subprocess.Popen(['hg', 'st', '-A'] + paths, stdout = subprocess.PIPE, cwd = root).stdout:
+                    line = stripeol(line).decode()
+                    if line[0] not in badstatuses:
+                        yield line[2:]
+            else:
+                p = subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE, cwd = root)
+                ignored = set(p.communicate()[0].decode().splitlines())
+                assert p.wait() in [0, 1]
+                for path in paths:
+                    if path not in ignored:
+                        yield path
 
     def __init__(self, root):
         self.allsrcpaths = [os.path.join(root, p) for p in self.relpaths(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'])]
