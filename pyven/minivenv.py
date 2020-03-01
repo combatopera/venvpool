@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .pipify import pipify
-from .projectinfo import ProjectInfo
+from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 import os, subprocess
 
 def executable(info, pyversion):
@@ -30,7 +30,10 @@ def executable(info, pyversion):
                 if name not in editables:
                     editables[name] = j = ProjectInfo(os.path.join(workspace, name))
                     addprojects(j)
-        pyveninfo = ProjectInfo(__file__)
+        try:
+            pyveninfo = ProjectInfo(__file__)
+        except ProjectInfoNotFoundException:
+            pyveninfo = dict(projects = [], deps = []) # Non-editable pyven install should already have all deps.
         for i in info, pyveninfo:
             addprojects(i)
         for i in editables.values():
