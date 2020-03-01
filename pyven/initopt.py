@@ -18,9 +18,11 @@
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from aridimpl.util import NoSuchPathException
-import logging, os, subprocess, sys
+import logging, os, re, subprocess, sys
 
 log = logging.getLogger(__name__)
+pkg_resources = re.compile(br'\bpkg_resources\b')
+eolbytes = set(b'\r\n')
 
 def hasname(info):
     try:
@@ -55,10 +57,19 @@ def main_initopt():
         pipify(info, False)
     for pyversion, infos in versiontoinfos.items():
         venvpath = os.path.join(home, 'opt', "venv%s" % pyversion)
+        pythonname = "python%s" % pyversion
         if not os.path.exists(venvpath):
-            subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
+            subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
         binpath = os.path.join(venvpath, 'bin')
         subprocess.check_call([os.path.join(binpath, 'pip'), 'install'] + sum((['-e', i.projectdir] for i in infos), []))
-        with open(os.path.join(binpath, 'pkg_resources.py'), 'w') as f:
-            f.write('''from pkg_resources_lite import load_entry_point
-''')
+        magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
+        for name in os.listdir(binpath):
+            path = os.path.join(binpath, name)
+            if not os.path.isdir(path):
+                with open(path, 'rb') as f:
+                    data = f.read(len(magic) + 1)
+                if data[:-1] == magic and data[-1] in eolbytes:
+                    with open(path, 'rb') as f:
+                        data = f.read()
+                    with open(path, 'wb') as f:
+                        f.write(pkg_resources.sub(b'pkg_resources_lite', data))
