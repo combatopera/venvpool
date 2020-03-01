@@ -59,9 +59,9 @@ def pathto(executable):
     return os.path.join(os.path.dirname(sys.executable), executable)
 
 def main_checks():
+    info = ProjectInfo(os.getcwd())
     while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
         os.chdir('..')
-    info = ProjectInfo(os.getcwd())
     files = Files()
     for check in (() if info['proprietary'] else (licheck,)) + (nlcheck, divcheck, execcheck, pyflakes):
         sys.stderr.write("%s: " % check.__name__)
