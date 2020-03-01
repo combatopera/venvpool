@@ -56,6 +56,9 @@ class ProjectInfo:
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()
 
+    def requires(self):
+        return self['projects'] + self['deps']
+
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
         pattern = re.compile('-([0-9]+)[-.]')

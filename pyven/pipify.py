@@ -16,6 +16,8 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import workingversion
+from .projectinfo import ProjectInfo
+from pkg_resources import parse_requirements
 import os
 
 setupformat = """import setuptools
@@ -45,6 +47,10 @@ universal=%s
 
 def pipify(info, release):
     description, url = info.descriptionandurl() if release else [None, None]
+    requires = info.requires()
+    if not release:
+        workspace = os.path.join(info.projectdir, '..')
+        requires = [str(r) for r in parse_requirements(requires) if not os.path.isdir(os.path.join(workspace, r.name))]
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
         f.write(setupformat % (
                 info['name'],
@@ -54,7 +60,7 @@ def pipify(info, release):
                 url,
                 info['author'] if release else None,
                 info.py_modules(),
-                info['deps'] + (info['projects'] if release else []),
+                requires,
                 info.scripts(),
                 info.console_scripts()))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
