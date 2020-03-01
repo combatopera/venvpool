@@ -44,7 +44,7 @@ def execcheck(info, files):
     execcheckimpl(files.pypaths)
 
 def pyflakes(info, files):
-    with open('.flakesignore') as f:
+    with open(os.path.join(files.root, '.flakesignore')) as f:
         ignores = [re.compile(stripeol(l)) for l in f]
     def accept(path):
         for pattern in ignores:
@@ -61,12 +61,12 @@ def pathto(executable):
 def main_checks():
     info = ProjectInfo(os.getcwd())
     files = Files(info.projectdir)
-    while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
-        os.chdir('..')
     for check in (() if info['proprietary'] else (licheck,)) + (nlcheck, divcheck, execcheck, pyflakes):
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
+    while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
+        os.chdir('..')
     return subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit', '--xunit-file', files.reportpath] + files.testpaths() + sys.argv[1:])
 
 def everyversion(info, noseargs):

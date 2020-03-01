@@ -52,8 +52,9 @@ class Files:
                     yield path
 
     def __init__(self, root):
-        self.allsrcpaths = list(self.filterfiles(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid']))
+        self.allsrcpaths = [os.path.join(root, p) for p in self.filterfiles(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'])]
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
+        self.root = root
 
     def testpaths(self):
         paths = [p for p in self.pypaths if os.path.basename(p).startswith('test_')]
