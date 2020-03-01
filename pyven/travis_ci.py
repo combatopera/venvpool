@@ -42,4 +42,6 @@ def main_travis_ci():
     info = projectinfo.ProjectInfo(os.getcwd())
     for project in info['projects']:
         workspace.checkoutifnecessary(info, project)
+    with open('.gitignore', 'a') as f:
+        f.write('/.pyven/\n')
     checks.everyversion(info, [])
