@@ -23,9 +23,6 @@ class Workspace:
     def __init__(self):
         self.workspace = os.path.dirname(os.getcwd())
 
-    def info(self, projectname):
-        return projectinfo.ProjectInfo(os.path.join(self.workspace, projectname))
-
     def checkoutifnecessary(self, info, project):
         path = os.path.join(self.workspace, project)
         if not os.path.exists(path): # Allow for diamond dependencies.
