@@ -27,8 +27,6 @@ class Workspace:
         return projectinfo.ProjectInfo(os.path.join(self.workspace, projectname))
 
     def checkoutifnecessary(self, info, project):
-        if '/' in project:
-            return # Assume it's a subdirectory of the context project.
         path = os.path.join(self.workspace, project)
         if not os.path.exists(path): # Allow for diamond dependencies.
             cloneargs = ['-b', info['branch'].get(project, 'master')]
