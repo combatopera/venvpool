@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from . import workingversion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from pkg_resources import get_distribution
@@ -35,7 +36,7 @@ def bindir(info, pyversion):
         reqs = info['deps'] # A new list.
         pyvenname = 'pyven'
         pyvendist = get_distribution(pyvenname)
-        if 'WORKING' == pyvendist.version:
+        if workingversion == pyvendist.version:
             addprojects(dict(projects = [pyvenname]))
         else:
             reqs.append(str(pyvendist.as_requirement()))
