@@ -35,5 +35,6 @@ def main_release():
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     if config.upload:
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
+        pipify(info, False)
     else:
         log.warning('Upload skipped, use --upload to upload.')
