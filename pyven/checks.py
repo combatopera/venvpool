@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
+from . import minivenv
 from .divcheck import mainimpl as divcheckimpl
 from .execcheck import mainimpl as execcheckimpl
 from .files import Files
@@ -23,7 +24,7 @@ from .licheck import mainimpl as licheckimpl
 from .nlcheck import mainimpl as nlcheckimpl
 from .projectinfo import ProjectInfo
 from .util import stderr, stripeol
-import subprocess, sys, os, re
+import os, re, subprocess, sys
 
 def licheck(info, files):
     def g():
@@ -57,7 +58,7 @@ def pyflakes(info, files):
 def pathto(executable):
     return os.path.join(os.path.dirname(sys.executable), executable)
 
-def main_chekkz():
+def main_checks():
     while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
         os.chdir('..')
     info = ProjectInfo(os.getcwd())
@@ -67,3 +68,10 @@ def main_chekkz():
         check(info, files)
         stderr('OK')
     return subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit', '--xunit-file', files.reportpath] + files.testpaths() + sys.argv[1:])
+
+def everyversion(info, noseargs):
+    for pyversion in info['pyversions']:
+        subprocess.check_call([os.path.join(minivenv.bindir(info, pyversion), 'checks')] + noseargs)
+
+def main_tests():
+    everyversion(ProjectInfo(os.getcwd()), sys.argv[1:])

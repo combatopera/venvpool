@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import projectinfo, runtests
+from . import projectinfo, checks
 import os, subprocess
 
 class Workspace:
@@ -42,4 +42,4 @@ def main_travis_ci():
     info = projectinfo.ProjectInfo(os.getcwd())
     for project in info['projects']:
         workspace.checkoutifnecessary(info, project)
-    runtests.runtests(info, [])
+    checks.everyversion(info, [])
