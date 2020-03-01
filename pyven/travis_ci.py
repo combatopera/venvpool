@@ -26,8 +26,7 @@ class Workspace:
     def checkoutifnecessary(self, info, project):
         path = os.path.join(self.workspace, project)
         if not os.path.exists(path): # Allow for diamond dependencies.
-            cloneargs = ['-b', info['branch'].get(project, 'master')]
-            subprocess.check_call(['git', 'clone'] + cloneargs + ["https://github.com/combatopera/%s.git" % project], cwd = self.workspace)
+            subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/combatopera/%s.git" % project], cwd = self.workspace)
         info2 = projectinfo.ProjectInfo(path)
         for project2 in info2['projects']:
             self.checkoutifnecessary(info2, project2)
