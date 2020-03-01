@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import with_statement
 import os
 
 def endswithifmain(istest, lines):
@@ -42,17 +43,16 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
             raise Exception(path) # Catch bad naming. TODO: Also check for duplicate method names.
         if istest and executable:
             raise Exception(path) # All tests should be non-executable.
-        f = open(path)
-        try:
+        with open(path) as f:
             lines = f.read().splitlines()
-        finally:
-            f.close()
         hashbang = bool(lines) and lines[0] in (
             '#!/usr/bin/env python',
             '#!/usr/bin/env python3',
         )
         main = bool(lines) and endswithifmain(istest, lines)
-        if hashbang and main and executable: return
+        if hashbang and main and executable:
+            return
         # An otherwise non-executable file may have a main if it's always passed to an interpreter:
-        if (not hashbang) and (not executable): return
+        if (not hashbang) and (not executable):
+            return
         raise Exception(path)
