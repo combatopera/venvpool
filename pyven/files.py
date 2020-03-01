@@ -46,7 +46,7 @@ class Files:
         else:
             p = subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE, cwd = root)
             ignored = set(p.communicate()[0].decode().splitlines())
-            assert not p.wait()
+            assert p.wait() in [0, 1]
             for path in paths:
                 if path not in ignored:
                     yield path
