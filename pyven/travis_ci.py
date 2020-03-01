@@ -20,8 +20,8 @@ import os, subprocess
 
 class Workspace:
 
-    def __init__(self):
-        self.workspace = os.path.dirname(os.getcwd())
+    def __init__(self, workspace):
+        self.workspace = workspace
 
     def checkoutifnecessary(self, project):
         path = os.path.join(self.workspace, project)
@@ -31,7 +31,7 @@ class Workspace:
             self.checkoutifnecessary(project2)
 
 def main_travis_ci():
-    workspace = Workspace()
+    workspace = Workspace(os.path.dirname(os.getcwd()))
     info = projectinfo.ProjectInfo(os.getcwd())
     for project in info['projects']:
         workspace.checkoutifnecessary(project)
