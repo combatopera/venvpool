@@ -18,6 +18,7 @@
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from aridimpl.util import NoSuchPathException
+from aridity import Context, Repl
 import logging, os, re, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -36,7 +37,10 @@ def main_initopt():
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
     home = os.path.expanduser('~')
     def configpaths():
-        projectsdir = os.path.join(home, 'projects')
+        context = Context()
+        with Repl(context) as repl:
+            repl('. $/($(~) .settings.arid)')
+        projectsdir = context.resolved('projectsdir').value
         for p in sorted(os.listdir(projectsdir)):
             configpath = os.path.join(projectsdir, p, 'project.arid')
             if os.path.exists(configpath):
