@@ -51,8 +51,8 @@ class Files:
                 if path not in ignored:
                     yield path
 
-    def __init__(self):
-        self.allsrcpaths = list(p for p in self.filterfiles('.', ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid']))
+    def __init__(self, root):
+        self.allsrcpaths = list(self.filterfiles(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid']))
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
 
     def testpaths(self):

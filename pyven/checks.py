@@ -60,9 +60,9 @@ def pathto(executable):
 
 def main_checks():
     info = ProjectInfo(os.getcwd())
+    files = Files(info.projectdir)
     while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
         os.chdir('..')
-    files = Files()
     for check in (() if info['proprietary'] else (licheck,)) + (nlcheck, divcheck, execcheck, pyflakes):
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
