@@ -35,7 +35,7 @@ class Files:
             dirnames.sort()
 
     @classmethod
-    def filterfiles(cls, root, suffixes):
+    def relpaths(cls, root, suffixes):
         paths = list(cls._findfiles(root, suffixes))
         if os.path.exists('.hg'):
             badstatuses = set('IR ')
@@ -52,7 +52,7 @@ class Files:
                     yield path
 
     def __init__(self, root):
-        self.allsrcpaths = [os.path.join(root, p) for p in self.filterfiles(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'])]
+        self.allsrcpaths = [os.path.join(root, p) for p in self.relpaths(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'])]
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
         self.root = root
 
