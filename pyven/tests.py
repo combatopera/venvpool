@@ -57,7 +57,7 @@ def pyflakes(info, files):
 def pathto(executable):
     return os.path.join(os.path.dirname(sys.executable), executable)
 
-def main():
+def main_chekkz():
     while not (os.path.exists('.hg') or os.path.exists('.svn') or os.path.exists('.git')):
         os.chdir('..')
     info = ProjectInfo(os.getcwd())

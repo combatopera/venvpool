@@ -16,15 +16,11 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import minivenv, projectinfo
-import os, subprocess, sys, tests
+import os, subprocess, sys
 
 def main_tests():
     runtests(projectinfo.ProjectInfo(os.getcwd()), sys.argv[1:])
 
 def runtests(info, args):
-    testspath = tests.__file__
-    if testspath.endswith('.pyc'):
-        testspath = testspath[:-1]
     for pyversion in info['pyversions']:
-        # Equivalent to running tests.py directly but with one fewer process launch:
-        subprocess.check_call([minivenv.executable(info, pyversion), testspath] + args)
+        subprocess.check_call([os.path.join(minivenv.bindir(info, pyversion), 'chekkz')] + args)
