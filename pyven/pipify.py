@@ -50,6 +50,7 @@ def pipify(info, release):
     requires = info.requires()
     if not release:
         workspace = os.path.join(info.projectdir, '..')
+        # XXX: Is name the correct attribute?
         requires = [str(r) for r in parse_requirements(requires) if not os.path.isdir(os.path.join(workspace, r.name))]
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
         f.write(setupformat % (
