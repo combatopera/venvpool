@@ -31,7 +31,7 @@ def bindir(info, pyversion):
     venvpath = os.path.join(info.projectdir, '.pyven', str(pyversion))
     if not os.path.exists(venvpath):
         subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
-        workspace = os.path.dirname(info.projectdir)
+        workspace = os.path.join(info.projectdir, '..')
         editables = {}
         def addprojects(i):
             for name in i.localrequires():
