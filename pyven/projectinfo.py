@@ -62,8 +62,9 @@ class ProjectInfo:
 
     def remoterequires(self):
         workspace = os.path.join(self.projectdir, '..')
+        v = self.allrequires()
         # XXX: Is name the correct attribute?
-        return [str(r) for r in parse_requirements(self.allrequires()) if not os.path.isdir(os.path.join(workspace, r.name))]
+        return [r for r, p in zip(v, parse_requirements(v)) if not os.path.isdir(os.path.join(workspace, p.name))]
 
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
