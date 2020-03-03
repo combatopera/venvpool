@@ -17,6 +17,7 @@
 
 from __future__ import with_statement
 from .files import Files
+from pkg_resources import parse_requirements
 import aridity, os, stat
 
 class ProjectInfoNotFoundException(Exception): pass
@@ -58,6 +59,11 @@ class ProjectInfo:
 
     def requires(self):
         return self['projects'] + self['deps']
+
+    def remoterequires(self):
+        workspace = os.path.join(self.projectdir, '..')
+        # XXX: Is name the correct attribute?
+        return [str(r) for r in parse_requirements(self.requires()) if not os.path.isdir(os.path.join(workspace, r.name))]
 
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom

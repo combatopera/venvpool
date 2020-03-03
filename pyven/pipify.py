@@ -17,7 +17,6 @@
 
 from . import workingversion
 from .projectinfo import ProjectInfo
-from pkg_resources import parse_requirements
 import os
 
 setupformat = """import setuptools
@@ -47,11 +46,7 @@ universal=%s
 
 def pipify(info, release):
     description, url = info.descriptionandurl() if release else [None, None]
-    requires = info.requires()
-    if not release:
-        workspace = os.path.join(info.projectdir, '..')
-        # XXX: Is name the correct attribute?
-        requires = [str(r) for r in parse_requirements(requires) if not os.path.isdir(os.path.join(workspace, r.name))]
+    requires = info.requires() if release else info.remoterequires()
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
         f.write(setupformat % (
                 info['name'],
