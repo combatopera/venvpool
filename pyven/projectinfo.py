@@ -66,6 +66,10 @@ class ProjectInfo:
         # XXX: Is name the correct attribute?
         return [r for r, p in zip(v, parse_requirements(v)) if not os.path.isdir(os.path.join(workspace, p.name))]
 
+    def localrequires(self):
+        remotes = set(self.remoterequires())
+        return [r for r in self.allrequires() if r not in remotes]
+
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
         pattern = re.compile('-([0-9]+)[-.]')

@@ -21,6 +21,12 @@ from .projectinfo import ProjectInfo
 from pkg_resources import get_distribution
 import os, subprocess
 
+class Namespace:
+
+    def __init__(self, **kwargs):
+        for name, value in kwargs.items():
+            setattr(self, name, value)
+
 def bindir(info, pyversion):
     venvpath = os.path.join(info.projectdir, '.pyven', str(pyversion))
     if not os.path.exists(venvpath):
@@ -28,16 +34,16 @@ def bindir(info, pyversion):
         workspace = os.path.dirname(info.projectdir)
         editables = {}
         def addprojects(i):
-            for name in i['projects']:
+            for name in i.localrequires():
                 if name not in editables:
                     editables[name] = j = ProjectInfo(os.path.join(workspace, name))
                     addprojects(j)
         addprojects(info)
-        reqs = info['deps'] # A new list.
+        reqs = info.remoterequires() # A new list.
         pyvenname = 'pyven'
         pyvendist = get_distribution(pyvenname)
         if workingversion == pyvendist.version:
-            addprojects(dict(projects = [pyvenname]))
+            addprojects(Namespace(localrequires = lambda: [pyvenname]))
         else:
             reqs.append(str(pyvendist.as_requirement()))
         for i in editables.values():
