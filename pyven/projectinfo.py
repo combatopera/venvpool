@@ -57,13 +57,13 @@ class ProjectInfo:
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()
 
-    def requires(self):
+    def allrequires(self):
         return self['projects'] + self['deps']
 
     def remoterequires(self):
         workspace = os.path.join(self.projectdir, '..')
         # XXX: Is name the correct attribute?
-        return [str(r) for r in parse_requirements(self.requires()) if not os.path.isdir(os.path.join(workspace, r.name))]
+        return [str(r) for r in parse_requirements(self.allrequires()) if not os.path.isdir(os.path.join(workspace, r.name))]
 
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom

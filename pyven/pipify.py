@@ -46,7 +46,6 @@ universal=%s
 
 def pipify(info, release):
     description, url = info.descriptionandurl() if release else [None, None]
-    requires = info.requires() if release else info.remoterequires()
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
         f.write(setupformat % (
                 info['name'],
@@ -56,7 +55,7 @@ def pipify(info, release):
                 url,
                 info['author'] if release else None,
                 info.py_modules(),
-                requires,
+                info.allrequires() if release else info.remoterequires(),
                 info.scripts(),
                 info.console_scripts()))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
