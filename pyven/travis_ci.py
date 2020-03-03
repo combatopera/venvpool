@@ -23,18 +23,16 @@ class Workspace:
     def __init__(self, workspace):
         self.workspace = workspace
 
-    def checkoutifnecessary(self, project):
-        path = os.path.join(self.workspace, project)
-        if not os.path.exists(path): # Allow for diamond dependencies.
-            subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/combatopera/%s.git" % project], cwd = self.workspace)
-        for project2 in projectinfo.ProjectInfo(path)['projects']:
-            self.checkoutifnecessary(project2)
+    def clonerequires(self, info):
+        for req in info['projects']:
+            path = os.path.join(self.workspace, req)
+            if not os.path.exists(path): # Allow for diamond dependencies.
+                subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/combatopera/%s.git" % req], cwd = self.workspace)
+            self.clonerequires(projectinfo.ProjectInfo(path))
 
 def main_travis_ci():
-    workspace = Workspace(os.path.dirname(os.getcwd()))
-    info = projectinfo.ProjectInfo(os.getcwd())
-    for project in info['projects']:
-        workspace.checkoutifnecessary(project)
+    info = projectinfo.ProjectInfo('.')
+    Workspace('..').clonerequires(info)
     with open('.gitignore', 'a') as f:
         f.write('/.pyven/\n')
     checks.everyversion(info, [])
