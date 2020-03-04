@@ -60,15 +60,16 @@ class ProjectInfo:
     def allrequires(self):
         return self['projects'] + self['deps']
 
-    def remoterequires(self):
-        workspace = os.path.join(self.projectdir, '..')
-        v = self.allrequires()
-        # XXX: Is name the correct attribute?
-        return [r for r, p in zip(v, parse_requirements(v)) if not os.path.isdir(os.path.join(workspace, p.name))]
+    def _projectornone(self, req):
+        name = req.name # XXX: Is name the correct attribute?
+        return name if os.path.isdir(os.path.join(self.projectdir, '..', name)) else None
 
     def localrequires(self):
-        remotes = set(self.remoterequires())
-        return [r for r in self.allrequires() if r not in remotes]
+        return [project for project in map(self._projectornone, parse_requirements(self.allrequires())) if project is not None]
+
+    def remoterequires(self):
+        reqstrs = self.allrequires()
+        return [reqstr for reqstr, req in zip(reqstrs, parse_requirements(reqstrs)) if self._projectornone(req) is None]
 
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
