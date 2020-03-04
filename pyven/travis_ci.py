@@ -16,19 +16,23 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import projectinfo, checks
-import os, subprocess
+import os, requests, subprocess
 
 class Workspace:
 
+    user = 'combatopera'
+
     def __init__(self, workspace):
+        self.projects = set(r['name'] for r in requests.get("https://api.github.com/users/%s/repos" % self.user).json())
         self.workspace = workspace
 
     def clonerequires(self, info):
-        for req in info['projects']:
-            path = os.path.join(self.workspace, req)
-            if not os.path.exists(path): # Allow for diamond dependencies.
-                subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/combatopera/%s.git" % req], cwd = self.workspace)
-            self.clonerequires(projectinfo.ProjectInfo(path))
+        for req in info.allrequires():
+            if req in self.projects:
+                path = os.path.join(self.workspace, req)
+                if not os.path.exists(path): # Allow for diamond dependencies.
+                    subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/%s/%s.git" % (self.user, req)], cwd = self.workspace)
+                self.clonerequires(projectinfo.ProjectInfo(path))
 
 def main_travis_ci():
     info = projectinfo.ProjectInfo('.')
