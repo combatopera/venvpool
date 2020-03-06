@@ -46,7 +46,7 @@ universal=%s
 
 def pipify(info, release):
     description, url = info.descriptionandurl() if release else [None, None]
-    version = info.nextversion() if release else workingversion,
+    version = info.nextversion() if release else workingversion
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
         f.write(setupformat % (
                 info['name'],
