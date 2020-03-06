@@ -46,10 +46,11 @@ universal=%s
 
 def pipify(info, release):
     description, url = info.descriptionandurl() if release else [None, None]
+    version = info.nextversion() if release else workingversion,
     with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
         f.write(setupformat % (
                 info['name'],
-                info.nextversion() if release else workingversion,
+                version,
                 description,
                 'long_description()' if release else repr(None),
                 url,
@@ -60,6 +61,7 @@ def pipify(info, release):
                 info.console_scripts()))
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
+    return version
 
 def main_pipify():
     pipify(ProjectInfo('.'), False)

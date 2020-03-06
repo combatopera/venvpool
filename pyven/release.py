@@ -28,7 +28,7 @@ def main_release():
     parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
     config = parser.parse_args()
     info = ProjectInfo(config.path)
-    pipify(info, True)
+    version = pipify(info, True)
     dist = os.path.join(info.projectdir, 'dist')
     if os.path.isdir(dist):
         shutil.rmtree(dist) # Remove any previous versions.
@@ -36,5 +36,7 @@ def main_release():
     if config.upload:
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
         pipify(info, False)
+        subprocess.check_call(['git', 'tag', "v%s" % version])
+        subprocess.check_call(['git', 'push', '--tags'])
     else:
         log.warning('Upload skipped, use --upload to upload.')
