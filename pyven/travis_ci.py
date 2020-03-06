@@ -20,10 +20,11 @@ import os, requests, subprocess
 
 class Workspace:
 
+    bools = {str(b).lower(): b for b in [False, True]}
     user = 'combatopera'
 
     def __init__(self, workspace):
-        self.projects = set(r['name'] for r in requests.get("https://api.github.com/users/%s/repos" % self.user).json())
+        self.projects = set(r['name'] for r in requests.get("https://api.github.com/users/%s/repos" % self.user).json()) if self.bools[os.environ['HEADS']] else []
         self.workspace = workspace
 
     def clonerequires(self, info):
