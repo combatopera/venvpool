@@ -47,8 +47,7 @@ class ProjectInfo:
             self.projectdir = parent
         self.info = aridity.Context()
         with aridity.Repl(self.info) as repl:
-            repl.printf('projects := $list()')
-            repl.printf('deps := $list()')
+            repl.printf('requires := $list()')
             repl.printf('pyversions := $list()')
             repl.printf('proprietary = false')
             repl.printf('executable = false')
@@ -58,7 +57,7 @@ class ProjectInfo:
         return self.info.resolved(key).unravel()
 
     def allrequires(self):
-        return self['projects'] + self['deps']
+        return self['requires']
 
     def _projectornone(self, req):
         name = req.name # XXX: Is name the correct attribute?

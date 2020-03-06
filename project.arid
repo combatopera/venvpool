@@ -23,8 +23,8 @@ years +=
     2015
     2016
     2017
-projects += aridity
-deps +=
+requires +=
+    aridity
     nose
     pyflakes
     twine
