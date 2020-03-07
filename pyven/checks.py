@@ -46,9 +46,10 @@ def execcheck(info, files):
 def pyflakes(info, files):
     with open(os.path.join(files.root, '.flakesignore')) as f:
         ignores = [re.compile(stripeol(l)) for l in f]
+    prefixlen = len(files.root + os.sep)
     def accept(path):
         for pattern in ignores:
-            if pattern.search(path) is not None:
+            if pattern.search(path[prefixlen:]) is not None:
                 return False
         return True
     paths = [p for p in files.pypaths if accept(p)]
