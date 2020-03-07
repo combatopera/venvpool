@@ -36,6 +36,7 @@ def main_release():
     if config.upload:
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
         pipify(info, False)
+        subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
         subprocess.check_call(['git', 'tag', "v%s" % version])
         subprocess.check_call(['git', 'push', '--tags'])
     else:
