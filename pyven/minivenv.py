@@ -45,6 +45,7 @@ def bindir(info, pyversion):
         if workingversion == pyvendist.version:
             addprojects(Namespace(localrequires = lambda: [pyvenname]))
         else:
+            reqs = [r for r in reqs if r != pyvenname]
             reqs.append(str(pyvendist.as_requirement()))
         for i in editables.values():
             pipify(i, False)
