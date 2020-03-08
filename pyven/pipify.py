@@ -17,7 +17,7 @@
 
 from . import workingversion
 from .projectinfo import ProjectInfo
-import os
+import os, subprocess, sys
 
 setupformat = """import setuptools
 
@@ -64,4 +64,6 @@ def pipify(info, release):
     return version
 
 def main_pipify():
-    pipify(ProjectInfo('.'), False)
+    info = ProjectInfo('.')
+    pipify(info, False)
+    subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
