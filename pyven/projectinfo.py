@@ -60,7 +60,7 @@ class ProjectInfo:
         return self['requires']
 
     def _projectornone(self, req):
-        name = req.name # XXX: Is name the correct attribute?
+        name = req.unsafe_name # XXX: Is unsafe_name the correct attribute?
         return name if os.path.isdir(os.path.join(self.projectdir, '..', name)) else None
 
     def localrequires(self):
