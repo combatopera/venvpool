@@ -18,7 +18,9 @@
 from __future__ import with_statement
 from .files import Files
 from pkg_resources import parse_requirements
-import aridity, os, stat
+import aridity, logging, os, stat
+
+log = logging.getLogger(__name__)
 
 class ProjectInfoNotFoundException(Exception): pass
 
@@ -109,7 +111,11 @@ class ProjectInfo:
         extension = '.py'
         for path in Files.relpaths(self.projectdir, [extension]):
             with open(os.path.join(self.projectdir, path)) as f:
-                m = ast.parse(f.read())
+                try:
+                    m = ast.parse(f.read())
+                except SyntaxError:
+                    log.warning("Skip: %s" % path, exc_info = True)
+                    continue
             for obj in m.body:
                 if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
                     v.append("%s=%s:%s" % (obj.name[len(prefix):], path[:-len(extension)].replace(os.sep, '.'), obj.name))
