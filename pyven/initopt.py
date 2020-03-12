@@ -30,7 +30,7 @@ def hasname(info):
         info['name']
         return True
     except NoSuchPathException:
-        pass
+        log.debug("Skip: %s", info.projectdir)
 
 def main_initopt():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
