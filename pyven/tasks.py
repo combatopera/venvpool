@@ -16,18 +16,12 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .files import Files
-import os, subprocess
-
-def isproject():
-    for name in '.hg', '.svn', '.git':
-        if os.path.exists(name):
-            return True
+import subprocess
 
 def main_tasks():
-    while not isproject():
-        os.chdir('..')
+    root, = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode().splitlines()
     agcommand = ['ag', '--noheading', '--nobreak']
-    paths = list(Files.relpaths('.', ['.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh']))
+    paths = list(Files.relpaths(root, ['.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh']))
     for tag in 'XXX', 'TODO', 'FIXME':
-        subprocess.call(agcommand + [tag + ' LATER'] + paths)
-        subprocess.call(agcommand + [tag + '(?! LATER)'] + paths)
+        subprocess.call(agcommand + [tag + ' LATER'] + paths, cwd = root)
+        subprocess.call(agcommand + [tag + '(?! LATER)'] + paths, cwd = root)
