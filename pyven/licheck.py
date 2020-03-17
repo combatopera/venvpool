@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-import re, os, hashlib
+import hashlib, os, re, sys
 
 template="""# Copyright %(years)s %(author)s
 
@@ -38,6 +38,9 @@ template="""# Copyright %(years)s %(author)s
 """ # Check it ends with 2 newlines.
 
 def mainimpl(info, paths):
+    if info['proprietary']:
+        sys.stderr.write('SKIP ')
+        return
     master = template % {
         'years': ', '.join(str(y) for y in info['years']),
         'author': info['author'],
