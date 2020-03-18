@@ -65,6 +65,7 @@ def main_initopt():
         if not os.path.exists(venvpath):
             subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
         binpath = os.path.join(venvpath, 'bin')
+        # FIXME: If 2 projects have the same dep, this won't pick a version that works for both:
         subprocess.check_call([os.path.join(binpath, 'pip'), 'install'] + sum((['-e', i.projectdir] for i in infos), []))
         magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
         for name in os.listdir(binpath):
