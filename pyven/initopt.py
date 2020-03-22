@@ -32,6 +32,15 @@ def hasname(info):
     except NoSuchPathException:
         log.debug("Skip: %s", info.projectdir)
 
+class Pip:
+
+    def __init__(self, pippath):
+        self.pippath = pippath
+
+    def installeditable(self, infos):
+        # FIXME: If 2 projects have the same dep, this won't pick a version that works for both:
+        subprocess.check_call([self.pippath, 'install'] + sum((['-e', i.projectdir] for i in infos), []))
+
 def main_initopt():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
@@ -65,8 +74,7 @@ def main_initopt():
         if not os.path.exists(venvpath):
             subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
         binpath = os.path.join(venvpath, 'bin')
-        # FIXME: If 2 projects have the same dep, this won't pick a version that works for both:
-        subprocess.check_call([os.path.join(binpath, 'pip'), 'install'] + sum((['-e', i.projectdir] for i in infos), []))
+        Pip(os.path.join(binpath, 'pip')).installeditable(infos)
         magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
         for name in os.listdir(binpath):
             path = os.path.join(binpath, name)
