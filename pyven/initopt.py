@@ -38,7 +38,16 @@ class Pip:
         self.pippath = pippath
 
     def installeditable(self, infos):
-        # FIXME: If 2 projects have the same dep, this won't pick a version that works for both:
+        specifiers = {}
+        for i in infos:
+            for req in i.parsedremoterequires():
+                s = specifiers.get(req.unsafe_name)
+                if s is None:
+                    s = req.specifier
+                else:
+                    s &= req.specifier
+                specifiers[req.unsafe_name] = s
+        subprocess.check_call([self.pippath, 'install'] + ["%s%s" % entry for entry in specifiers.items()])
         subprocess.check_call([self.pippath, 'install'] + sum((['-e', i.projectdir] for i in infos), []))
 
 def main_initopt():

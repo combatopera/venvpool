@@ -72,6 +72,9 @@ class ProjectInfo:
         reqstrs = self.allrequires()
         return [reqstr for reqstr, req in zip(reqstrs, parse_requirements(reqstrs)) if self._projectornone(req) is None]
 
+    def parsedremoterequires(self):
+        return [req for req in parse_requirements(self.allrequires()) if self._projectornone(req) is None]
+
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
         pattern = re.compile('-([0-9]+)[-.]')
