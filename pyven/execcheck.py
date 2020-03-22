@@ -18,16 +18,6 @@
 from __future__ import with_statement
 import os
 
-def endswithifmain(istest, lines):
-    if ('    unittest.main()' if istest else '    main()') != lines[-1]:
-        return False
-    for i in range(len(lines) - 2, -1, -1):
-        if '''if '__main__' == __name__:''' == lines[i]:
-            return True
-        if not lines[i].startswith('    '):
-            return False
-    return False
-
 def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-executable.
     for path in paths:
         if os.stat(path).st_mode & 0x49:
@@ -42,7 +32,6 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
             '#!/usr/bin/env python',
             '#!/usr/bin/env python3',
         )
-        main = bool(lines) and endswithifmain(istest, lines)
         # An otherwise non-executable file may have a main if it's always passed to an interpreter:
         if hashbang:
             raise Exception(path)
