@@ -45,6 +45,9 @@ class Files:
                     if line[0] not in badstatuses:
                         yield line[2:]
             else:
+                if os.path.exists(os.path.join(root, '.gitmodules')):
+                    for submoduleslash in (l.split(' ', 1)[1] + os.sep for l in subprocess.check_output(['git', 'config', '--file', '.gitmodules', '--get-regexp', '^submodule[.].+[.]path$'], cwd = root).decode().splitlines()):
+                        paths = [p for p in paths if not p.startswith(submoduleslash)]
                 p = subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE, cwd = root)
                 ignored = set(p.communicate()[0].decode().splitlines())
                 assert p.wait() in [0, 1]
