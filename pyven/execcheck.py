@@ -27,7 +27,7 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
             raise Exception("Should not be executable: %s" % path)
         basename = os.path.basename(path)
         if basename.lower().startswith('test') and not basename.startswith('test_'):
-            raise Exception(path) # Catch bad naming. Note pyflakes already checks for duplicate method names.
+            raise Exception("Inconsistent name: %s" % path) # Note pyflakes already checks for duplicate method names.
         with open(path) as f:
             if f.readline().startswith(magic):
                 raise Exception("Using %s is obsolete: %s" % (magic, path))
