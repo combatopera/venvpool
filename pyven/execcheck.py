@@ -18,15 +18,17 @@
 from __future__ import with_statement
 import os
 
+execmask = 0x49
+magic = '#!'
+
 def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-executable.
     for path in paths:
-        if os.stat(path).st_mode & 0x49:
+        if os.stat(path).st_mode & execmask:
             raise Exception("Should not be executable: %s" % path)
         basename = os.path.basename(path)
         istest = basename.startswith('test_')
         if basename.lower().startswith('test') and not istest:
             raise Exception(path) # Catch bad naming. Note pyflakes already checks for duplicate method names.
         with open(path) as f:
-            magic = '#!'
             if f.readline().startswith(magic):
                 raise Exception("Using %s is obsolete: %s" % (magic, path))
