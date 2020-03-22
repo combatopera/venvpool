@@ -61,19 +61,25 @@ class ProjectInfo:
     def allrequires(self):
         return self['requires']
 
-    def _projectornone(self, req):
-        name = req.unsafe_name # XXX: Is unsafe_name the correct attribute?
-        return name if os.path.isdir(os.path.join(self.projectdir, '..', name)) else None
+    def _parsedrequires(self):
+        class Req:
+            def __init__(self, reqstr, req):
+                self.reqstr = reqstr
+                self.namepart = req.unsafe_name # XXX: Is unsafe_name the correct attribute?
+                self.specifier = req.specifier
+            def isproject(this):
+                return os.path.isdir(os.path.join(self.projectdir, '..', this.namepart))
+        reqstrs = self.allrequires()
+        return (Req(reqstr, req) for reqstr, req in zip(reqstrs, parse_requirements(reqstrs)))
 
     def localrequires(self):
-        return [project for project in map(self._projectornone, parse_requirements(self.allrequires())) if project is not None]
+        return [r.namepart for r in self._parsedrequires() if r.isproject()]
 
     def remoterequires(self):
-        reqstrs = self.allrequires()
-        return [reqstr for reqstr, req in zip(reqstrs, parse_requirements(reqstrs)) if self._projectornone(req) is None]
+        return [r.reqstr for r in self._parsedrequires() if not r.isproject()]
 
     def parsedremoterequires(self):
-        return [req for req in parse_requirements(self.allrequires()) if self._projectornone(req) is None]
+        return [r for r in self._parsedrequires() if not r.isproject()]
 
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom

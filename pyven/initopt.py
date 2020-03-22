@@ -41,12 +41,13 @@ class Pip:
         specifiers = {}
         for i in infos:
             for req in i.parsedremoterequires():
-                s = specifiers.get(req.unsafe_name)
+                s = specifiers.get(req.namepart)
                 if s is None:
                     s = req.specifier
                 else:
+                    log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifier)
                     s &= req.specifier
-                specifiers[req.unsafe_name] = s
+                specifiers[req.namepart] = s
         subprocess.check_call([self.pippath, 'install'] + ["%s%s" % entry for entry in specifiers.items()])
         subprocess.check_call([self.pippath, 'install'] + sum((['-e', i.projectdir] for i in infos), []))
 
