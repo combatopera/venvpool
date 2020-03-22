@@ -22,6 +22,7 @@ def main_tasks():
     root, = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode().splitlines()
     agcommand = ['ag', '--noheading', '--nobreak']
     paths = list(Files.relpaths(root, ['.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh']))
-    for tag in 'XXX', 'TODO', 'FIXME':
+    for tag in 'xxx', 'todo', 'fixme':
+        tag = tag.upper()
         subprocess.call(agcommand + [tag + ' LATER'] + paths, cwd = root)
         subprocess.call(agcommand + [tag + '(?! LATER)'] + paths, cwd = root)
