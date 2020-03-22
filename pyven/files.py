@@ -48,12 +48,13 @@ class Files:
                 if os.path.exists(os.path.join(root, '.gitmodules')):
                     for submoduleslash in (l.split(' ', 1)[1] + os.sep for l in subprocess.check_output(['git', 'config', '--file', '.gitmodules', '--get-regexp', '^submodule[.].+[.]path$'], cwd = root).decode().splitlines()):
                         paths = [p for p in paths if not p.startswith(submoduleslash)]
-                p = subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE, cwd = root)
-                ignored = set(p.communicate()[0].decode().splitlines())
-                assert p.wait() in [0, 1]
-                for path in paths:
-                    if path not in ignored:
-                        yield path
+                if paths:
+                    p = subprocess.Popen(['git', 'check-ignore'] + paths, stdout = subprocess.PIPE, cwd = root)
+                    ignored = set(p.communicate()[0].decode().splitlines())
+                    assert p.wait() in [0, 1]
+                    for path in paths:
+                        if path not in ignored:
+                            yield path
 
     def __init__(self, root):
         self.allsrcpaths = [os.path.join(root, p) for p in self.relpaths(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'])]
