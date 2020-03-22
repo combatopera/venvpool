@@ -21,12 +21,12 @@ import subprocess
 
 def main_tasks():
     parser = ArgumentParser()
-    parser.add_argument('-q', action = 'store_true')
+    parser.add_argument('-q', action = 'count', default = 0)
     config = parser.parse_args()
     root, = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode().splitlines()
     agcommand = ['ag', '--noheading', '--nobreak']
     paths = list(Files.relpaths(root, ['.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh']))
-    for tag in ([] if config.q else ['xxx']) + ['todo', 'fixme']:
+    for tag in ['xxx', 'todo', 'fixme'][config.q:]:
         tag = tag.upper()
         subprocess.call(agcommand + [tag + ' LATER'] + paths, cwd = root)
         subprocess.call(agcommand + [tag + '(?! LATER)'] + paths, cwd = root)
