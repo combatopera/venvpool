@@ -24,7 +24,7 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
             raise Exception("Should not be executable: %s" % path)
         basename = os.path.basename(path)
         istest = basename.startswith('test_')
-        if basename not in ('tests.py', 'Test.py') and basename.lower().startswith('test') and not istest:
+        if basename.lower().startswith('test') and not istest:
             raise Exception(path) # Catch bad naming. Note pyflakes already checks for duplicate method names.
         with open(path) as f:
             magic = '#!'
