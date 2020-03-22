@@ -27,11 +27,6 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
         if basename not in ('tests.py', 'Test.py') and basename.lower().startswith('test') and not istest:
             raise Exception(path) # Catch bad naming. Note pyflakes already checks for duplicate method names.
         with open(path) as f:
-            lines = f.read().splitlines()
-        hashbang = bool(lines) and lines[0] in (
-            '#!/usr/bin/env python',
-            '#!/usr/bin/env python3',
-        )
-        # An otherwise non-executable file may have a main if it's always passed to an interpreter:
-        if hashbang:
-            raise Exception(path)
+            magic = '#!'
+            if f.readline().startswith(magic):
+                raise Exception("Using %s is obsolete: %s" % (magic, path))
