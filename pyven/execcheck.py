@@ -30,19 +30,12 @@ def endswithifmain(istest, lines):
 
 def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-executable.
     for path in paths:
-        executable = os.stat(path).st_mode & 0x49
-        if 0 == executable:
-            executable = False
-        elif 0x49 == executable:
-            executable = True
-        else:
-            raise Exception(path) # Should be all or nothing.
+        if os.stat(path).st_mode & 0x49:
+            raise Exception("Should not be executable: %s" % path)
         basename = os.path.basename(path)
         istest = basename.startswith('test_')
         if basename not in ('tests.py', 'Test.py') and basename.lower().startswith('test') and not istest:
             raise Exception(path) # Catch bad naming. Note pyflakes already checks for duplicate method names.
-        if istest and executable:
-            raise Exception(path) # All tests should be non-executable.
         with open(path) as f:
             lines = f.read().splitlines()
         hashbang = bool(lines) and lines[0] in (
@@ -50,9 +43,6 @@ def mainimpl(paths): # TODO: Can probably be simplified now that tests are non-e
             '#!/usr/bin/env python3',
         )
         main = bool(lines) and endswithifmain(istest, lines)
-        if hashbang and main and executable:
-            return
         # An otherwise non-executable file may have a main if it's always passed to an interpreter:
-        if (not hashbang) and (not executable):
-            return
-        raise Exception(path)
+        if hashbang:
+            raise Exception(path)
