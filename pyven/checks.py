@@ -75,7 +75,7 @@ def main_checks():
     ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths() + sys.argv[1:])
     reportname = '.coverage'
     if os.path.exists(reportname):
-        os.rename(reportname, os.path.join(pathto('..'), reportname))
+        os.rename(reportname, os.path.join(pathto('..'), reportname)) # XXX: Even when status is non-zero?
     return status
 
 def everyversion(info, noseargs):
