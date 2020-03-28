@@ -24,6 +24,8 @@ from .licheck import mainimpl as licheckimpl
 from .nlcheck import mainimpl as nlcheckimpl
 from .projectinfo import ProjectInfo
 from .util import stderr, stripeol
+from itertools import chain
+from setuptools import find_packages
 import os, re, subprocess, sys
 
 def licheck(info, files):
@@ -66,7 +68,15 @@ def main_checks():
         sys.stderr.write("%s: " % check.__name__)
         check(info, files)
         stderr('OK')
-    return subprocess.call([pathto('nosetests'), '--exe', '-v', '--with-xunit', '--xunit-file', files.reportpath] + files.testpaths() + sys.argv[1:])
+    status = subprocess.call([
+        pathto('nosetests'), '--exe', '-v',
+        '--with-xunit', '--xunit-file', files.reportpath,
+        '--with-cov', '--cov-report', 'term-missing',
+    ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths() + sys.argv[1:])
+    reportname = '.coverage'
+    if os.path.exists(reportname):
+        os.rename(reportname, os.path.join(pathto('..'), reportname))
+    return status
 
 def everyversion(info, noseargs):
     for pyversion in info['pyversions']:
