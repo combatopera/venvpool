@@ -38,6 +38,6 @@ def main_release():
         pipify(info, False)
         subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
         subprocess.check_call(['git', 'tag', "v%s" % version])
-        subprocess.check_call(['git', 'push', '--tags'])
+        subprocess.check_call(['git', 'push', '--tags']) # FIXME: To all remotes.
     else:
         log.warning('Upload skipped, use --upload to upload.')
