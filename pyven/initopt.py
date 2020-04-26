@@ -74,7 +74,7 @@ def main_initopt():
             for p in i.localrequires():
                 add(infos, allinfos[p])
     for info in allinfos.values():
-        if info['executable']:
+        if info['executable']: # TODO: Is this check still needed?
             for pyversion in info['pyversions']:
                 if pyversion in versiontoinfos:
                     add(versiontoinfos[pyversion], info)
