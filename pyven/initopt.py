@@ -37,6 +37,9 @@ class Pip:
     def __init__(self, pippath):
         self.pippath = pippath
 
+    def _pipinstall(self, command):
+        subprocess.check_call([self.pippath, 'install'] + command)
+
     def installeditable(self, infos):
         specifiers = {}
         for i in infos:
@@ -48,8 +51,8 @@ class Pip:
                     log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifier)
                     s &= req.specifier
                 specifiers[req.namepart] = s
-        subprocess.check_call([self.pippath, 'install'] + ["%s%s" % entry for entry in specifiers.items()])
-        subprocess.check_call([self.pippath, 'install'] + sum((['-e', i.projectdir] for i in infos), []))
+        self._pipinstall(["%s%s" % entry for entry in specifiers.items()])
+        self._pipinstall(sum((['-e', i.projectdir] for i in infos), []))
 
 def main_initopt():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
