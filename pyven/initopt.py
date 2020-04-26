@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 pkg_resources = re.compile(br'\bpkg_resources\b')
 eolbytes = set(b'\r\n')
 
-def hasname(info):
+def hasname(info): # TODO: Perhaps deduce a default name and install if executable is true.
     try:
         info['name']
         return True
@@ -74,7 +74,7 @@ def main_initopt():
             for p in i.localrequires():
                 add(infos, allinfos[p])
     for info in allinfos.values():
-        if info['executable']: # TODO: Is this check still needed?
+        if info['executable']:
             for pyversion in info['pyversions']:
                 if pyversion in versiontoinfos:
                     add(versiontoinfos[pyversion], info)

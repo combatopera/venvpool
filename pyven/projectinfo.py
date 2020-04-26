@@ -52,7 +52,7 @@ class ProjectInfo:
             repl.printf('requires := $list()')
             repl.printf('pyversions := $list()')
             repl.printf('proprietary = false')
-            repl.printf('executable = false')
+            repl.printf('executable = false') # XXX: Make it true?
             repl.printf(". %s", os.path.abspath(infopath))
 
     def __getitem__(self, key):
