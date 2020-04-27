@@ -29,6 +29,7 @@ requires +=
     nose-cov
     pyflakes
     twine
+    virtualenv
 pyversions +=
     3
     2
