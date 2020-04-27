@@ -21,7 +21,7 @@ import os, sys, subprocess, shutil, argparse, logging
 
 log = logging.getLogger(__name__)
 
-def main_release():
+def main_release(): # TODO: Dockerise.
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     parser = argparse.ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')
