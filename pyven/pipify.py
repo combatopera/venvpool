@@ -19,8 +19,7 @@ from . import workingversion
 from .projectinfo import ProjectInfo
 import os, subprocess, sys
 
-setupformat = """from pathlib import Path
-import setuptools
+setupformat = """import setuptools
 
 def long_description():
     with open('README.md') as f:
@@ -29,6 +28,10 @@ def long_description():
 packages = setuptools.find_packages()
 
 def ext_modules():
+    try:
+        from pathlib import Path
+    except ImportError:
+        return {}
     paths = [str(path) for package in packages for path in Path(*package.split('.')).glob('*.pyx')]
     if not paths:
         return {}
