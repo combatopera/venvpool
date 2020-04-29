@@ -19,6 +19,7 @@ from . import workingversion
 from .projectinfo import ProjectInfo
 import os, subprocess, sys
 
+# TODO: Port to aridity templates.
 setupformat = """import os, setuptools
 
 def long_description():
