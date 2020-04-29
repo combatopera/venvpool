@@ -19,7 +19,7 @@ from . import workingversion
 from .projectinfo import ProjectInfo
 import os, subprocess, sys
 
-setupformat = """import setuptools
+setupformat = """import os, setuptools
 
 def long_description():
     with open('README.md') as f:
@@ -28,15 +28,17 @@ def long_description():
 packages = setuptools.find_packages()
 
 def ext_modules():
-    try:
-        from pathlib import Path
-    except ImportError:
-        return {}
-    paths = [str(path) for package in packages for path in Path(*package.split('.')).glob('*.pyx')]
-    if not paths:
-        return {}
-    from Cython.Build import cythonize
-    return dict(ext_modules = cythonize(paths))
+    def g():
+        for package in packages:
+            dirpath = package.replace('.', os.sep)
+            for name in os.listdir(dirpath):
+                if name.endswith('.pyx'):
+                    yield os.path.join(dirpath, name)
+    paths = list(g())
+    if paths:
+        from Cython.Build import cythonize
+        return dict(ext_modules = cythonize(paths))
+    return {}
 
 setuptools.setup(
         name = %r,
