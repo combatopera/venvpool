@@ -19,11 +19,21 @@ from . import workingversion
 from .projectinfo import ProjectInfo
 import os, subprocess, sys
 
-setupformat = """import setuptools
+setupformat = """from pathlib import Path
+import setuptools
 
 def long_description():
     with open('README.md') as f:
         return f.read()
+
+packages = setuptools.find_packages()
+
+def ext_modules():
+    paths = [str(path) for package in packages for path in Path(*package.split('.')).glob('*.pyx')]
+    if not paths:
+        return {}
+    from Cython.Build import cythonize
+    return dict(ext_modules = cythonize(paths))
 
 setuptools.setup(
         name = %r,
@@ -33,12 +43,13 @@ setuptools.setup(
         long_description_content_type = 'text/markdown',
         url = %r,
         author = %r,
-        packages = setuptools.find_packages(),
+        packages = packages,
         py_modules = %r,
         install_requires = %r,
         package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld', '*.arid', '*.aridt']},
         scripts = %r,
-        entry_points = {'console_scripts': %r})
+        entry_points = {'console_scripts': %r},
+        **ext_modules())
 """
 cfgformat = """[bdist_wheel]
 universal=%s
