@@ -43,13 +43,13 @@ class ProjectInfo:
         while True:
             infopath = os.path.join(projectdir, 'project.arid')
             if os.path.exists(infopath):
-                return cls(infopath)
+                return cls(projectdir, infopath)
             parent = os.path.join(projectdir, '..')
             if os.path.abspath(parent) == os.path.abspath(projectdir):
                 raise ProjectInfoNotFoundException(realdir)
             projectdir = parent
 
-    def __init__(self, infopath):
+    def __init__(self, projectdir, infopath):
         self.info = aridity.Context()
         with aridity.Repl(self.info) as repl:
             repl.printf('requires := $list()')
@@ -57,7 +57,7 @@ class ProjectInfo:
             repl.printf('proprietary = false')
             repl.printf('executable = false') # XXX: Make it true?
             repl.printf(". %s", os.path.abspath(infopath))
-        self.projectdir = os.path.dirname(infopath)
+        self.projectdir = projectdir
 
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()

@@ -17,6 +17,7 @@
 
 from . import workingversion
 from .projectinfo import ProjectInfo
+from argparse import ArgumentParser
 import os, subprocess, sys
 
 # TODO: Port to aridity templates.
@@ -86,6 +87,9 @@ def pipify(info, release):
     return version
 
 def main_pipify():
-    info = ProjectInfo.seek('.')
+    parser = ArgumentParser()
+    parser.add_argument('-f')
+    config = parser.parse_args()
+    info = ProjectInfo.seek('.') if config.f is None else ProjectInfo('.', config.f)
     pipify(info, False)
     subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
