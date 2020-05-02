@@ -43,6 +43,7 @@ def ext_modules():
                     yield g['make_ext'](package + '.' + name[:-len(suffix)], path)
     paths = list(g())
     if paths:
+        # XXX: Can cythonize be deferred?
         from Cython.Build import cythonize
         return dict(ext_modules = cythonize(paths))
     return {}
