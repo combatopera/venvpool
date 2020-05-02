@@ -37,16 +37,19 @@ def textcontent(node):
 
 class ProjectInfo:
 
-    def __init__(self, realdir):
-        self.projectdir = realdir
+    @classmethod
+    def seek(cls, realdir):
+        projectdir = realdir
         while True:
-            infopath = os.path.join(self.projectdir, 'project.arid')
+            infopath = os.path.join(projectdir, 'project.arid')
             if os.path.exists(infopath):
-                break
-            parent = os.path.join(self.projectdir, '..')
-            if os.path.abspath(parent) == os.path.abspath(self.projectdir):
+                return cls(infopath)
+            parent = os.path.join(projectdir, '..')
+            if os.path.abspath(parent) == os.path.abspath(projectdir):
                 raise ProjectInfoNotFoundException(realdir)
-            self.projectdir = parent
+            projectdir = parent
+
+    def __init__(self, infopath):
         self.info = aridity.Context()
         with aridity.Repl(self.info) as repl:
             repl.printf('requires := $list()')
@@ -54,6 +57,7 @@ class ProjectInfo:
             repl.printf('proprietary = false')
             repl.printf('executable = false') # XXX: Make it true?
             repl.printf(". %s", os.path.abspath(infopath))
+        self.projectdir = os.path.dirname(infopath)
 
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()

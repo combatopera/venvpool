@@ -67,7 +67,7 @@ def main_initopt():
             configpath = os.path.join(projectsdir, p, 'project.arid')
             if os.path.exists(configpath):
                 yield configpath
-    allinfos = {i['name']: i for i in (ProjectInfo(os.path.dirname(p)) for p in configpaths()) if hasname(i)}
+    allinfos = {i['name']: i for i in (ProjectInfo.seek(os.path.dirname(p)) for p in configpaths()) if hasname(i)}
     def add(infos, i):
         if i not in infos:
             infos.add(i)

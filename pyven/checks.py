@@ -62,7 +62,7 @@ def pathto(executable):
     return os.path.join(os.path.dirname(sys.executable), executable)
 
 def main_checks():
-    info = ProjectInfo(os.getcwd())
+    info = ProjectInfo.seek(os.getcwd())
     files = Files(info.projectdir)
     for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
         sys.stderr.write("%s: " % check.__name__)
@@ -83,4 +83,4 @@ def everyversion(info, noseargs):
         subprocess.check_call([os.path.join(minivenv.bindir(info, pyversion), 'checks')] + noseargs)
 
 def main_tests():
-    everyversion(ProjectInfo(os.getcwd()), sys.argv[1:])
+    everyversion(ProjectInfo.seek(os.getcwd()), sys.argv[1:])

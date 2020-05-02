@@ -27,7 +27,7 @@ def main_release(): # TODO: Dockerise.
     parser.add_argument('--upload', action = 'store_true')
     parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
     config = parser.parse_args()
-    info = ProjectInfo(config.path)
+    info = ProjectInfo.seek(config.path)
     version = pipify(info, True)
     dist = os.path.join(info.projectdir, 'dist')
     if os.path.isdir(dist):

@@ -86,6 +86,6 @@ def pipify(info, release):
     return version
 
 def main_pipify():
-    info = ProjectInfo('.')
+    info = ProjectInfo.seek('.')
     pipify(info, False)
     subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)

@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import projectinfo, checks
+from . import checks
+from .projectinfo import ProjectInfo
 import os, requests, subprocess
 
 class Workspace:
@@ -33,10 +34,10 @@ class Workspace:
                 path = os.path.join(self.workspace, req)
                 if not os.path.exists(path): # Allow for diamond dependencies.
                     subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/%s/%s.git" % (self.user, req)], cwd = self.workspace)
-                self.clonerequires(projectinfo.ProjectInfo(path))
+                self.clonerequires(ProjectInfo.seek(path))
 
 def main_travis_ci():
-    info = projectinfo.ProjectInfo('.')
+    info = ProjectInfo.seek('.')
     Workspace('..').clonerequires(info)
     with open('.gitignore', 'a') as f:
         f.write('/.pyven/\n')

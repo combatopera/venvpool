@@ -36,7 +36,7 @@ def bindir(info, pyversion):
         def addprojects(i):
             for name in i.localrequires():
                 if name not in editables:
-                    editables[name] = j = ProjectInfo(os.path.join(workspace, name))
+                    editables[name] = j = ProjectInfo.seek(os.path.join(workspace, name))
                     addprojects(j)
         addprojects(info)
         reqs = info.remoterequires() # A new list.
