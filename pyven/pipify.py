@@ -19,7 +19,7 @@ from . import workingversion
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
 from aridimpl.model import Function, Scalar, Text
-from aridity import Context, Repl
+from aridity import Repl
 from pkg_resources import resource_filename
 import os, subprocess, sys
 
@@ -33,7 +33,7 @@ def pyquote(context, resolvable):
 def pipify(info, release):
     description, url = info.descriptionandurl() if release and not info['proprietary'] else [None, None]
     version = info.nextversion() if release else workingversion
-    context = Context(info.info)
+    context = info.info.createchild()
     context['"',] = Function(pyquote)
     context['version',] = Scalar(version)
     context['description',] = Scalar(description)
