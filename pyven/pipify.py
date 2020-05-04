@@ -18,71 +18,36 @@
 from . import workingversion
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
+from aridimpl.model import Function, Scalar, Text
+from aridity import Context, Repl
+from pkg_resources import resource_filename
 import os, subprocess, sys
 
-# TODO: Port to aridity templates.
-setupformat = """import os, setuptools
-
-def long_description():
-    with open('README.md') as f:
-        return f.read()
-
-packages = setuptools.find_packages()
-
-def ext_modules():
-    def g():
-        suffix = '.pyx'
-        for package in packages:
-            dirpath = package.replace('.', os.sep)
-            for name in os.listdir(dirpath):
-                if name.endswith(suffix):
-                    path = os.path.join(dirpath, name)
-                    g = {}
-                    with open(path + 'bld') as f:
-                        exec(f.read(), g)
-                    yield g['make_ext'](package + '.' + name[:-len(suffix)], path)
-    paths = list(g())
-    if paths:
-        # XXX: Can cythonize be deferred?
-        from Cython.Build import cythonize
-        return dict(ext_modules = cythonize(paths))
-    return {}
-
-setuptools.setup(
-        name = %r,
-        version = %r,
-        description = %r,
-        long_description = %s,
-        long_description_content_type = 'text/markdown',
-        url = %r,
-        author = %r,
-        packages = packages,
-        py_modules = %r,
-        install_requires = %r,
-        package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld', '*.arid', '*.aridt']},
-        scripts = %r,
-        entry_points = {'console_scripts': %r},
-        **ext_modules())
-"""
 cfgformat = """[bdist_wheel]
 universal=%s
 """
 
+def pyquote(context, resolvable):
+    return Text(repr(resolvable.resolve(context).value))
+
 def pipify(info, release):
     description, url = info.descriptionandurl() if release and not info['proprietary'] else [None, None]
     version = info.nextversion() if release else workingversion
-    with open(os.path.join(info.projectdir, 'setup.py'), 'w') as f:
-        f.write(setupformat % (
-                info['name'],
-                version,
-                description,
-                'long_description()' if release else repr(None),
-                url,
-                info['author'] if release else None,
-                info.py_modules(),
-                info.allrequires() if release else info.remoterequires(),
-                info.scripts(),
-                info.console_scripts()))
+    context = Context()
+    context['"',] = Function(pyquote)
+    context['name',] = Scalar(info['name'])
+    context['version',] = Scalar(version)
+    context['description',] = Scalar(description)
+    context['long_description',] = Text('long_description()' if release else repr(None))
+    context['url',] = Scalar(url)
+    context['author',] = Scalar(info['author'] if release else None)
+    context['py_modules',] = Scalar(info.py_modules())
+    context['install_requires',] = Scalar(info.allrequires() if release else info.remoterequires())
+    context['scripts',] = Scalar(info.scripts())
+    context['console_scripts',] = Scalar(info.console_scripts())
+    with Repl(context) as repl:
+        repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, 'setup.py')))
+        repl.printf("< %s", resource_filename(__name__, 'setup.py.aridt')) # XXX: Use stream?
     with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
         f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
     return version
