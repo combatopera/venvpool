@@ -33,14 +33,14 @@ def pyquote(context, resolvable):
 def pipify(info, release):
     description, url = info.descriptionandurl() if release and not info['proprietary'] else [None, None]
     version = info.nextversion() if release else workingversion
-    context = Context()
+    context = Context(info.info)
     context['"',] = Function(pyquote)
-    context['name',] = Scalar(info['name'])
     context['version',] = Scalar(version)
     context['description',] = Scalar(description)
     context['long_description',] = Text('long_description()' if release else repr(None))
     context['url',] = Scalar(url)
-    context['author',] = Scalar(info['author'] if release else None)
+    if not release:
+        context['author',] = Scalar(None)
     context['py_modules',] = Scalar(info.py_modules())
     context['install_requires',] = Scalar(info.allrequires() if release else info.remoterequires())
     context['scripts',] = Scalar(info.scripts())
