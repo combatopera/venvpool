@@ -52,10 +52,11 @@ class ProjectInfo:
     def __init__(self, projectdir, infopath):
         self.info = aridity.Context()
         with aridity.Repl(self.info) as repl:
-            repl.printf('requires := $list()')
-            repl.printf('pyversions := $list()')
-            repl.printf('proprietary = false')
-            repl.printf('executable = false') # XXX: Make it true?
+            repl('requires := $list()')
+            repl('pyversions := $list()')
+            repl('proprietary = false')
+            repl('executable = false') # XXX: Make it true?
+            repl('resource types := $list(pxd pyx pyxbld arid aridt)')
             repl.printf(". %s", os.path.abspath(infopath))
         self.projectdir = projectdir
 

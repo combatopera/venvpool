@@ -36,7 +36,7 @@ setuptools.setup(
         packages = packages,
         py_modules = $"$(py_modules),
         install_requires = $"$(install_requires),
-        package_data = {'': ['*.pxd', '*.pyx', '*.pyxbld', '*.arid', '*.aridt']},
+        package_data = {'': [$join($map($(resource types) it $"(*.$(it))) $.(, ))]},
         scripts = $"$(scripts),
         entry_points = {'console_scripts': $"$(console_scripts)},
         **ext_modules())
