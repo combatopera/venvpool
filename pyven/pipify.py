@@ -18,14 +18,10 @@
 from . import workingversion
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
-from aridimpl.model import Function, Scalar, Text
+from aridimpl.model import Function, Number, Scalar, Text
 from aridity import Repl
 from pkg_resources import resource_filename
 import os, subprocess, sys
-
-cfgformat = """[bdist_wheel]
-universal=%s
-"""
 
 def pyquote(context, resolvable):
     return Text(repr(resolvable.resolve(context).value))
@@ -45,11 +41,11 @@ def pipify(info, release):
     context['install_requires',] = Scalar(info.allrequires() if release else info.remoterequires())
     context['scripts',] = Scalar(info.scripts())
     context['console_scripts',] = Scalar(info.console_scripts())
+    context['universal',] = Number(int({2, 3} <= set(info['pyversions'])))
     with Repl(context) as repl:
-        repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, 'setup.py')))
-        repl.printf("< %s", resource_filename(__name__, 'setup.py.aridt')) # XXX: Use stream?
-    with open(os.path.join(info.projectdir, 'setup.cfg'), 'w') as f:
-        f.write(cfgformat % int({2, 3} <= set(info['pyversions'])))
+        for name in 'setup.py', 'setup.cfg':
+            repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, name)))
+            repl.printf("< %s", resource_filename(__name__, name + '.aridt')) # XXX: Use stream?
     return version
 
 def main_pipify():
