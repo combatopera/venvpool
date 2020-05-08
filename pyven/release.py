@@ -19,6 +19,7 @@ from .checks import everyversion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
+from lagoon.program import Program
 from tempfile import TemporaryDirectory
 import lagoon, logging, os, shutil, subprocess, sys
 
@@ -68,12 +69,13 @@ def release(config, srcgit, info, workspace):
                 log.debug("Delete: %s", path)
                 os.remove(path)
     pipify(info, version)
-    subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
+    python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
+    python('setup.py', 'sdist', 'bdist_wheel')
     artifactrelpaths = [os.path.join(distrelpath, name) for name in os.listdir(os.path.join(info.projectdir, distrelpath))]
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
-        subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + artifactrelpaths, cwd = info.projectdir)
+        python('-m', 'twine', 'upload', *artifactrelpaths)
     else:
         log.warning('Upload skipped, use --upload to upload.')
     return artifactrelpaths
