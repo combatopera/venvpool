@@ -31,7 +31,7 @@ def main_release():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     parser = ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')
-    parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
+    parser.add_argument('path', nargs = '?', default = '.')
     config = parser.parse_args()
     info = ProjectInfo.seek(config.path)
     git = lagoon.git.partial(cwd = info.projectdir)
@@ -43,7 +43,7 @@ def main_release():
         raise Exception("Current branch must track some %s branch." % targetremote)
     log.debug("Good remote: %s", remotename)
     with TemporaryDirectory() as tempdir:
-        copydir = os.path.join(tempdir, os.path.basename(info.projectdir))
+        copydir = os.path.join(tempdir, os.path.basename(os.path.abspath(info.projectdir)))
         log.info("Copying project to: %s", copydir)
         shutil.copytree(info.projectdir, copydir)
         for relpath in release(config, git, ProjectInfo.seek(copydir), info.contextworkspace()):
