@@ -80,7 +80,7 @@ def main_checks():
 
 def everyversion(info, workspace, noseargs):
     for pyversion in info['pyversions']:
-        subprocess.check_call([os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks')] + noseargs)
+        subprocess.check_call([os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks')] + noseargs, cwd = info.projectdir)
 
 def main_tests():
     info = ProjectInfo.seek('.')
