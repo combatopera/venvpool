@@ -17,13 +17,14 @@
 
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-import os, sys, subprocess, shutil, argparse, logging
+from argparse import ArgumentParser
+import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 
 def main_release(): # TODO: Dockerise.
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')
     parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
     config = parser.parse_args()
