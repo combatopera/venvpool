@@ -18,10 +18,10 @@
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
-from lagoon import git
-import logging, os, shutil, subprocess, sys
+import lagoon, logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
+targetremote = 'origin'
 
 def main_release(): # TODO: Dockerise.
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
@@ -30,9 +30,13 @@ def main_release(): # TODO: Dockerise.
     parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
     config = parser.parse_args()
     info = ProjectInfo.seek(config.path)
-    if git.status.__porcelain(cwd = info.projectdir):
+    git = lagoon.git.partial(cwd = info.projectdir)
+    if git.status.__porcelain():
         raise Exception('Uncommitted changes!')
-    # TODO: Assert up to date with origin.
+    remotename, remotebranch = git.rev_parse.__abbrev_ref('@{u}').split('/')
+    if targetremote != remotename:
+        raise Exception("Current branch must track some %s branch." % targetremote)
+    # TODO: Tag up-front if upload enabled.
     # TODO: Run tests on scrubbed directory.
     # TODO: Scrub the directory before running setup.
     version = pipify(info, True)
