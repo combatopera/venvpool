@@ -62,7 +62,7 @@ def pathto(executable):
     return os.path.join(os.path.dirname(sys.executable), executable)
 
 def main_checks():
-    info = ProjectInfo.seek(os.getcwd())
+    info = ProjectInfo.seek(os.getcwd()) # XXX: Must this be absolute?
     files = Files(info.projectdir)
     for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
         sys.stderr.write("%s: " % check.__name__)
