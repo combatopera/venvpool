@@ -55,8 +55,8 @@ def release(config, srcgit, info):
         shutil.rmtree(dist) # Remove any previous versions.
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     if config.upload:
-        srcgit.tag.print("v%s" % version)
-        srcgit.push.__tags.print() # XXX: Also update other remotes?
+        srcgit.tag("v%s" % version, stdout = None)
+        srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
         # TODO: Copy artifacts back to source project.
     else:
