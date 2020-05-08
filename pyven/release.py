@@ -40,7 +40,7 @@ def main_release(): # TODO: Dockerise.
         raise Exception("Current branch must track some %s branch." % targetremote)
     log.debug("Good remote: %s", remotename)
     with TemporaryDirectory() as tempdir:
-        copydir = os.path.join(tempdir, 'project')
+        copydir = os.path.join(tempdir, os.path.basename(info.projectdir))
         log.info("Copying project to: %s", copydir)
         shutil.copytree(info.projectdir, copydir)
         release(config, git, ProjectInfo.seek(copydir))
