@@ -74,6 +74,7 @@ def release(config, srcgit, info, workspace):
     artifactrelpaths = [os.path.join(distrelpath, name) for name in os.listdir(os.path.join(info.projectdir, distrelpath))]
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
+        # TODO LATER: If tag succeeded but push fails, we're left with a bogus tag.
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
         python('-m', 'twine', 'upload', *artifactrelpaths)
     else:
