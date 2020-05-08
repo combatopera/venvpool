@@ -63,6 +63,9 @@ class ProjectInfo:
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()
 
+    def contextworkspace(self):
+        return os.path.join(self.projectdir, '..')
+
     def allrequires(self):
         return self['requires']
 
@@ -73,7 +76,7 @@ class ProjectInfo:
                 self.namepart = req.unsafe_name # XXX: Is unsafe_name the correct attribute?
                 self.specifier = req.specifier
             def isproject(this):
-                return os.path.isdir(os.path.join(self.projectdir, '..', this.namepart))
+                return os.path.isdir(os.path.join(self.contextworkspace(), this.namepart))
         reqstrs = self.allrequires()
         return (Req(reqstr, req) for reqstr, req in zip(reqstrs, parse_requirements(reqstrs)))
 
