@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .checks import everyversion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
@@ -43,20 +44,20 @@ def main_release(): # TODO: Dockerise.
         copydir = os.path.join(tempdir, os.path.basename(info.projectdir))
         log.info("Copying project to: %s", copydir)
         shutil.copytree(info.projectdir, copydir)
-        release(config, git, ProjectInfo.seek(copydir))
+        release(config, git, ProjectInfo.seek(copydir), info.contextworkspace())
 
-def release(config, srcgit, info):
-    # TODO: Run tests on scrubbed directory.
-    # TODO: Scrub the directory before running setup.
+def release(config, srcgit, info, workspace):
+    git = lagoon.git.partial(cwd = info.projectdir)
+    git.clean._xdi(input = 'c', stdout = None)
     version = info.nextversion()
-    pipify(info, version)
-    dist = os.path.join(info.projectdir, 'dist')
-    if os.path.isdir(dist):
-        shutil.rmtree(dist) # Remove any previous versions.
+    pipify(info, version) # Test against releases, in theory.
+    everyversion(info, workspace, []) # FIXME LATER: Dependencies of pyven interfere with those of project.
+    # TODO: Scrub the directory and remove tests before running setup.
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
+        dist = os.path.join(info.projectdir, 'dist')
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
         # TODO: Copy artifacts back to source project.
     else:
