@@ -39,14 +39,15 @@ def main_release(): # TODO: Dockerise.
     # TODO: Tag up-front if upload enabled.
     # TODO: Run tests on scrubbed directory.
     # TODO: Scrub the directory before running setup.
-    version = pipify(info, True)
+    version = info.nextversion()
+    pipify(info, version)
     dist = os.path.join(info.projectdir, 'dist')
     if os.path.isdir(dist):
         shutil.rmtree(dist) # Remove any previous versions.
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     if config.upload:
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
-        pipify(info, False)
+        pipify(info)
         subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
         subprocess.check_call(['git', 'tag', "v%s" % version])
         subprocess.check_call(['git', 'push', '--tags']) # FIXME: To all remotes.

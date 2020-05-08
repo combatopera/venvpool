@@ -80,7 +80,7 @@ def main_initopt():
                     add(versiontoinfos[pyversion], info)
     for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir):
         log.debug("Prepare: %s", info.projectdir)
-        pipify(info, False)
+        pipify(info)
     for pyversion, infos in versiontoinfos.items():
         venvpath = os.path.join(home, 'opt', "venv%s" % pyversion)
         pythonname = "python%s" % pyversion

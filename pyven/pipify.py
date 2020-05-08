@@ -26,9 +26,9 @@ import os, subprocess, sys
 def pyquote(context, resolvable):
     return Text(repr(resolvable.resolve(context).value))
 
-def pipify(info, release):
+def pipify(info, version = workingversion):
+    release = version != workingversion
     description, url = info.descriptionandurl() if release and not info['proprietary'] else [None, None]
-    version = info.nextversion() if release else workingversion
     context = info.info.createchild()
     context['"',] = Function(pyquote)
     context['version',] = Scalar(version)
@@ -46,12 +46,11 @@ def pipify(info, release):
         for name in 'setup.py', 'setup.cfg':
             repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, name)))
             repl.printf("< %s", resource_filename(__name__, name + '.aridt')) # TODO: Make aridity get the resource.
-    return version
 
 def main_pipify():
     parser = ArgumentParser()
     parser.add_argument('-f')
     config = parser.parse_args()
     info = ProjectInfo.seek('.') if config.f is None else ProjectInfo('.', config.f)
-    pipify(info, False)
+    pipify(info)
     subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)

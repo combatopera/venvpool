@@ -48,6 +48,6 @@ def bindir(info, pyversion):
             reqs = [r for r in reqs if r != pyvenname]
             reqs.append(str(pyvendist.as_requirement()))
         for i in editables.values():
-            pipify(i, False)
+            pipify(i)
         subprocess.check_call([os.path.join(venvpath, 'bin', 'pip'), 'install'] + reqs + sum((['-e', i.projectdir] for i in editables.values()), []))
     return os.path.join(venvpath, 'bin')
