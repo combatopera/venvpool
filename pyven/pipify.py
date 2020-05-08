@@ -45,7 +45,7 @@ def pipify(info, release):
     with Repl(context) as repl:
         for name in 'setup.py', 'setup.cfg':
             repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, name)))
-            repl.printf("< %s", resource_filename(__name__, name + '.aridt')) # XXX: Use stream?
+            repl.printf("< %s", resource_filename(__name__, name + '.aridt')) # TODO: Make aridity get the resource.
     return version
 
 def main_pipify():
