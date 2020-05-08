@@ -18,6 +18,7 @@
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
+from lagoon import git
 import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -29,7 +30,8 @@ def main_release(): # TODO: Dockerise.
     parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
     config = parser.parse_args()
     info = ProjectInfo.seek(config.path)
-    # TODO: Assert clean checkout.
+    if git.status.__porcelain(cwd = info.projectdir):
+        raise Exception('Uncommitted changes!')
     # TODO: Assert up to date with origin.
     # TODO: Run tests on scrubbed directory.
     # TODO: Scrub the directory before running setup.
