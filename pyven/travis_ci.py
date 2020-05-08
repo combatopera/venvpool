@@ -38,7 +38,8 @@ class Workspace:
 
 def main_travis_ci():
     info = ProjectInfo.seek('.')
-    Workspace('..').clonerequires(info)
+    workspace = '..' # XXX: Use a subdirectory of here?
+    Workspace(workspace).clonerequires(info)
     with open('.gitignore', 'a') as f:
         f.write('/.pyven/\n')
-    checks.everyversion(info, [])
+    checks.everyversion(info, workspace, [])

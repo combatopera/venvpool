@@ -78,9 +78,10 @@ def main_checks():
         os.rename(reportname, os.path.join(pathto('..'), reportname)) # XXX: Even when status is non-zero?
     return status
 
-def everyversion(info, noseargs):
+def everyversion(info, workspace, noseargs):
     for pyversion in info['pyversions']:
-        subprocess.check_call([os.path.join(minivenv.bindir(info, pyversion), 'checks')] + noseargs)
+        subprocess.check_call([os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks')] + noseargs)
 
 def main_tests():
-    everyversion(ProjectInfo.seek(os.getcwd()), sys.argv[1:])
+    info = ProjectInfo.seek(os.getcwd()) # XXX: Does this need to be absolute?
+    everyversion(info, os.path.join(info.projectdir, '..'), sys.argv[1:])
