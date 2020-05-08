@@ -83,5 +83,5 @@ def everyversion(info, workspace, noseargs):
         subprocess.check_call([os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks')] + noseargs)
 
 def main_tests():
-    info = ProjectInfo.seek(os.getcwd()) # XXX: Does this need to be absolute?
+    info = ProjectInfo.seek('.')
     everyversion(info, info.contextworkspace(), sys.argv[1:])
