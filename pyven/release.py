@@ -21,7 +21,7 @@ from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
 from lagoon.program import Program
 from tempfile import TemporaryDirectory
-import lagoon, logging, os, shutil, subprocess, sys
+import lagoon, logging, os, shutil, sys
 
 log = logging.getLogger(__name__)
 targetremote = 'origin'
