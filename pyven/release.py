@@ -47,12 +47,19 @@ def main_release(): # TODO: Dockerise.
         release(config, git, ProjectInfo.seek(copydir), info.contextworkspace())
 
 def release(config, srcgit, info, workspace):
-    git = lagoon.git.partial(cwd = info.projectdir)
-    git.clean._xdi(input = 'c', stdout = None)
+    scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
+    scrub()
     version = info.nextversion()
     pipify(info, version) # Test against releases, in theory.
     everyversion(info, workspace, []) # FIXME LATER: Dependencies of pyven interfere with those of project.
-    # TODO: Scrub the directory and remove tests before running setup.
+    scrub()
+    for dirpath, dirnames, filenames in os.walk(info.projectdir):
+        for name in filenames:
+            if name.startswith('test_') and name.endswith('.py'):
+                path = os.path.join(dirpath, name)
+                log.debug("Delete: %s", path)
+                os.remove(path)
+    pipify(info, version)
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
