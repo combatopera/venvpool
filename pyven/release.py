@@ -18,6 +18,7 @@
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
+from tempfile import TemporaryDirectory
 import lagoon, logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -33,9 +34,18 @@ def main_release(): # TODO: Dockerise.
     git = lagoon.git.partial(cwd = info.projectdir)
     if git.status.__porcelain():
         raise Exception('Uncommitted changes!')
-    remotename, remotebranch = git.rev_parse.__abbrev_ref('@{u}').split('/')
+    log.debug('No uncommitted changes.')
+    remotename, _ = git.rev_parse.__abbrev_ref('@{u}').split('/')
     if targetremote != remotename:
         raise Exception("Current branch must track some %s branch." % targetremote)
+    log.debug("Good remote: %s", remotename)
+    with TemporaryDirectory() as tempdir:
+        copydir = os.path.join(tempdir, 'project')
+        log.info("Copying project to: %s", copydir)
+        shutil.copytree(info.projectdir, copydir)
+        release(config, git, ProjectInfo.seek(copydir))
+
+def release(config, srcgit, info):
     # TODO: Run tests on scrubbed directory.
     # TODO: Scrub the directory before running setup.
     version = info.nextversion()
@@ -45,10 +55,9 @@ def main_release(): # TODO: Dockerise.
         shutil.rmtree(dist) # Remove any previous versions.
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     if config.upload:
-        git.tag.print("v%s" % version)
-        git.push.__tags.print() # XXX: Also update other remotes?
+        srcgit.tag.print("v%s" % version)
+        srcgit.push.__tags.print() # XXX: Also update other remotes?
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
-        pipify(info)
-        subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
+        # TODO: Copy artifacts back to source project.
     else:
         log.warning('Upload skipped, use --upload to upload.')
