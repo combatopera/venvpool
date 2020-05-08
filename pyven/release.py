@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 targetremote = 'origin'
 distrelpath = 'dist'
 
-def main_release(): # TODO: Dockerise.
+def main_release():
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
     parser = ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')
@@ -48,6 +48,10 @@ def main_release(): # TODO: Dockerise.
         for relpath in release(config, git, ProjectInfo.seek(copydir), info.contextworkspace()):
             log.info("Replace artifact: %s", relpath)
             destpath = os.path.join(info.projectdir, relpath)
+            try:
+                os.makedirs(os.path.dirname(destpath))
+            except OSError:
+                pass
             shutil.copy2(os.path.join(copydir, relpath), destpath)
 
 def release(config, srcgit, info, workspace):
