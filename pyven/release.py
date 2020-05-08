@@ -36,7 +36,6 @@ def main_release(): # TODO: Dockerise.
     remotename, remotebranch = git.rev_parse.__abbrev_ref('@{u}').split('/')
     if targetremote != remotename:
         raise Exception("Current branch must track some %s branch." % targetremote)
-    # TODO: Tag up-front if upload enabled.
     # TODO: Run tests on scrubbed directory.
     # TODO: Scrub the directory before running setup.
     version = info.nextversion()
@@ -46,10 +45,10 @@ def main_release(): # TODO: Dockerise.
         shutil.rmtree(dist) # Remove any previous versions.
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
     if config.upload:
+        git.tag.print("v%s" % version)
+        git.push.__tags.print() # XXX: Also update other remotes?
         subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
         pipify(info)
         subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
-        subprocess.check_call(['git', 'tag', "v%s" % version])
-        subprocess.check_call(['git', 'push', '--tags']) # FIXME: To all remotes.
     else:
         log.warning('Upload skipped, use --upload to upload.')
