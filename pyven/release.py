@@ -28,6 +28,10 @@ def main_release(): # TODO: Dockerise.
     parser.add_argument('path', nargs = '?', type = os.path.abspath, default = os.getcwd())
     config = parser.parse_args()
     info = ProjectInfo.seek(config.path)
+    # TODO: Assert clean checkout.
+    # TODO: Assert up to date with origin.
+    # TODO: Run tests on scrubbed directory.
+    # TODO: Scrub the directory before running setup.
     version = pipify(info, True)
     dist = os.path.join(info.projectdir, 'dist')
     if os.path.isdir(dist):
