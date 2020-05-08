@@ -24,6 +24,7 @@ import lagoon, logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 targetremote = 'origin'
+distrelpath = 'dist'
 
 def main_release(): # TODO: Dockerise.
     logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
@@ -44,7 +45,10 @@ def main_release(): # TODO: Dockerise.
         copydir = os.path.join(tempdir, os.path.basename(info.projectdir))
         log.info("Copying project to: %s", copydir)
         shutil.copytree(info.projectdir, copydir)
-        release(config, git, ProjectInfo.seek(copydir), info.contextworkspace())
+        for relpath in release(config, git, ProjectInfo.seek(copydir), info.contextworkspace()):
+            log.info("Replace artifact: %s", relpath)
+            destpath = os.path.join(info.projectdir, relpath)
+            shutil.copy2(os.path.join(copydir, relpath), destpath)
 
 def release(config, srcgit, info, workspace):
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
@@ -61,11 +65,11 @@ def release(config, srcgit, info, workspace):
                 os.remove(path)
     pipify(info, version)
     subprocess.check_call([sys.executable, 'setup.py', 'sdist', 'bdist_wheel'], cwd = info.projectdir)
+    artifactrelpaths = [os.path.join(distrelpath, name) for name in os.listdir(os.path.join(info.projectdir, distrelpath))]
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
-        dist = os.path.join(info.projectdir, 'dist')
-        subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + [os.path.join(dist, name) for name in os.listdir(dist)])
-        # TODO: Copy artifacts back to source project.
+        subprocess.check_call([sys.executable, '-m', 'twine', 'upload'] + artifactrelpaths, cwd = info.projectdir)
     else:
         log.warning('Upload skipped, use --upload to upload.')
+    return artifactrelpaths
