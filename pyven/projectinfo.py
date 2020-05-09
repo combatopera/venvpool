@@ -17,8 +17,6 @@
 
 from __future__ import with_statement
 from .files import Files
-from .util import tomlquote
-from aridimpl.model import Function, Text
 from pkg_resources import parse_requirements
 import aridity, logging, os, stat
 
@@ -53,7 +51,6 @@ class ProjectInfo:
 
     def __init__(self, projectdir, infopath):
         self.info = aridity.Context()
-        self.info['toml"',] = Function(lambda c, r: Text(tomlquote(r.resolve(c).cat())))
         with aridity.Repl(self.info) as repl:
             repl('requires := $list()')
             repl('pyversions := $list()')
