@@ -25,7 +25,7 @@ def stripeol(line):
     line, = line.splitlines()
     return line
 
-tomlbadchars = re.compile(r'["\\%s]+' % ''.join(chr(x) for x in itertools.chain(range(0x08 + 1), range(0x0A, 0x1F + 1), [0x7F])))
+tomlbadchars = re.compile('[%s]+' % re.escape(r'\"' + ''.join(chr(x) for x in itertools.chain(range(0x08 + 1), range(0x0A, 0x1F + 1), [0x7F]))))
 
 def tomlquote(text):
     def repl(m):
