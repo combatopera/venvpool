@@ -55,6 +55,14 @@ def main_release():
                 pass
             shutil.copy2(os.path.join(copydir, relpath), destpath)
 
+def uploadableartifacts(artifactrelpaths):
+    for p in artifactrelpaths:
+        name = os.path.basename(p)
+        if not name.endswith('.whl') or name.endswith('-any.whl'):
+            yield p
+        else:
+            log.warning("Not uploadable: %s", p)
+
 def release(config, srcgit, info, workspace):
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
     scrub()
@@ -76,7 +84,7 @@ def release(config, srcgit, info, workspace):
         srcgit.tag("v%s" % version, stdout = None)
         # TODO LATER: If tag succeeded but push fails, we're left with a bogus tag.
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
-        python('-m', 'twine', 'upload', *artifactrelpaths)
+        python('-m', 'twine', 'upload', *uploadableartifacts(artifactrelpaths))
     else:
         log.warning('Upload skipped, use --upload to upload.')
     return artifactrelpaths
