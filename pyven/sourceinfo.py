@@ -19,7 +19,20 @@ import os, setuptools
 
 class SourceInfo:
 
-    dotpyx = '.pyx'
+    class PYXPath:
+
+        dotpyx = '.pyx'
+
+        def __init__(self, package, name, path):
+            self.package = package
+            self.name = name
+            self.path = path
+
+        def make_ext(self):
+            g = {}
+            with open(self.path + 'bld') as f: # Assume project root.
+                exec(f.read(), g)
+            return g['make_ext'](self.package + '.' + self.name[:-len(self.dotpyx)], self.path)
 
     def __init__(self, rootdir):
         self.packages = setuptools.find_packages(rootdir)
@@ -27,6 +40,6 @@ class SourceInfo:
             for package in self.packages:
                 dirpath = package.replace('.', os.sep)
                 for name in os.listdir(os.path.join(rootdir, dirpath)):
-                    if name.endswith(self.dotpyx):
-                        yield os.path.join(dirpath, name)
+                    if name.endswith(self.PYXPath.dotpyx):
+                        yield self.PYXPath(package, name, os.path.join(dirpath, name))
         self.pyxpaths = list(g())

@@ -8,13 +8,7 @@ $readfile$./(sourceinfo.py)
 sourceinfo = SourceInfo('.')
 
 def ext_modules():
-    def g():
-        for path in sourceinfo.pyxpaths:
-            g = {}
-            with open(path + 'bld') as f:
-                exec(f.read(), g)
-            yield g['make_ext'](package + '.' + name[:-len(sourceinfo.dotpyx)], path)
-    paths = list(g())
+    paths = [path.make_ext() for path in sourceinfo.pyxpaths]
     if paths:
         # XXX: Can cythonize be deferred?
         from Cython.Build import cythonize
