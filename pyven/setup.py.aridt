@@ -4,12 +4,13 @@ def long_description():
     with open('README.md') as f:
         return f.read()
 
-packages = setuptools.find_packages()
+$readfile$./(sourceinfo.py)
+sourceinfo = SourceInfo('.')
 
 def ext_modules():
     def g():
         suffix = '.pyx'
-        for package in packages:
+        for package in sourceinfo.packages:
             dirpath = package.replace('.', os.sep)
             for name in os.listdir(dirpath):
                 if name.endswith(suffix):
@@ -33,7 +34,7 @@ setuptools.setup(
         long_description_content_type = 'text/markdown',
         url = $"$(url),
         author = $"$(author),
-        packages = packages,
+        packages = sourceinfo.packages,
         py_modules = $"$(py_modules),
         install_requires = $"$(install_requires),
         package_data = {'': [$join($map($(resource types) it $"(*.$(it))) $.(, ))]},
