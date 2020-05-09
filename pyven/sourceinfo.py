@@ -26,7 +26,7 @@ class SourceInfo:
         def g():
             for package in self.packages:
                 dirpath = package.replace('.', os.sep)
-                for name in os.listdir(dirpath):
+                for name in os.listdir(os.path.join(rootdir, dirpath)):
                     if name.endswith(self.dotpyx):
                         yield os.path.join(dirpath, name)
         self.pyxpaths = list(g())
