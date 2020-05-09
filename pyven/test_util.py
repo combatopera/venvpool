@@ -15,19 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import itertools, os, re, sys
+from .util import tomlquote
+from unittest import TestCase
 
-def stderr(obj):
-    sys.stderr.write(str(obj))
-    sys.stderr.write(os.linesep)
+class TestUtil(TestCase):
 
-def stripeol(line):
-    line, = line.splitlines()
-    return line
-
-tomlbadchars = re.compile(r'["\\%s]+' % ''.join(chr(x) for x in itertools.chain(range(0x08 + 1), range(0x0A, 0x1F + 1), [0x7F])))
-
-def tomlquote(text):
-    def repl(m):
-        return ''.join(r"\u%04X" % ord(c) for c in m.group())
-    return '"%s"' % tomlbadchars.sub(repl, text)
+    def test_tomlquote(self):
+        self.assertEqual('"abc\t \x7e\x80"', tomlquote('abc\t \x7e\x80'))
+        self.assertEqual(r'"\u005C\u0022"', tomlquote(r'\"'))
+        self.assertEqual(r'"\u0000\u0008\u000A\u001F\u007F"', tomlquote('\x00\x08\x0a\x1f\x7f'))
