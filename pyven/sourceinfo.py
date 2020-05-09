@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, setuptools
+import os, setuptools, subprocess
 
 class SourceInfo:
 
@@ -42,4 +42,8 @@ class SourceInfo:
                 for name in os.listdir(os.path.join(rootdir, dirpath)):
                     if name.endswith(self.PYXPath.dotpyx):
                         yield self.PYXPath(package, name, os.path.join(dirpath, name))
-        self.pyxpaths = list(g())
+        pyxpaths = list(g())
+        check_ignore = subprocess.Popen(['git', 'check-ignore'] + [p.path for p in pyxpaths], cwd = rootdir, stdout = subprocess.PIPE)
+        ignoredpaths = set(check_ignore.communicate()[0].decode().splitlines())
+        assert check_ignore.wait() in [0, 1]
+        self.pyxpaths = [path for path in pyxpaths if path.path not in ignoredpaths]
