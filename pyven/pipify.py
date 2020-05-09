@@ -43,7 +43,7 @@ def pipify(info, version = workingversion):
     context['console_scripts',] = Scalar(info.console_scripts())
     context['universal',] = Number(int({2, 3} <= set(info['pyversions'])))
     with Repl(context) as repl:
-        for name in 'setup.py', 'setup.cfg':
+        for name in 'setup.py', 'setup.cfg', 'pyproject.toml':
             repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, name)))
             repl.printf("< %s", resource_filename(__name__, name + '.aridt')) # TODO: Make aridity get the resource.
 

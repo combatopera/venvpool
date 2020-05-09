@@ -1,0 +1,2 @@
+[build-system]
+requires = [$join($map($(build requires) it $toml"$(it)) $.(, ))]
