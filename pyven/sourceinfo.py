@@ -43,7 +43,7 @@ class SourceInfo:
                     if name.endswith(self.PYXPath.dotpyx):
                         yield self.PYXPath(package, name, os.path.join(dirpath, name))
         pyxpaths = list(g())
-        if pyxpaths:
+        if pyxpaths and os.path.isdir(os.path.join(rootdir, '.git')): # We could be an unpacked sdist.
             check_ignore = subprocess.Popen(['git', 'check-ignore'] + [p.path for p in pyxpaths], cwd = rootdir, stdout = subprocess.PIPE)
             ignoredpaths = set(check_ignore.communicate()[0].decode().splitlines())
             assert check_ignore.wait() in [0, 1]
