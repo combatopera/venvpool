@@ -49,6 +49,7 @@ def pipify(info, version = workingversion):
             if name not in seen:
                 seen.add(name)
                 repl.printf("build requires += %s", name)
+    # XXX: Is pip install faster without pyproject.toml when only setuptools and wheel are needed?
     for name, quote in ['setup.py', pyquote], ['setup.cfg', None], ['pyproject.toml', lambda c, r: Text(tomlquote(r.resolve(c).cat()))]:
         context['"',] = Function(quote)
         with Repl(context) as repl:
