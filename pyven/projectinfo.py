@@ -57,7 +57,7 @@ class ProjectInfo:
             repl('proprietary = false')
             repl('executable = false') # XXX: Make it true?
             repl('resource types := $list(pxd pyx pyxbld arid aridt)')
-            repl('build requires := $list(setuptools wheel Cython)')
+            repl('build requires := $list()')
             repl.printf(". %s", os.path.abspath(infopath))
         self.projectdir = projectdir
 

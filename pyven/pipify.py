@@ -22,7 +22,7 @@ from argparse import ArgumentParser
 from aridimpl.model import Function, Number, Scalar, Text
 from aridity import Repl
 from pkg_resources import resource_filename
-import os, subprocess, sys
+import itertools, os, subprocess, sys
 
 def pyquote(context, resolvable): # TODO LATER: Already exists in aridity.
     return Text(repr(resolvable.resolve(context).value))
@@ -42,11 +42,22 @@ def pipify(info, version = workingversion):
     context['scripts',] = Scalar(info.scripts())
     context['console_scripts',] = Scalar(info.console_scripts())
     context['universal',] = Number(int({2, 3} <= set(info['pyversions'])))
+    with Repl(context) as repl:
+        seen = set()
+        for name in itertools.chain(pyvenbuildrequires(), info.info.resolved('build', 'requires').unravel()):
+            if name not in seen:
+                seen.add(name)
+                repl.printf("build requires += %s", name)
     for name, quote in ['setup.py', pyquote], ['setup.cfg', None], ['pyproject.toml', lambda c, r: Text(tomlquote(r.resolve(c).cat()))]:
         context['"',] = Function(quote)
         with Repl(context) as repl:
             repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, name)))
             repl.printf("< %s", resource_filename(__name__, name + '.aridt')) # TODO: Make aridity get the resource.
+
+def pyvenbuildrequires():
+    yield 'setuptools'
+    yield 'wheel'
+    yield 'Cython' # FIXME: If necessary.
 
 def main_pipify():
     parser = ArgumentParser()
