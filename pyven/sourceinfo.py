@@ -15,9 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import setuptools
+import os, setuptools
 
 class SourceInfo:
 
+    dotpyx = '.pyx'
+
     def __init__(self, rootdir):
         self.packages = setuptools.find_packages(rootdir)
+        def g():
+            for package in self.packages:
+                dirpath = package.replace('.', os.sep)
+                for name in os.listdir(dirpath):
+                    if name.endswith(self.dotpyx):
+                        yield os.path.join(dirpath, name)
+        self.pyxpaths = list(g())

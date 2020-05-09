@@ -9,16 +9,11 @@ sourceinfo = SourceInfo('.')
 
 def ext_modules():
     def g():
-        suffix = '.pyx'
-        for package in sourceinfo.packages:
-            dirpath = package.replace('.', os.sep)
-            for name in os.listdir(dirpath):
-                if name.endswith(suffix):
-                    path = os.path.join(dirpath, name)
-                    g = {}
-                    with open(path + 'bld') as f:
-                        exec(f.read(), g)
-                    yield g['make_ext'](package + '.' + name[:-len(suffix)], path)
+        for path in sourceinfo.pyxpaths:
+            g = {}
+            with open(path + 'bld') as f:
+                exec(f.read(), g)
+            yield g['make_ext'](package + '.' + name[:-len(sourceinfo.dotpyx)], path)
     paths = list(g())
     if paths:
         # XXX: Can cythonize be deferred?

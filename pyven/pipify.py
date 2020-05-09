@@ -17,6 +17,7 @@
 
 from . import workingversion
 from .projectinfo import ProjectInfo
+from .sourceinfo import SourceInfo
 from .util import tomlquote
 from argparse import ArgumentParser
 from aridimpl.model import Function, Number, Scalar, Text
@@ -44,7 +45,7 @@ def pipify(info, version = workingversion):
     context['universal',] = Number(int({2, 3} <= set(info['pyversions'])))
     with Repl(context) as repl:
         seen = set()
-        for name in itertools.chain(pyvenbuildrequires(), info.info.resolved('build', 'requires').unravel()):
+        for name in itertools.chain(pyvenbuildrequires(info), info.info.resolved('build', 'requires').unravel()):
             if name not in seen:
                 seen.add(name)
                 repl.printf("build requires += %s", name)
@@ -54,10 +55,11 @@ def pipify(info, version = workingversion):
             repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, name)))
             repl.printf("< %s", resource_filename(__name__, name + '.aridt')) # TODO: Make aridity get the resource.
 
-def pyvenbuildrequires():
+def pyvenbuildrequires(info):
     yield 'setuptools'
     yield 'wheel'
-    yield 'Cython' # FIXME: If necessary.
+    if SourceInfo(info.projectdir).pyxpaths:
+        yield 'Cython'
 
 def main_pipify():
     parser = ArgumentParser()
