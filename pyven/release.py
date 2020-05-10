@@ -72,7 +72,7 @@ def release(config, srcgit, info, workspace):
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
         for name in filenames:
-            if name.startswith('test_') and name.endswith('.py'):
+            if name.startswith('test_') and name.endswith('.py'): # TODO LATER: Allow project to add globs to exclude.
                 path = os.path.join(dirpath, name)
                 log.debug("Delete: %s", path)
                 os.remove(path)
