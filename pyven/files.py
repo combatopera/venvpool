@@ -66,7 +66,7 @@ class Files:
         if os.path.exists(self.reportpath):
             with open(self.reportpath) as f:
                 doc = dom.parse(f)
-            nametopath = dict([p[:-len('.py')].replace(os.sep, '.'), p] for p in paths)
+            nametopath = dict([p[len(self.root + os.sep):-len('.py')].replace(os.sep, '.'), p] for p in paths)
             pathtotime = collections.defaultdict(lambda: 0)
             for e in doc.getElementsByTagName('testcase'):
                 name = e.getAttribute('classname')
