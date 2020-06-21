@@ -58,6 +58,7 @@ class ProjectInfo:
             repl('executable = false') # XXX: Make it true?
             repl('resource types := $list(pxd pyx pyxbld arid aridt)')
             repl('build requires := $list()')
+            repl('licenses := $list(GPL)')
             repl.printf(". %s", os.path.abspath(infopath))
         self.projectdir = projectdir
 

@@ -18,7 +18,7 @@
 from __future__ import with_statement
 import hashlib, os, re, sys
 
-template="""# Copyright %(years)s %(author)s
+gpltemplate = """# Copyright %(years)s %(author)s
 
 # This file is part of %(name)s.
 #
@@ -34,18 +34,31 @@ template="""# Copyright %(years)s %(author)s
 #
 # You should have received a copy of the GNU General Public License
 # along with %(name)s.  If not, see <http://www.gnu.org/licenses/>.
-
-""" # Check it ends with 2 newlines.
+"""
+intersection = '''# This file incorporates work covered by the following copyright and
+# permission notice:
+'''
 
 def mainimpl(info, paths):
     if info['proprietary']:
         sys.stderr.write('SKIP ')
         return
-    master = template % {
-        'years': ', '.join(str(y) for y in info['years']),
-        'author': info['author'],
-        'name': info['name'],
-    }
+    sections = []
+    for name in info['licenses']:
+        if sections:
+            sections.append(intersection)
+        if 'GPL' == name:
+            sections.append(gpltemplate % {
+                'years': ', '.join(str(y) for y in info['years']),
+                'author': info['author'],
+                'name': info['name'],
+            })
+        elif 'MIT' == name:
+            with open(os.path.join(info.projectdir, 'LICENSE')) as f:
+                sections.append(''.join(('# ' if l.rstrip() else '#') + l for l in f))
+        else:
+            raise Exception(name)
+    master = ''.join(s + '\n' for s in sections) # Check each section ends with 2 newlines.
     for path in paths:
         with open(path) as f:
             text = f.read()
