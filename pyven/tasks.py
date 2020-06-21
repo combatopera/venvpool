@@ -26,7 +26,7 @@ def main_tasks():
     root, = subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).decode().splitlines()
     agcommand = ['ag', '--noheading', '--nobreak']
     # XXX: Integrate with declared project resource types?
-    paths = list(Files.relpaths(root, ['.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh', '.arid', '.aridt'], ['Dockerfile']))
+    paths = list(Files.relpaths(root, ['.py', '.pyx', '.h', '.cpp', '.ui', '.java', '.kt', '.c', '.s', '.sh', '.arid', '.aridt', '.gradle', '.java', '.mk'], ['Dockerfile', 'Makefile']))
     for tag in ['xxx', 'todo', 'fixme'][config.q:]:
         tag = tag.upper()
         subprocess.call(agcommand + [tag + ' LATER'] + paths, cwd = root)
