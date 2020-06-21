@@ -40,7 +40,7 @@ class Files:
             dirnames.sort()
 
     @classmethod
-    def relpaths(cls, root, suffixes):
+    def relpaths(cls, root, suffixes, prefixes):
         paths = list(cls._findfiles(root, suffixes, prefixes))
         with open(os.devnull) as devnull:
             if not subprocess.call(['hg', 'root'], stdout = devnull, stderr = devnull, cwd = root):
