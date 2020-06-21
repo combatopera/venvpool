@@ -128,7 +128,7 @@ class ProjectInfo:
         v = []
         prefix = 'main_'
         extension = '.py'
-        for path in Files.relpaths(self.projectdir, [extension]):
+        for path in Files.relpaths(self.projectdir, [extension], []):
             with open(os.path.join(self.projectdir, path)) as f:
                 try:
                     m = ast.parse(f.read())

@@ -24,19 +24,24 @@ class Files:
     reportpath = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'nosetests.xml')
 
     @staticmethod
-    def _findfiles(walkpath, suffixes):
+    def _findfiles(walkpath, suffixes, prefixes):
+        def acceptname():
+            for suffix in suffixes:
+                if name.endswith(suffix):
+                    return True
+            for prefix in prefixes:
+                if name.startswith(prefix):
+                    return True
         prefixlen = len(walkpath + os.sep)
         for dirpath, dirnames, filenames in os.walk(walkpath):
             for name in sorted(filenames):
-                for suffix in suffixes:
-                    if name.endswith(suffix):
-                        yield os.path.join(dirpath, name)[prefixlen:]
-                        break # Next name.
+                if acceptname():
+                    yield os.path.join(dirpath, name)[prefixlen:]
             dirnames.sort()
 
     @classmethod
     def relpaths(cls, root, suffixes):
-        paths = list(cls._findfiles(root, suffixes))
+        paths = list(cls._findfiles(root, suffixes, prefixes))
         with open(os.devnull) as devnull:
             if not subprocess.call(['hg', 'root'], stdout = devnull, stderr = devnull, cwd = root):
                 badstatuses = set('IR ')
@@ -57,7 +62,7 @@ class Files:
                             yield path
 
     def __init__(self, root):
-        self.allsrcpaths = [os.path.join(root, p) for p in self.relpaths(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'])]
+        self.allsrcpaths = [os.path.join(root, p) for p in self.relpaths(root, ['.py', '.py3', '.pyx', '.s', '.sh', '.h', '.cpp', '.cxx', '.arid'], ['Dockerfile'])]
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
         self.root = root
 
