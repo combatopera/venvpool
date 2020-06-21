@@ -67,7 +67,7 @@ def mainimpl(info, paths):
                 text = text[text.index('\n') + 1:]
         if path.endswith('.s'):
             text = re.sub('^;', '#', text, flags = re.MULTILINE)
-        elif path.endswith('.h') or path.endswith('.cpp') or path.endswith('.cxx'):
+        elif path.endswith(('.h', '.cpp', '.cxx', '.gradle')):
             text = re.sub('^//', '#', text, flags = re.MULTILINE)
         elif path.endswith('.arid'):
             text = re.sub('^:', '#', text, flags = re.MULTILINE)
