@@ -59,8 +59,12 @@ class ProjectInfo:
             repl('resource types := $list(pxd pyx pyxbld arid aridt)')
             repl('build requires := $list()')
             repl('licenses := $list(GPL)')
+            repl('MIT path = LICENSE')
             repl.printf(". %s", os.path.abspath(infopath))
         self.projectdir = projectdir
+
+    def mitpath(self):
+        return os.path.join(self.projectdir, self.info.resolved('MIT', 'path').unravel())
 
     def __getitem__(self, key):
         return self.info.resolved(key).unravel()

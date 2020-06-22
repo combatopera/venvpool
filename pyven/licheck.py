@@ -54,7 +54,7 @@ def mainimpl(info, paths):
                 'name': info['name'],
             })
         elif 'MIT' == name:
-            with open(os.path.join(info.projectdir, 'LICENSE')) as f:
+            with open(info.mitpath()) as f:
                 sections.append(''.join(('# ' if l.rstrip() else '#') + l for l in f))
         else:
             raise Exception(name)
