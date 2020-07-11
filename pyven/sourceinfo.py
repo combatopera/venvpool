@@ -69,7 +69,7 @@ def lazy(clazz, init, *initbefore):
     return obj
 
 def cythonize(*args, **kwargs):
-    def init(v):
+    def init(ext_modules):
         from Cython.Build import cythonize
-        v[:] = cythonize(*args, **kwargs)
+        ext_modules[:] = cythonize(*args, **kwargs)
     return lazy(list, '__len__', init)
