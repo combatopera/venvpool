@@ -50,3 +50,19 @@ class SourceInfo:
             self.pyxpaths = [path for path in pyxpaths if path.path not in ignoredpaths]
         else:
             self.pyxpaths = pyxpaths
+
+def lazy(clazz, methodname, init):
+    def override(*args, **kwargs):
+        init(obj)
+        delattr(T, methodname)
+        return orig(*args, **kwargs)
+    orig = getattr(clazz, methodname)
+    T = type('T', (clazz, object), {methodname: override})
+    obj = T()
+    return obj
+
+def cythonize(*args, **kwargs):
+    def init(v):
+        from Cython.Build import cythonize
+        v[:] = cythonize(*args, **kwargs)
+    return lazy(list, '__iter__', init)
