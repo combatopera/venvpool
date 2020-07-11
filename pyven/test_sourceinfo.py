@@ -28,7 +28,7 @@ class TestLazy(TestCase):
             return self.k
 
         def bar(self):
-            return self.k
+            return -self.k
 
     def test_works(self):
         def init(o):
@@ -37,9 +37,9 @@ class TestLazy(TestCase):
         self.assertEqual(0, obj.k)
         self.assertEqual(0, obj.foo())
         self.assertEqual(0, obj.k)
-        self.assertEqual(1, obj.bar())
+        self.assertEqual(-1, obj.bar())
         self.assertEqual(1, obj.k)
-        self.assertEqual(1, obj.bar())
+        self.assertEqual(-1, obj.bar())
         self.assertEqual(1, obj.k)
         for names in ['foo', 'bar'], ['bar', 'foo']:
             obj = lazy(self.Obj, init, *names)
@@ -48,7 +48,7 @@ class TestLazy(TestCase):
             self.assertEqual(1, obj.k)
             self.assertEqual(1, obj.foo())
             self.assertEqual(1, obj.k)
-            self.assertEqual(1, obj.bar())
+            self.assertEqual(-1, obj.bar())
             self.assertEqual(1, obj.k)
 
     def test_works2(self):
