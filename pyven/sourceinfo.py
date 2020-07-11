@@ -54,11 +54,11 @@ class SourceInfo:
 def lazy(clazz, initbefore, init):
     def override(*args, **kwargs):
         init(obj)
-        delattr(T, initbefore)
+        delattr(Lazy, initbefore)
         return orig(*args, **kwargs)
     orig = getattr(clazz, initbefore)
-    T = type('T', (clazz, object), {initbefore: override})
-    obj = T()
+    Lazy = type('Lazy', (clazz, object), {initbefore: override})
+    obj = Lazy()
     return obj
 
 def cythonize(*args, **kwargs):
