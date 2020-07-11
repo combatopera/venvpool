@@ -65,4 +65,4 @@ def cythonize(*args, **kwargs):
     def init(v):
         from Cython.Build import cythonize
         v[:] = cythonize(*args, **kwargs)
-    return lazy(list, '__iter__', init)
+    return lazy(list, '__len__', init)
