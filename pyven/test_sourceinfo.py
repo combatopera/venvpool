@@ -41,3 +41,15 @@ class TestLazy(TestCase):
         self.assertEqual(1, obj.k)
         self.assertEqual(1, obj.bar())
         self.assertEqual(1, obj.k)
+
+    def test_works2(self):
+        def init(v):
+            v[:] = 0, 1, 2
+        obj = lazy(list, '__iter__', init)
+        self.assertEqual(0, len(obj))
+        self.assertEqual((0, 1, 2), tuple(obj))
+        self.assertEqual(3, len(obj))
+        obj = lazy(list, '__getitem__', init)
+        self.assertEqual((), tuple(obj))
+        self.assertEqual(1, obj[1])
+        self.assertEqual((0, 1, 2), tuple(obj))
