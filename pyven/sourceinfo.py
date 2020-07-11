@@ -53,12 +53,12 @@ class SourceInfo:
             self.pyxpaths = pyxpaths
 
 def lazy(clazz, init, *initbefore):
-    lock = Lock()
+    initlock = Lock()
     init = [init]
     def overridefactory(name):
         orig = getattr(clazz, name)
         def override(*args, **kwargs):
-            with lock:
+            with initlock:
                 if init:
                     init[0](obj)
                     del init[:]
