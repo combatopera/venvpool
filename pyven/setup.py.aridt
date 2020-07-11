@@ -9,11 +9,7 @@ sourceinfo = SourceInfo('.')
 
 def ext_modules():
     paths = [path.make_ext() for path in sourceinfo.pyxpaths]
-    if paths:
-        # XXX: Can cythonize be deferred?
-        from Cython.Build import cythonize
-        return dict(ext_modules = cythonize(paths))
-    return {}
+    return dict(ext_modules = cythonize(paths)) if paths else {}
 
 setuptools.setup(
         name = $"$(name),
