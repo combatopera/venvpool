@@ -58,11 +58,11 @@ class TestLazy(TestCase):
         def init(v):
             v[:] = 0, 1, 2
         obj = lazy(list, '__len__', init)
-        empty = True
-        for x in obj:
-            empty = False
-        self.assertTrue(empty)
+        n = 0
+        for _ in obj:
+            n += 1
+        self.assertEqual(0, n)
         self.assertEqual(3, len(obj))
-        for x in obj:
-            empty = False
-        self.assertFalse(empty)
+        for _ in obj:
+            n += 1
+        self.assertEqual(3, n)
