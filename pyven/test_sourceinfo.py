@@ -33,7 +33,7 @@ class TestLazy(TestCase):
     def test_works(self):
         def init(o):
             o.k += 1
-        obj = lazy(self.Obj, 'bar', init)
+        obj = lazy(self.Obj, init, 'bar')
         self.assertEqual(0, obj.k)
         self.assertEqual(0, obj.foo())
         self.assertEqual(0, obj.k)
@@ -41,15 +41,24 @@ class TestLazy(TestCase):
         self.assertEqual(1, obj.k)
         self.assertEqual(1, obj.bar())
         self.assertEqual(1, obj.k)
+        for names in ['foo', 'bar'], ['bar', 'foo']:
+            obj = lazy(self.Obj, init, *names)
+            self.assertEqual(0, obj.k)
+            self.assertEqual(1, obj.foo())
+            self.assertEqual(1, obj.k)
+            self.assertEqual(1, obj.foo())
+            self.assertEqual(1, obj.k)
+            self.assertEqual(1, obj.bar())
+            self.assertEqual(1, obj.k)
 
     def test_works2(self):
         def init(v):
             v[:] = 0, 1, 2
-        obj = lazy(list, '__iter__', init)
+        obj = lazy(list, init, '__iter__')
         self.assertEqual(0, len(obj))
         self.assertEqual((0, 1, 2), tuple(obj))
         self.assertEqual(3, len(obj))
-        obj = lazy(list, '__getitem__', init)
+        obj = lazy(list, init, '__getitem__')
         self.assertEqual((), tuple(obj))
         self.assertEqual(1, obj[1])
         self.assertEqual((0, 1, 2), tuple(obj))
@@ -57,7 +66,7 @@ class TestLazy(TestCase):
     def test_lenisnotenough(self):
         def init(v):
             v[:] = 0, 1, 2
-        obj = lazy(list, '__len__', init)
+        obj = lazy(list, init, '__len__')
         n = 0
         for _ in obj:
             n += 1

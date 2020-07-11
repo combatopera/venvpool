@@ -51,13 +51,16 @@ class SourceInfo:
         else:
             self.pyxpaths = pyxpaths
 
-def lazy(clazz, initbefore, init):
-    def override(*args, **kwargs):
-        init(obj)
-        delattr(Lazy, initbefore)
-        return orig(*args, **kwargs)
-    orig = getattr(clazz, initbefore)
-    Lazy = type('Lazy', (clazz, object), {initbefore: override})
+def lazy(clazz, init, *initbefore):
+    def overridefactory(name):
+        orig = getattr(clazz, name)
+        def override(*args, **kwargs):
+            init(obj)
+            for n in initbefore:
+                delattr(Lazy, n)
+            return orig(*args, **kwargs)
+        return override
+    Lazy = type('Lazy', (clazz, object), {name: overridefactory(name) for name in initbefore})
     obj = Lazy()
     return obj
 
