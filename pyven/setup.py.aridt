@@ -8,8 +8,8 @@ $readfile$./(sourceinfo.py)
 sourceinfo = SourceInfo('.')
 
 def ext_modules():
-    paths = [path.make_ext() for path in sourceinfo.pyxpaths]
-    return dict(ext_modules = cythonize(paths)) if paths else {}
+    extensions = [path.make_ext() for path in sourceinfo.pyxpaths]
+    return dict(ext_modules = cythonize(extensions)) if extensions else {}
 
 setuptools.setup(
         name = $"$(name),
