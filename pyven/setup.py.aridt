@@ -5,13 +5,12 @@ def long_description():
         return f.read()
 
 $readfile$./(sourceinfo.py)
-sourceinfo = SourceInfo('.')
-
 $readfile$./(cythonize.py)
 def ext_modules():
     extensions = [path.make_ext() for path in sourceinfo.pyxpaths]
     return dict(ext_modules = cythonize(extensions)) if extensions else {}
 
+sourceinfo = SourceInfo('.')
 setuptools.setup(
         name = $"$(name),
         version = $"$(version),
