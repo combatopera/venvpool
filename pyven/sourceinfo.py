@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from threading import Lock
 import os, setuptools, subprocess
 
 class SourceInfo:
@@ -52,12 +53,14 @@ class SourceInfo:
             self.pyxpaths = pyxpaths
 
 def lazy(clazz, init, *initbefore):
+    lock = Lock()
     def overridefactory(name):
         orig = getattr(clazz, name)
         def override(*args, **kwargs):
-            init(obj)
-            for n in initbefore:
-                delattr(Lazy, n)
+            with lock:
+                init(obj)
+                for n in initbefore:
+                    delattr(Lazy, n)
             return orig(*args, **kwargs)
         return override
     Lazy = type('Lazy', (clazz, object), {name: overridefactory(name) for name in initbefore})
