@@ -54,13 +54,14 @@ class SourceInfo:
 
 def lazy(clazz, init, *initbefore):
     lock = Lock()
+    init = [init]
     def overridefactory(name):
         orig = getattr(clazz, name)
         def override(*args, **kwargs):
             with lock:
-                init(obj)
-                for n in initbefore:
-                    delattr(Lazy, n)
+                if init:
+                    init[0](obj)
+                    del init[:]
             return orig(*args, **kwargs)
         return override
     Lazy = type('Lazy', (clazz, object), {name: overridefactory(name) for name in initbefore})
