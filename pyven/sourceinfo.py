@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from threading import Lock
-import os, setuptools, subprocess
-
 class SourceInfo:
 
     class PYXPath:
@@ -36,6 +33,7 @@ class SourceInfo:
             return g['make_ext'](self.package + '.' + self.name[:-len(self.dotpyx)], self.path)
 
     def __init__(self, rootdir):
+        import os, setuptools, subprocess
         self.packages = setuptools.find_packages(rootdir)
         def g():
             for package in self.packages:
@@ -51,25 +49,3 @@ class SourceInfo:
             self.pyxpaths = [path for path in pyxpaths if path.path not in ignoredpaths]
         else:
             self.pyxpaths = pyxpaths
-
-def lazy(clazz, init, *initbefore):
-    initlock = Lock()
-    init = [init]
-    def overridefactory(name):
-        orig = getattr(clazz, name)
-        def override(*args, **kwargs):
-            with initlock:
-                if init:
-                    init[0](obj)
-                    del init[:]
-            return orig(*args, **kwargs)
-        return override
-    Lazy = type('Lazy', (clazz, object), {name: overridefactory(name) for name in initbefore})
-    obj = Lazy()
-    return obj
-
-def cythonize(*args, **kwargs):
-    def init(ext_modules):
-        from Cython.Build import cythonize
-        ext_modules[:] = cythonize(*args, **kwargs)
-    return lazy(list, init, '__getitem__', '__iter__', '__len__')

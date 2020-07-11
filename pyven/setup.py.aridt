@@ -1,4 +1,4 @@
-import os, setuptools
+import setuptools
 
 def long_description():
     with open('README.md') as f:
@@ -7,6 +7,7 @@ def long_description():
 $readfile$./(sourceinfo.py)
 sourceinfo = SourceInfo('.')
 
+$readfile$./(cythonize.py)
 def ext_modules():
     extensions = [path.make_ext() for path in sourceinfo.pyxpaths]
     return dict(ext_modules = cythonize(extensions)) if extensions else {}
