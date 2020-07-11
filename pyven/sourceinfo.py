@@ -72,4 +72,4 @@ def cythonize(*args, **kwargs):
     def init(ext_modules):
         from Cython.Build import cythonize
         ext_modules[:] = cythonize(*args, **kwargs)
-    return lazy(list, '__len__', init)
+    return lazy(list, init, '__iter__', '__len__')
