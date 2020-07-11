@@ -34,11 +34,13 @@ def hasname(info): # TODO: Perhaps deduce a default name and install if executab
 
 class Pip:
 
+    env = dict(os.environ, PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring')
+
     def __init__(self, pippath):
         self.pippath = pippath
 
     def _pipinstall(self, command):
-        subprocess.check_call([self.pippath, 'install'] + command)
+        subprocess.check_call([self.pippath, 'install'] + command, env = self.env)
 
     def installeditable(self, infos):
         specifiers = {}
