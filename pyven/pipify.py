@@ -43,14 +43,19 @@ def pipify(info, version = workingversion):
     context['scripts',] = Scalar(info.scripts())
     context['console_scripts',] = Scalar(info.console_scripts())
     context['universal',] = Number(int({2, 3} <= set(info['pyversions'])))
+    nametoquote = [
+        ['setup.py', pyquote],
+        ['setup.cfg', None],
+    ]
     with Repl(context) as repl:
         seen = set()
         for name in itertools.chain(pyvenbuildrequires(info), info.info.resolved('build', 'requires').unravel()):
             if name not in seen:
                 seen.add(name)
                 repl.printf("build requires += %s", name)
-    # XXX: Is pip install faster without pyproject.toml when only setuptools and wheel are needed?
-    for name, quote in ['setup.py', pyquote], ['setup.cfg', None], ['pyproject.toml', lambda c, r: Text(tomlquote(r.resolve(c).cat()))]:
+        if seen != {'setuptools', 'wheel'}:
+            nametoquote.append(['pyproject.toml', lambda c, r: Text(tomlquote(r.resolve(c).cat()))])
+    for name, quote in nametoquote:
         context['"',] = Function(quote)
         with Repl(context) as repl:
             repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, name)))
