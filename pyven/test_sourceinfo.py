@@ -53,3 +53,16 @@ class TestLazy(TestCase):
         self.assertEqual((), tuple(obj))
         self.assertEqual(1, obj[1])
         self.assertEqual((0, 1, 2), tuple(obj))
+
+    def test_lenisnotenough(self):
+        def init(v):
+            v[:] = 0, 1, 2
+        obj = lazy(list, '__len__', init)
+        empty = True
+        for x in obj:
+            empty = False
+        self.assertTrue(empty)
+        self.assertEqual(3, len(obj))
+        for x in obj:
+            empty = False
+        self.assertFalse(empty)
