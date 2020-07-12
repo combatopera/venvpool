@@ -31,3 +31,25 @@ def tomlquote(text): # TODO: Migrate to aridity.
     def repl(m):
         return ''.join(r"\u%04X" % ord(c) for c in m.group())
     return '"%s"' % tomlbasicbadchars.sub(repl, text)
+
+class Excludes:
+
+    def __init__(self, globs):
+        def disjunction():
+            sep = re.escape(os.sep)
+            star = "[^%s]*" % sep
+            def components():
+                for word in glob.split('/'):
+                    if '**' == word:
+                        yield "(?:%s%s)*" % (star, sep)
+                    else:
+                        yield star.join(re.escape(part) for part in word.split('*'))
+                        yield sep
+            for glob in globs:
+                concat = ''.join(components())
+                assert concat.endswith(sep)
+                yield concat[:-len(sep)]
+        self.pattern = re.compile("^%s$" % '|'.join(disjunction()))
+
+    def __contains__(self, relpath):
+        return self.pattern.search(relpath) is not None

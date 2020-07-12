@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .util import tomlquote
+from .util import Excludes, tomlquote
 from unittest import TestCase
+import os
 
 class TestUtil(TestCase):
 
@@ -24,3 +25,17 @@ class TestUtil(TestCase):
         self.assertEqual('"abc\t \x7e\x80"', tomlquote('abc\t \x7e\x80'))
         self.assertEqual(r'"\u005C\u0022"', tomlquote(r'\"'))
         self.assertEqual(r'"\u0000\u0008\u000A\u001F\u007F"', tomlquote('\x00\x08\x0a\x1f\x7f'))
+
+    def test_excludes(self):
+        e = Excludes(['**/contrib/*', '**/*_turbo/*'])
+        self.assertFalse('contrib' in e)
+        self.assertFalse(os.path.join('a', 'contrib') in e)
+        self.assertTrue(os.path.join('contrib', 'x') in e)
+        self.assertTrue(os.path.join('a', 'contrib', 'x') in e)
+        self.assertTrue(os.path.join('a', 'bb', 'contrib', 'x') in e)
+        for t in '_turbo', 'w_turbo', 'ww_turbo':
+            self.assertFalse(t in e)
+            self.assertFalse(os.path.join('a', t) in e)
+            self.assertTrue(os.path.join(t, 'x') in e)
+            self.assertTrue(os.path.join('a', t, 'x') in e)
+            self.assertTrue(os.path.join('a', 'bb', t, 'x') in e)

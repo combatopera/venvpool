@@ -23,16 +23,16 @@ from .files import Files
 from .licheck import mainimpl as licheckimpl
 from .nlcheck import mainimpl as nlcheckimpl
 from .projectinfo import ProjectInfo
-from .util import stderr, stripeol
+from .util import Excludes, stderr, stripeol
 from itertools import chain
 from setuptools import find_packages
 import os, re, subprocess, sys
 
 def licheck(info, files):
     def g():
+        excludes = Excludes(['**/contrib/*', '**/*_turbo/*'])
         for path in files.allsrcpaths:
-            parentname = os.path.basename(os.path.dirname(path))
-            if parentname != 'contrib' and not parentname.endswith('_turbo'):
+            if os.path.relpath(path, files.root) not in excludes:
                 yield path
     licheckimpl(info, list(g()))
 
