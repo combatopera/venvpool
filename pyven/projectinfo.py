@@ -60,6 +60,7 @@ class ProjectInfo:
             repl('build requires := $list()')
             repl('licenses := $list(GPL)')
             repl('MIT path = LICENSE')
+            repl('licheck exclude globs := $list()')
             repl.printf(". %s", os.path.abspath(infopath))
         self.projectdir = projectdir
 

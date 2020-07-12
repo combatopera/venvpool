@@ -30,7 +30,7 @@ import os, re, subprocess, sys
 
 def licheck(info, files):
     def g():
-        excludes = Excludes(['**/contrib/*', '**/*_turbo/*'])
+        excludes = Excludes(info['licheck']['exclude']['globs'])
         for path in files.allsrcpaths:
             if os.path.relpath(path, files.root) not in excludes:
                 yield path
