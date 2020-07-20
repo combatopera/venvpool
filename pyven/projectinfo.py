@@ -142,5 +142,5 @@ class ProjectInfo:
                     continue
             for obj in m.body:
                 if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
-                    v.append("%s=%s:%s" % (obj.name[len(prefix):], path[:-len(extension)].replace(os.sep, '.'), obj.name))
+                    v.append("%s=%s:%s" % (obj.name[len(prefix):].replace('_', '-'), path[:-len(extension)].replace(os.sep, '.'), obj.name))
         return v
