@@ -20,8 +20,8 @@ from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from .util import tomlquote
 from argparse import ArgumentParser
-from aridimpl.model import Function, Number, Scalar, Text
 from aridity import Repl
+from aridity.model import Function, Number, Scalar, Text
 from pkg_resources import resource_filename
 import itertools, os, subprocess, sys
 

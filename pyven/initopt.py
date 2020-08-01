@@ -17,8 +17,7 @@
 
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from aridimpl.util import NoSuchPathException
-from aridity import Context, Repl
+from aridity import Context, NoSuchPathException, Repl
 import logging, os, re, subprocess, sys
 
 log = logging.getLogger(__name__)

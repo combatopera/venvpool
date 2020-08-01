@@ -17,8 +17,9 @@
 
 from __future__ import with_statement
 from .files import Files
+from aridity import Context, Repl
 from pkg_resources import parse_requirements
-import aridity, logging, os, stat
+import logging, os, stat
 
 log = logging.getLogger(__name__)
 
@@ -50,8 +51,8 @@ class ProjectInfo:
             projectdir = parent
 
     def __init__(self, projectdir, infopath):
-        self.info = aridity.Context()
-        with aridity.Repl(self.info) as repl:
+        self.info = Context()
+        with Repl(self.info) as repl:
             repl('requires := $list()')
             repl('pyversions := $list()')
             repl('proprietary = false')
