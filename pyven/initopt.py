@@ -17,14 +17,15 @@
 
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from aridity import Context, NoSuchPathException, Repl
+from aridity import NoSuchPathException
+from aridity.config import Config
 import logging, os, re, subprocess, sys
 
 log = logging.getLogger(__name__)
 pkg_resources = re.compile(br'\bpkg_resources\b')
 eolbytes = set(b'\r\n')
 
-def hasname(info): # TODO: Perhaps deduce a default name and install if executable is true.
+def _hasname(info): # TODO: Perhaps deduce a default name and install if executable is true.
     try:
         info['name']
         return True
@@ -60,15 +61,14 @@ def main_initopt():
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
     home = os.path.expanduser('~')
     def configpaths():
-        context = Context()
-        with Repl(context) as repl:
-            repl('. $/($(~) .settings.arid)')
-        projectsdir = context.resolved('projectsdir').value
+        config = Config.blank()
+        config.load(os.path.join(home, '.settings.arid'))
+        projectsdir = config.projectsdir
         for p in sorted(os.listdir(projectsdir)):
             configpath = os.path.join(projectsdir, p, 'project.arid')
             if os.path.exists(configpath):
                 yield configpath
-    allinfos = {i['name']: i for i in (ProjectInfo.seek(os.path.dirname(p)) for p in configpaths()) if hasname(i)}
+    allinfos = {i['name']: i for i in (ProjectInfo.seek(os.path.dirname(p)) for p in configpaths()) if _hasname(i)}
     def add(infos, i):
         if i not in infos:
             infos.add(i)
