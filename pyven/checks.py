@@ -30,7 +30,7 @@ import os, re, subprocess, sys
 
 def licheck(info, files):
     def g():
-        excludes = Excludes(info['licheck']['exclude']['globs'])
+        excludes = Excludes(info.config.licheck.exclude.globs)
         for path in files.allsrcpaths:
             if os.path.relpath(path, files.root) not in excludes:
                 yield path
@@ -79,7 +79,7 @@ def main_checks():
     return status
 
 def everyversion(info, workspace, noseargs):
-    for pyversion in info['pyversions']:
+    for pyversion in info.config.pyversions:
         subprocess.check_call([os.path.abspath(os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks'))] + noseargs, cwd = info.projectdir)
 
 def main_tests():

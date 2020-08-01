@@ -20,5 +20,5 @@ import os
 
 def main_drmake():
     info = ProjectInfo.seek('.')
-    command = 'docker', 'build', '-t', info['docker']['tag'], info.projectdir
+    command = 'docker', 'build', '-t', info.config.docker.tag, info.projectdir
     os.execvp(command[0], command)

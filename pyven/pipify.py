@@ -30,7 +30,7 @@ def pyquote(context, resolvable): # TODO LATER: Already exists in aridity.
 
 def pipify(info, version = workingversion):
     release = version != workingversion
-    description, url = info.descriptionandurl() if release and not info['proprietary'] else [None, None]
+    description, url = info.descriptionandurl() if release and not info.config.proprietary else [None, None]
     context = info.info.createchild()
     context['version',] = Scalar(version)
     context['description',] = Scalar(description)
@@ -42,14 +42,14 @@ def pipify(info, version = workingversion):
     context['install_requires',] = Scalar(info.allrequires() if release else info.remoterequires())
     context['scripts',] = Scalar(info.scripts())
     context['console_scripts',] = Scalar(info.console_scripts())
-    context['universal',] = Number(int({2, 3} <= set(info['pyversions'])))
+    context['universal',] = Number(int({2, 3} <= set(info.config.pyversions)))
     nametoquote = [
         ['setup.py', pyquote],
         ['setup.cfg', None],
     ]
     with Repl(context) as repl:
         seen = set()
-        for name in itertools.chain(pyvenbuildrequires(info), info.info.resolved('build', 'requires').unravel()):
+        for name in itertools.chain(pyvenbuildrequires(info), info.config.build.requires):
             if name not in seen:
                 seen.add(name)
                 repl.printf("build requires += %s", name)

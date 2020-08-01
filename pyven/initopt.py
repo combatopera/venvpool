@@ -27,7 +27,7 @@ eolbytes = set(b'\r\n')
 
 def _hasname(info): # TODO: Perhaps deduce a default name and install if executable is true.
     try:
-        info['name']
+        info.config.name
         return True
     except NoSuchPathException:
         log.debug("Skip: %s", info.projectdir)
@@ -75,8 +75,8 @@ def main_initopt():
             for p in i.localrequires():
                 add(infos, allinfos[p])
     for info in allinfos.values():
-        if info['executable']:
-            for pyversion in info['pyversions']:
+        if info.config.executable:
+            for pyversion in info.config.pyversions:
                 if pyversion in versiontoinfos:
                     add(versiontoinfos[pyversion], info)
     for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir):

@@ -17,7 +17,7 @@
 
 from __future__ import with_statement
 from .files import Files
-from aridity import Context, Repl
+from aridity.config import Config
 from pkg_resources import parse_requirements
 import logging, os, stat
 
@@ -51,8 +51,8 @@ class ProjectInfo:
             projectdir = parent
 
     def __init__(self, projectdir, infopath):
-        self.info = Context()
-        with Repl(self.info) as repl:
+        self.config = Config.blank()
+        with self.config.repl() as repl:
             repl('requires := $list()')
             repl('pyversions := $list()')
             repl('proprietary = false')
@@ -66,10 +66,7 @@ class ProjectInfo:
         self.projectdir = projectdir
 
     def mitpath(self):
-        return os.path.join(self.projectdir, self.info.resolved('MIT', 'path').unravel())
-
-    def __getitem__(self, key):
-        return self.info.resolved(key).unravel()
+        return os.path.join(self.projectdir, self.config.MIT.path)
 
     def contextworkspace(self):
         return os.path.join(self.projectdir, '..')

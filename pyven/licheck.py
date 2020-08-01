@@ -40,18 +40,18 @@ intersection = '''# This file incorporates work covered by the following copyrig
 '''
 
 def mainimpl(info, paths):
-    if info['proprietary']:
+    if info.config.proprietary:
         sys.stderr.write('SKIP ')
         return
     sections = []
-    for name in info['licenses']:
+    for name in info.config.licenses:
         if sections:
             sections.append(intersection)
         if 'GPL' == name:
             sections.append(gpltemplate % {
-                'years': ', '.join(str(y) for y in info['years']),
-                'author': info['author'],
-                'name': info['name'],
+                'years': ', '.join(str(y) for y in info.config.years),
+                'author': info.config.author,
+                'name': info.config.name,
             })
         elif 'MIT' == name:
             with open(info.mitpath()) as f:
