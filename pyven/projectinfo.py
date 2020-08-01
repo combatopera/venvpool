@@ -72,7 +72,7 @@ class ProjectInfo:
         return os.path.join(self.projectdir, '..')
 
     def allrequires(self):
-        return self.config.requires
+        return list(self.config.requires)
 
     def _parsedrequires(self):
         class Req:
