@@ -17,7 +17,6 @@
 
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from aridity import NoSuchPathException
 from aridity.config import Config
 import logging, os, re, subprocess, sys
 
@@ -29,7 +28,7 @@ def _hasname(info): # TODO: Perhaps deduce a default name and install if executa
     try:
         info.config.name
         return True
-    except NoSuchPathException:
+    except AttributeError:
         log.debug("Skip: %s", info.projectdir)
 
 class Pip:
