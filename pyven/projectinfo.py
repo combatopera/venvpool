@@ -72,7 +72,7 @@ class ProjectInfo:
         return os.path.join(self.projectdir, '..')
 
     def allrequires(self):
-        return self['requires']
+        return self.config.requires
 
     def _parsedrequires(self):
         class Req:
@@ -98,7 +98,7 @@ class ProjectInfo:
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
         pattern = re.compile('-([0-9]+)[-.]')
         try:
-            with urllib.request.urlopen("https://pypi.org/simple/%s/" % self['name']) as f:
+            with urllib.request.urlopen("https://pypi.org/simple/%s/" % self.config.name) as f:
                 doc = dom.parseString(f.read())
             last = max(int(pattern.search(textcontent(a)).group(1)) for a in doc.getElementsByTagName('a'))
         except urllib.error.HTTPError as e:
@@ -119,7 +119,7 @@ class ProjectInfo:
         return [name[:-len(suffix)] for name in os.listdir(self.projectdir) if name.endswith(suffix) and 'setup.py' != name and not name.startswith('test_')]
 
     def scripts(self):
-        if not self['executable']:
+        if not self.config.executable:
             return []
         xmask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         def isscript(path):
