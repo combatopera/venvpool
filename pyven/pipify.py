@@ -20,8 +20,7 @@ from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from .util import tomlquote
 from argparse import ArgumentParser
-from aridity import Repl
-from aridity.model import Function, Number, Scalar, Text
+from aridity.model import Text
 from pkg_resources import resource_filename
 import itertools, os, subprocess, sys
 
@@ -31,23 +30,23 @@ def pyquote(context, resolvable): # TODO LATER: Already exists in aridity.
 def pipify(info, version = workingversion):
     release = version != workingversion
     description, url = info.descriptionandurl() if release and not info.config.proprietary else [None, None]
-    context = info.info.createchild()
-    context['version',] = Scalar(version)
-    context['description',] = Scalar(description)
-    context['long_description',] = Text('long_description()' if release else repr(None))
-    context['url',] = Scalar(url)
+    config = info.config.createchild()
+    config.put('version', scalar = version)
+    config.put('description', scalar = description)
+    config.put('long_description', text = 'long_description()' if release else repr(None))
+    config.put('url', scalar = url)
     if not release:
-        context['author',] = Scalar(None)
-    context['py_modules',] = Scalar(info.py_modules())
-    context['install_requires',] = Scalar(info.allrequires() if release else info.remoterequires())
-    context['scripts',] = Scalar(info.scripts())
-    context['console_scripts',] = Scalar(info.console_scripts())
-    context['universal',] = Number(int({2, 3} <= set(info.config.pyversions)))
+        config.put('author', scalar = None)
+    config.put('py_modules', scalar = info.py_modules())
+    config.put('install_requires', scalar = info.allrequires() if release else info.remoterequires())
+    config.put('scripts', scalar = info.scripts())
+    config.put('console_scripts', scalar = info.console_scripts())
+    config.put('universal', number = int({2, 3} <= set(info.config.pyversions)))
     nametoquote = [
         ['setup.py', pyquote],
         ['setup.cfg', None],
     ]
-    with Repl(context) as repl:
+    with config.repl() as repl:
         seen = set()
         for name in itertools.chain(pyvenbuildrequires(info), info.config.build.requires):
             if name not in seen:
@@ -56,10 +55,10 @@ def pipify(info, version = workingversion):
         if seen != {'setuptools', 'wheel'}:
             nametoquote.append(['pyproject.toml', lambda c, r: Text(tomlquote(r.resolve(c).cat()))])
     for name, quote in nametoquote:
-        context['"',] = Function(quote)
-        with Repl(context) as repl:
-            repl.printf("redirect %s", os.path.abspath(os.path.join(info.projectdir, name)))
-            repl.printf("< %s", resource_filename(__name__, name + '.aridt')) # TODO: Make aridity get the resource.
+        config.put('"', function = quote)
+        config.processtemplate(
+                resource_filename(__name__, name + '.aridt'), # TODO: Make aridity get the resource.
+                os.path.abspath(os.path.join(info.projectdir, name)))
 
 def pyvenbuildrequires(info):
     yield 'setuptools'
