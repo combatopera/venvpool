@@ -62,7 +62,7 @@ def main_initopt():
     home = os.path.expanduser('~')
     def configpaths():
         config = Config.blank()
-        config.load(os.path.join(home, '.settings.arid'))
+        config.loadsettings()
         projectsdir = config.projectsdir
         for p in sorted(os.listdir(projectsdir)):
             configpath = os.path.join(projectsdir, p, 'project.arid')
