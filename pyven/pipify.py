@@ -46,14 +46,13 @@ def pipify(info, version = workingversion):
         ['setup.py', pyquote],
         ['setup.cfg', None],
     ]
-    with config.repl() as repl:
-        seen = set()
-        for name in itertools.chain(pyvenbuildrequires(info), info.config.build.requires):
-            if name not in seen:
-                seen.add(name)
-                repl.printf("build requires += %s", name)
-        if seen != {'setuptools', 'wheel'}:
-            nametoquote.append(['pyproject.toml', lambda c, r: Text(tomlquote(r.resolve(c).cat()))])
+    seen = set()
+    for name in itertools.chain(pyvenbuildrequires(info), info.config.build.requires):
+        if name not in seen:
+            seen.add(name)
+            config.printf("build requires += %s", name)
+    if seen != {'setuptools', 'wheel'}:
+        nametoquote.append(['pyproject.toml', lambda c, r: Text(tomlquote(r.resolve(c).cat()))])
     for name, quote in nametoquote:
         config.put('"', function = quote)
         config.processtemplate(

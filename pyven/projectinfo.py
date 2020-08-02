@@ -52,17 +52,16 @@ class ProjectInfo:
 
     def __init__(self, projectdir, infopath):
         self.config = Config.blank()
-        with self.config.repl() as repl:
-            repl('requires := $list()')
-            repl('pyversions := $list()')
-            repl('proprietary = false')
-            repl('executable = false') # XXX: Make it true?
-            repl('resource types := $list(pxd pyx pyxbld arid aridt)')
-            repl('build requires := $list()')
-            repl('licenses := $list(GPL)')
-            repl('MIT path = LICENSE')
-            repl('licheck exclude globs := $list()')
-            repl.printf(". %s", os.path.abspath(infopath))
+        self.config.printf('requires := $list()')
+        self.config.printf('pyversions := $list()')
+        self.config.printf('proprietary = false')
+        self.config.printf('executable = false') # XXX: Make it true?
+        self.config.printf('resource types := $list(pxd pyx pyxbld arid aridt)')
+        self.config.printf('build requires := $list()')
+        self.config.printf('licenses := $list(GPL)')
+        self.config.printf('MIT path = LICENSE')
+        self.config.printf('licheck exclude globs := $list()')
+        self.config.printf(". %s", os.path.abspath(infopath))
         self.projectdir = projectdir
 
     def mitpath(self):
