@@ -18,7 +18,7 @@
 from __future__ import with_statement
 from .files import Files
 from aridity.config import Config
-from pkg_resources import parse_requirements
+from pkg_resources import parse_requirements, resource_filename
 import logging, os, stat
 
 log = logging.getLogger(__name__)
@@ -52,16 +52,8 @@ class ProjectInfo:
 
     def __init__(self, projectdir, infopath):
         self.config = Config.blank()
-        self.config.printf('requires := $list()')
-        self.config.printf('pyversions := $list()')
-        self.config.printf('proprietary = false')
-        self.config.printf('executable = false') # XXX: Make it true?
-        self.config.printf('resource types := $list(pxd pyx pyxbld arid aridt)')
-        self.config.printf('build requires := $list()')
-        self.config.printf('licenses := $list(GPL)')
-        self.config.printf('MIT path = LICENSE')
-        self.config.printf('licheck exclude globs := $list()')
-        self.config.printf(". %s", os.path.abspath(infopath))
+        for path in resource_filename(__name__, 'projectinfo.arid'), os.path.abspath(infopath):
+            self.config.load(path)
         self.projectdir = projectdir
 
     def mitpath(self):
