@@ -15,11 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import workingversion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from pkg_resources import get_distribution
 import os, subprocess
+
+nullversion = '0.0.0'
 
 class Namespace:
 
@@ -41,7 +42,7 @@ def bindir(info, workspace, pyversion):
         reqs = info.remoterequires() # A new list.
         pyvenname = 'pyven'
         pyvendist = get_distribution(pyvenname)
-        if workingversion == pyvendist.version:
+        if nullversion == pyvendist.version:
             addprojects(Namespace(localrequires = lambda: [pyvenname]))
         else:
             reqs = [r for r in reqs if r != pyvenname]

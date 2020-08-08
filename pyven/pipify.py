@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import workingversion
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from .util import tomlquote
@@ -27,8 +26,8 @@ import itertools, os, subprocess, sys
 def pyquote(context, resolvable): # TODO LATER: Already exists in aridity.
     return Text(repr(resolvable.resolve(context).value))
 
-def pipify(info, version = workingversion):
-    release = version != workingversion
+def pipify(info, version = None):
+    release = version is not None
     description, url = info.descriptionandurl() if release and not info.config.proprietary else [None, None]
     config = info.config.createchild()
     config.put('version', scalar = version)
