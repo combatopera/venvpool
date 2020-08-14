@@ -73,10 +73,10 @@ def _nose(info, workspace, noseargs, files):
             os.path.join(bindir, 'nosetests'), '--exe', '-v',
             '--with-xunit', '--xunit-file', files.reportpath,
             '--with-cov', '--cov-report', 'term-missing',
-        ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths() + noseargs, cwd = info.projectdir)
-        reportpath = os.path.join(info.projectdir, '.coverage')
-        if os.path.exists(reportpath):
-            os.rename(reportpath, os.path.join(bindir, '..', os.path.basename(reportpath))) # XXX: Even when status is non-zero?
+        ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths() + noseargs)
+        reportname = '.coverage'
+        if os.path.exists(reportname):
+            os.rename(reportname, os.path.join(bindir, '..', reportname)) # XXX: Even when status is non-zero?
         assert not status
 
 def _runcheck(variant, check, *args):
