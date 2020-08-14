@@ -36,7 +36,7 @@ def _licheck(info, files):
                 yield path
     licheckimpl(info, list(g()))
 
-def nlcheck(info, files):
+def _nlcheck(info, files):
     nlcheckimpl(files.allsrcpaths)
 
 def divcheck(info, files):
@@ -69,7 +69,7 @@ def _runcheck(check, info, files):
 def main_checks():
     info = ProjectInfo.seek(os.getcwd()) # XXX: Must this be absolute?
     files = Files(info.projectdir)
-    for check in nlcheck, divcheck, execcheck, pyflakes:
+    for check in divcheck, execcheck, pyflakes:
         _runcheck(check, info, files)
     status = subprocess.call([
         pathto('nosetests'), '--exe', '-v',
@@ -83,7 +83,8 @@ def main_checks():
 
 def everyversion(info, workspace, noseargs):
     files = Files(info.projectdir)
-    _runcheck(_licheck, info, files)
+    for check in _licheck, _nlcheck:
+        _runcheck(check, info, files)
     for pyversion in info.config.pyversions:
         subprocess.check_call([os.path.abspath(os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks'))] + noseargs, cwd = info.projectdir)
 
