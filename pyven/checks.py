@@ -24,7 +24,7 @@ from itertools import chain
 from setuptools import find_packages
 import os, re, subprocess, sys
 
-def _licheck(info, workspace, files):
+def _licheck(info, workspace, noseargs, files):
     from .licheck import licheck
     def g():
         excludes = Excludes(info.config.licheck.exclude.globs)
@@ -33,15 +33,15 @@ def _licheck(info, workspace, files):
                 yield path
     _runcheck('*', licheck, info, list(g()))
 
-def _nlcheck(info, workspace, files):
+def _nlcheck(info, workspace, noseargs, files):
     from .nlcheck import nlcheck
     _runcheck('*', nlcheck, files.allsrcpaths)
 
-def _execcheck(info, workspace, files):
+def _execcheck(info, workspace, noseargs, files):
     from .execcheck import execcheck
     _runcheck('*', execcheck, files.pypaths)
 
-def _divcheck(info, workspace, files):
+def _divcheck(info, workspace, noseargs, files):
     from . import divcheck
     scriptpath = divcheck.__file__
     def divcheck():
@@ -50,7 +50,7 @@ def _divcheck(info, workspace, files):
     for pyversion in info.config.pyversions:
         _runcheck(pyversion, divcheck)
 
-def _pyflakes(info, workspace, files):
+def _pyflakes(info, workspace, noseargs, files):
     with open(os.path.join(files.root, '.flakesignore')) as f:
         ignores = [re.compile(stripeol(l)) for l in f]
     prefixlen = len(files.root + os.sep)
@@ -92,7 +92,7 @@ def main_checks():
 def everyversion(info, workspace, noseargs):
     files = Files(info.projectdir)
     for check in _licheck, _nlcheck, _execcheck, _divcheck, _pyflakes:
-        check(info, workspace, files)
+        check(info, workspace, noseargs, files)
     for pyversion in info.config.pyversions:
         subprocess.check_call([os.path.abspath(os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks'))] + noseargs, cwd = info.projectdir)
 
