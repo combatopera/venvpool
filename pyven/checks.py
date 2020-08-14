@@ -17,7 +17,6 @@
 
 from __future__ import with_statement
 from . import minivenv
-from .divcheck import mainimpl as divcheckimpl
 from .files import Files
 from .projectinfo import ProjectInfo
 from .util import Excludes, stderr, stripeol
@@ -42,8 +41,14 @@ def _execcheck(info, workspace, files):
     from .execcheck import execcheck
     _runcheck(execcheck, files.pypaths)
 
-def divcheck(info, files):
-    divcheckimpl(files.pypaths)
+def _divcheck(info, workspace, files):
+    from . import divcheck
+    scriptpath = divcheck.__file__
+    def divcheck():
+        subprocess.check_call([python, scriptpath] + files.pypaths, cwd = info.projectdir)
+    for pyversion in info.config.pyversions:
+        python = os.path.join(minivenv.bindir(info, workspace, pyversion), 'python')
+        _runcheck(divcheck)
 
 def pyflakes(info, files):
     with open(os.path.join(files.root, '.flakesignore')) as f:
@@ -63,13 +68,14 @@ def pathto(executable):
 
 def _runcheck(check, *args):
     sys.stderr.write("%s: " % check.__name__)
+    sys.stderr.flush()
     check(*args)
     stderr('OK')
 
 def main_checks():
     info = ProjectInfo.seek(os.getcwd()) # XXX: Must this be absolute?
     files = Files(info.projectdir)
-    for check in divcheck, pyflakes:
+    for check in pyflakes,:
         _runcheck(check, info, files)
     status = subprocess.call([
         pathto('nosetests'), '--exe', '-v',
@@ -83,7 +89,7 @@ def main_checks():
 
 def everyversion(info, workspace, noseargs):
     files = Files(info.projectdir)
-    for check in _licheck, _nlcheck, _execcheck:
+    for check in _licheck, _nlcheck, _execcheck, _divcheck:
         check(info, workspace, files)
     for pyversion in info.config.pyversions:
         subprocess.check_call([os.path.abspath(os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks'))] + noseargs, cwd = info.projectdir)

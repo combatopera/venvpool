@@ -16,13 +16,13 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-import re, ast, sys
+import ast, re, sys
 
-def mainimpl(paths):
+def main():
     if sys.version_info[0] >= 3:
         sys.stderr.write('SKIP ')
         return
-    for path in paths:
+    for path in sys.argv[1:]:
         with open(path) as f:
             text = f.read()
         for node in ast.walk(ast.parse(text)):
@@ -33,3 +33,6 @@ def mainimpl(paths):
             hasdiv = False
         if hasdiv == (re.search('^from __future__ import division(?: # .+)?$', text, flags = re.MULTILINE) is None):
             raise Exception(path)
+
+if '__main__' == __name__:
+    main()
