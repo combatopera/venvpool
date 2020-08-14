@@ -19,9 +19,6 @@ from __future__ import with_statement
 import ast, re, sys
 
 def main():
-    if sys.version_info[0] >= 3:
-        sys.stderr.write('SKIP ')
-        return
     for path in sys.argv[1:]:
         with open(path) as f:
             text = f.read()

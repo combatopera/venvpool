@@ -45,7 +45,10 @@ def _divcheck(info, workspace, noseargs, files):
     from . import divcheck
     scriptpath = divcheck.__file__
     def divcheck():
-        subprocess.check_call([os.path.join(minivenv.bindir(info, workspace, pyversion), 'python'), scriptpath] + files.pypaths)
+        if pyversion < 3:
+            subprocess.check_call([os.path.join(minivenv.bindir(info, workspace, pyversion), 'python'), scriptpath] + files.pypaths)
+        else:
+            sys.stderr.write('SKIP ')
     for pyversion in info.config.pyversions:
         _runcheck(pyversion, divcheck)
 
