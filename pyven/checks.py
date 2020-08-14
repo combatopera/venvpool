@@ -28,7 +28,7 @@ from itertools import chain
 from setuptools import find_packages
 import os, re, subprocess, sys
 
-def _licheck(info, files):
+def _licheck(info, workspace, files):
     def g():
         excludes = Excludes(info.config.licheck.exclude.globs)
         for path in files.allsrcpaths:
@@ -36,16 +36,16 @@ def _licheck(info, files):
                 yield path
     licheckimpl(info, list(g()))
 
-def _nlcheck(info, files):
+def _nlcheck(info, workspace, files):
     nlcheckimpl(files.allsrcpaths)
 
-def divcheck(info, files):
+def divcheck(info, workspace, files):
     divcheckimpl(files.pypaths)
 
-def _execcheck(info, files):
+def _execcheck(info, workspace, files):
     execcheckimpl(files.pypaths)
 
-def pyflakes(info, files):
+def pyflakes(info, workspace, files):
     with open(os.path.join(files.root, '.flakesignore')) as f:
         ignores = [re.compile(stripeol(l)) for l in f]
     prefixlen = len(files.root + os.sep)
@@ -61,16 +61,16 @@ def pyflakes(info, files):
 def pathto(executable):
     return os.path.join(os.path.dirname(sys.executable), executable)
 
-def _runcheck(check, info, files):
+def _runcheck(check, info, workspace, files):
     sys.stderr.write("%s: " % check.__name__)
-    check(info, files)
+    check(info, workspace, files)
     stderr('OK')
 
 def main_checks():
     info = ProjectInfo.seek(os.getcwd()) # XXX: Must this be absolute?
     files = Files(info.projectdir)
     for check in divcheck, pyflakes:
-        _runcheck(check, info, files)
+        _runcheck(check, info, None, files)
     status = subprocess.call([
         pathto('nosetests'), '--exe', '-v',
         '--with-xunit', '--xunit-file', files.reportpath,
@@ -84,7 +84,7 @@ def main_checks():
 def everyversion(info, workspace, noseargs):
     files = Files(info.projectdir)
     for check in _licheck, _nlcheck, _execcheck:
-        _runcheck(check, info, files)
+        _runcheck(check, info, workspace, files)
     for pyversion in info.config.pyversions:
         subprocess.check_call([os.path.abspath(os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks'))] + noseargs, cwd = info.projectdir)
 
