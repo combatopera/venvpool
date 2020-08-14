@@ -27,7 +27,6 @@ years +=
 requires +=
     aridity
     lagoon
-    nose-cov
     twine
     virtualenv
 pyversions +=

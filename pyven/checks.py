@@ -73,6 +73,7 @@ def _pyflakes(info, workspace, noseargs, files):
 def _nose(info, workspace, noseargs, files):
     for pyversion in info.config.pyversions:
         bindir = minivenv.bindir(info, workspace, pyversion)
+        subprocess.check_call([os.path.join(bindir, 'pip'), 'install', 'nose-cov'])
         status = subprocess.call([
             os.path.join(bindir, 'nosetests'), '--exe', '-v',
             '--with-xunit', '--xunit-file', files.reportpath,
