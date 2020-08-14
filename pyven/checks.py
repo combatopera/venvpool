@@ -46,7 +46,7 @@ def _divcheck(info, workspace, noseargs, files):
     scriptpath = divcheck.__file__
     def divcheck():
         python = os.path.join(minivenv.bindir(info, workspace, pyversion), 'python')
-        subprocess.check_call([python, scriptpath] + files.pypaths, cwd = info.projectdir)
+        subprocess.check_call([python, scriptpath] + files.pypaths)
     for pyversion in info.config.pyversions:
         _runcheck(pyversion, divcheck)
 
