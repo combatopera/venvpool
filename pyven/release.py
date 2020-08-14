@@ -46,7 +46,7 @@ def main_release():
         copydir = os.path.join(tempdir, os.path.basename(os.path.abspath(info.projectdir)))
         log.info("Copying project to: %s", copydir)
         shutil.copytree(info.projectdir, copydir)
-        for relpath in release(config, git, ProjectInfo.seek(copydir), info.contextworkspace()):
+        for relpath in release(config, git, ProjectInfo.seek(copydir)):
             log.info("Replace artifact: %s", relpath)
             destpath = os.path.join(info.projectdir, relpath)
             try:
@@ -63,12 +63,12 @@ def uploadableartifacts(artifactrelpaths):
         else:
             log.warning("Not uploadable: %s", p)
 
-def release(config, srcgit, info, workspace):
+def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
     scrub()
     version = info.nextversion()
     pipify(info, version) # Test against releases, in theory.
-    everyversion(info, workspace, []) # FIXME LATER: Dependencies of pyven interfere with those of project.
+    everyversion(info, []) # FIXME LATER: Dependencies of pyven interfere with those of project.
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
         for name in filenames:

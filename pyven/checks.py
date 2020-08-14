@@ -24,7 +24,7 @@ from itertools import chain
 from setuptools import find_packages
 import os, re, subprocess, sys
 
-def _licheck(info, workspace, noseargs, files):
+def _licheck(info, noseargs, files):
     from .licheck import licheck
     def g():
         excludes = Excludes(info.config.licheck.exclude.globs)
@@ -33,26 +33,26 @@ def _licheck(info, workspace, noseargs, files):
                 yield path
     _runcheck('*', licheck, info, list(g()))
 
-def _nlcheck(info, workspace, noseargs, files):
+def _nlcheck(info, noseargs, files):
     from .nlcheck import nlcheck
     _runcheck('*', nlcheck, files.allsrcpaths)
 
-def _execcheck(info, workspace, noseargs, files):
+def _execcheck(info, noseargs, files):
     from .execcheck import execcheck
     _runcheck('*', execcheck, files.pypaths)
 
-def _divcheck(info, workspace, noseargs, files):
+def _divcheck(info, noseargs, files):
     from . import divcheck
     scriptpath = divcheck.__file__
     def divcheck():
         if pyversion < 3:
-            subprocess.check_call([os.path.join(minivenv.bindir(info, workspace, pyversion), 'python'), scriptpath] + files.pypaths)
+            subprocess.check_call([os.path.join(minivenv.bindir(info, pyversion), 'python'), scriptpath] + files.pypaths)
         else:
             sys.stderr.write('SKIP ')
     for pyversion in info.config.pyversions:
         _runcheck(pyversion, divcheck)
 
-def _pyflakes(info, workspace, noseargs, files):
+def _pyflakes(info, noseargs, files):
     with open(os.path.join(files.root, '.flakesignore')) as f:
         ignores = [re.compile(stripeol(l)) for l in f]
     prefixlen = len(files.root + os.sep)
@@ -64,15 +64,15 @@ def _pyflakes(info, workspace, noseargs, files):
     paths = [p for p in files.pypaths if accept(p)]
     def pyflakes():
         if paths:
-            bindir = minivenv.bindir(info, workspace, pyversion)
+            bindir = minivenv.bindir(info, pyversion)
             subprocess.check_call([os.path.join(bindir, 'pip'), 'install', 'pyflakes'])
             subprocess.check_call([os.path.join(bindir, 'pyflakes')] + paths)
     for pyversion in info.config.pyversions:
         _runcheck(pyversion, pyflakes)
 
-def _nose(info, workspace, noseargs, files):
+def _nose(info, noseargs, files):
     for pyversion in info.config.pyversions:
-        bindir = minivenv.bindir(info, workspace, pyversion)
+        bindir = minivenv.bindir(info, pyversion)
         subprocess.check_call([os.path.join(bindir, 'pip'), 'install', 'nose-cov'])
         status = subprocess.call([
             os.path.join(bindir, 'nosetests'), '--exe', '-v',
@@ -90,11 +90,10 @@ def _runcheck(variant, check, *args):
     check(*args)
     stderr('OK')
 
-def everyversion(info, workspace, noseargs):
+def everyversion(info, noseargs):
     files = Files(info.projectdir)
     for check in _licheck, _nlcheck, _execcheck, _divcheck, _pyflakes, _nose:
-        check(info, workspace, noseargs, files)
+        check(info, noseargs, files)
 
 def main_tests():
-    info = ProjectInfo.seek('.')
-    everyversion(info, info.contextworkspace(), sys.argv[1:])
+    everyversion(ProjectInfo.seek('.'), sys.argv[1:])

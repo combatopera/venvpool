@@ -25,7 +25,7 @@ class Namespace:
         for name, value in kwargs.items():
             setattr(self, name, value)
 
-def bindir(info, workspace, pyversion):
+def bindir(info, pyversion):
     venvpath = os.path.join(info.projectdir, '.pyven', str(pyversion))
     if not os.path.exists(venvpath):
         subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
@@ -33,7 +33,7 @@ def bindir(info, workspace, pyversion):
         def addprojects(i):
             for name in i.localrequires():
                 if name not in editables:
-                    editables[name] = j = ProjectInfo.seek(os.path.join(workspace, name))
+                    editables[name] = j = ProjectInfo.seek(os.path.join(i.contextworkspace(), name))
                     addprojects(j)
         addprojects(info)
         for i in editables.values():
