@@ -64,8 +64,9 @@ def _pyflakes(info, workspace, noseargs, files):
     paths = [p for p in files.pypaths if accept(p)]
     def pyflakes():
         if paths:
-            pyflakesexe = os.path.join(minivenv.bindir(info, workspace, pyversion), 'pyflakes')
-            subprocess.check_call([pyflakesexe] + paths)
+            bindir = minivenv.bindir(info, workspace, pyversion)
+            subprocess.check_call([os.path.join(bindir, 'pip'), 'install', 'pyflakes'])
+            subprocess.check_call([os.path.join(bindir, 'pyflakes')] + paths)
     for pyversion in info.config.pyversions:
         _runcheck(pyversion, pyflakes)
 

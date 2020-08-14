@@ -28,7 +28,6 @@ requires +=
     aridity
     lagoon
     nose-cov
-    pyflakes
     twine
     virtualenv
 pyversions +=
