@@ -67,8 +67,18 @@ def _pyflakes(info, workspace, noseargs, files):
     for pyversion in info.config.pyversions:
         _runcheck(pyversion, pyflakes)
 
-def pathto(executable):
-    return os.path.join(os.path.dirname(sys.executable), executable)
+def _nose(info, workspace, noseargs, files):
+    for pyversion in info.config.pyversions:
+        bindir = minivenv.bindir(info, workspace, pyversion)
+        status = subprocess.call([
+            os.path.join(bindir, 'nosetests'), '--exe', '-v',
+            '--with-xunit', '--xunit-file', files.reportpath,
+            '--with-cov', '--cov-report', 'term-missing',
+        ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths() + noseargs, cwd = info.projectdir)
+        reportpath = os.path.join(info.projectdir, '.coverage')
+        if os.path.exists(reportpath):
+            os.rename(reportpath, os.path.join(bindir, '..', os.path.basename(reportpath))) # XXX: Even when status is non-zero?
+        assert not status
 
 def _runcheck(variant, check, *args):
     sys.stderr.write("%s[%s]: " % (check.__name__, variant))
@@ -76,25 +86,10 @@ def _runcheck(variant, check, *args):
     check(*args)
     stderr('OK')
 
-def main_checks():
-    info = ProjectInfo.seek(os.getcwd()) # XXX: Must this be absolute?
-    files = Files(info.projectdir)
-    status = subprocess.call([
-        pathto('nosetests'), '--exe', '-v',
-        '--with-xunit', '--xunit-file', files.reportpath,
-        '--with-cov', '--cov-report', 'term-missing',
-    ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths() + sys.argv[1:])
-    reportname = '.coverage'
-    if os.path.exists(reportname):
-        os.rename(reportname, os.path.join(pathto('..'), reportname)) # XXX: Even when status is non-zero?
-    return status
-
 def everyversion(info, workspace, noseargs):
     files = Files(info.projectdir)
-    for check in _licheck, _nlcheck, _execcheck, _divcheck, _pyflakes:
+    for check in _licheck, _nlcheck, _execcheck, _divcheck, _pyflakes, _nose:
         check(info, workspace, noseargs, files)
-    for pyversion in info.config.pyversions:
-        subprocess.check_call([os.path.abspath(os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks'))] + noseargs, cwd = info.projectdir)
 
 def main_tests():
     info = ProjectInfo.seek('.')
