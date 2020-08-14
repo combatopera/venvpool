@@ -28,7 +28,7 @@ from itertools import chain
 from setuptools import find_packages
 import os, re, subprocess, sys
 
-def licheck(info, files):
+def _licheck(info, files):
     def g():
         excludes = Excludes(info.config.licheck.exclude.globs)
         for path in files.allsrcpaths:
@@ -61,13 +61,16 @@ def pyflakes(info, files):
 def pathto(executable):
     return os.path.join(os.path.dirname(sys.executable), executable)
 
+def _runcheck(check, info, files):
+    sys.stderr.write("%s: " % check.__name__)
+    check(info, files)
+    stderr('OK')
+
 def main_checks():
     info = ProjectInfo.seek(os.getcwd()) # XXX: Must this be absolute?
     files = Files(info.projectdir)
-    for check in licheck, nlcheck, divcheck, execcheck, pyflakes:
-        sys.stderr.write("%s: " % check.__name__)
-        check(info, files)
-        stderr('OK')
+    for check in nlcheck, divcheck, execcheck, pyflakes:
+        _runcheck(check, info, files)
     status = subprocess.call([
         pathto('nosetests'), '--exe', '-v',
         '--with-xunit', '--xunit-file', files.reportpath,
@@ -79,6 +82,8 @@ def main_checks():
     return status
 
 def everyversion(info, workspace, noseargs):
+    files = Files(info.projectdir)
+    _runcheck(_licheck, info, files)
     for pyversion in info.config.pyversions:
         subprocess.check_call([os.path.abspath(os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks'))] + noseargs, cwd = info.projectdir)
 
