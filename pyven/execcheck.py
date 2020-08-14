@@ -21,7 +21,7 @@ import os
 execmask = 0x49
 magic = '#!'
 
-def mainimpl(paths):
+def execcheck(paths):
     for path in paths:
         if os.stat(path).st_mode & execmask:
             raise Exception("Should not be executable: %s" % path)

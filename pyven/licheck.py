@@ -39,7 +39,7 @@ intersection = '''# This file incorporates work covered by the following copyrig
 # permission notice:
 '''
 
-def mainimpl(info, paths):
+def licheck(info, paths):
     if info.config.proprietary:
         sys.stderr.write('SKIP ')
         return

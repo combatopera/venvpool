@@ -18,10 +18,7 @@
 from __future__ import with_statement
 from . import minivenv
 from .divcheck import mainimpl as divcheckimpl
-from .execcheck import mainimpl as execcheckimpl
 from .files import Files
-from .licheck import mainimpl as licheckimpl
-from .nlcheck import mainimpl as nlcheckimpl
 from .projectinfo import ProjectInfo
 from .util import Excludes, stderr, stripeol
 from itertools import chain
@@ -29,23 +26,26 @@ from setuptools import find_packages
 import os, re, subprocess, sys
 
 def _licheck(info, workspace, files):
+    from .licheck import licheck
     def g():
         excludes = Excludes(info.config.licheck.exclude.globs)
         for path in files.allsrcpaths:
             if os.path.relpath(path, files.root) not in excludes:
                 yield path
-    licheckimpl(info, list(g()))
+    _runcheck(licheck, info, list(g()))
 
 def _nlcheck(info, workspace, files):
-    nlcheckimpl(files.allsrcpaths)
-
-def divcheck(info, workspace, files):
-    divcheckimpl(files.pypaths)
+    from .nlcheck import nlcheck
+    _runcheck(nlcheck, files.allsrcpaths)
 
 def _execcheck(info, workspace, files):
-    execcheckimpl(files.pypaths)
+    from .execcheck import execcheck
+    _runcheck(execcheck, files.pypaths)
 
-def pyflakes(info, workspace, files):
+def divcheck(info, files):
+    divcheckimpl(files.pypaths)
+
+def pyflakes(info, files):
     with open(os.path.join(files.root, '.flakesignore')) as f:
         ignores = [re.compile(stripeol(l)) for l in f]
     prefixlen = len(files.root + os.sep)
@@ -61,16 +61,16 @@ def pyflakes(info, workspace, files):
 def pathto(executable):
     return os.path.join(os.path.dirname(sys.executable), executable)
 
-def _runcheck(check, info, workspace, files):
+def _runcheck(check, *args):
     sys.stderr.write("%s: " % check.__name__)
-    check(info, workspace, files)
+    check(*args)
     stderr('OK')
 
 def main_checks():
     info = ProjectInfo.seek(os.getcwd()) # XXX: Must this be absolute?
     files = Files(info.projectdir)
     for check in divcheck, pyflakes:
-        _runcheck(check, info, None, files)
+        _runcheck(check, info, files)
     status = subprocess.call([
         pathto('nosetests'), '--exe', '-v',
         '--with-xunit', '--xunit-file', files.reportpath,
@@ -84,7 +84,7 @@ def main_checks():
 def everyversion(info, workspace, noseargs):
     files = Files(info.projectdir)
     for check in _licheck, _nlcheck, _execcheck:
-        _runcheck(check, info, workspace, files)
+        check(info, workspace, files)
     for pyversion in info.config.pyversions:
         subprocess.check_call([os.path.abspath(os.path.join(minivenv.bindir(info, workspace, pyversion), 'checks'))] + noseargs, cwd = info.projectdir)
 

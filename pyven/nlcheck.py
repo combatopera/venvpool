@@ -20,7 +20,7 @@ import re
 
 class MoreThanOneEolStyleException(Exception): pass
 
-def mainimpl(paths):
+def nlcheck(paths):
     for path in paths:
         with open(path, 'rb') as f:
             text = f.read().decode()
