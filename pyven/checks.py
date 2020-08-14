@@ -65,17 +65,21 @@ def _pyflakes(info, noseargs, files):
     def pyflakes():
         if paths:
             bindir = minivenv.bindir(info, pyversion)
-            subprocess.check_call([os.path.join(bindir, 'pip'), 'install', 'pyflakes'])
-            subprocess.check_call([os.path.join(bindir, 'pyflakes')] + paths)
+            pyflakesexe = os.path.join(bindir, 'pyflakes')
+            if not os.path.exists(pyflakesexe):
+                subprocess.check_call([os.path.join(bindir, 'pip'), 'install', 'pyflakes'])
+            subprocess.check_call([pyflakesexe] + paths)
     for pyversion in info.config.pyversions:
         _runcheck(pyversion, pyflakes)
 
 def _nose(info, noseargs, files):
     for pyversion in info.config.pyversions:
         bindir = minivenv.bindir(info, pyversion)
-        subprocess.check_call([os.path.join(bindir, 'pip'), 'install', 'nose-cov'])
+        nosetests = os.path.join(bindir, 'nosetests')
+        if not os.path.exists(nosetests):
+            subprocess.check_call([os.path.join(bindir, 'pip'), 'install', 'nose-cov'])
         status = subprocess.call([
-            os.path.join(bindir, 'nosetests'), '--exe', '-v',
+            nosetests, '--exe', '-v',
             '--with-xunit', '--xunit-file', files.reportpath,
             '--with-cov', '--cov-report', 'term-missing',
         ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths() + noseargs)
