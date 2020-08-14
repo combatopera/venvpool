@@ -17,10 +17,7 @@
 
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from pkg_resources import get_distribution
 import os, subprocess
-
-nullversion = '0.0.0'
 
 class Namespace:
 
@@ -39,15 +36,7 @@ def bindir(info, workspace, pyversion):
                     editables[name] = j = ProjectInfo.seek(os.path.join(workspace, name))
                     addprojects(j)
         addprojects(info)
-        reqs = info.remoterequires() # A new list.
-        pyvenname = 'pyven'
-        pyvendist = get_distribution(pyvenname)
-        if nullversion == pyvendist.version:
-            addprojects(Namespace(localrequires = lambda: [pyvenname]))
-        else:
-            reqs = [r for r in reqs if r != pyvenname]
-            reqs.append(str(pyvendist.as_requirement()))
         for i in editables.values():
             pipify(i)
-        subprocess.check_call([os.path.join(venvpath, 'bin', 'pip'), 'install'] + reqs + sum((['-e', i.projectdir] for i in editables.values()), []))
+        subprocess.check_call([os.path.join(venvpath, 'bin', 'pip'), 'install'] + info.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), []))
     return os.path.join(venvpath, 'bin')
