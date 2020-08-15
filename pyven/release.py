@@ -68,7 +68,7 @@ def release(config, srcgit, info):
     scrub()
     version = info.nextversion()
     pipify(info, version) # Test against releases, in theory.
-    everyversion(info, []) # FIXME LATER: Dependencies of pyven interfere with those of project.
+    everyversion(info, [])
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
         for name in filenames:
