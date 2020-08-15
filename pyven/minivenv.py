@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .pipify import pipify
-from .projectinfo import ProjectInfo
 import os, subprocess
 
 class Venv:
@@ -25,22 +23,9 @@ class Venv:
         self.venvpath = os.path.join(info.projectdir, '.pyven', str(pyversion))
         if not os.path.exists(self.venvpath):
             subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, self.venvpath])
-        self.info = info
 
     def programpath(self, name):
         return os.path.join(self.venvpath, 'bin', name)
 
     def install(self, args):
         subprocess.check_call([self.programpath('pip'), 'install'] + args)
-
-    def projectdeps(self): # TODO: Migrate elsewhere.
-        editables = {}
-        def addprojects(i):
-            for name in i.localrequires():
-                if name not in editables:
-                    editables[name] = j = ProjectInfo.seek(os.path.join(i.contextworkspace(), name))
-                    addprojects(j)
-        addprojects(self.info)
-        for i in editables.values():
-            pipify(i)
-        return self.info.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), [])

@@ -133,3 +133,16 @@ class ProjectInfo:
                 if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
                     v.append("%s=%s:%s" % (obj.name[len(prefix):].replace('_', '-'), path[:-len(extension)].replace(os.sep, '.'), obj.name))
         return v
+
+    def depsaspipinstallargs(self):
+        from .pipify import pipify
+        editables = {}
+        def addprojects(i):
+            for name in i.localrequires():
+                if name not in editables:
+                    editables[name] = j = ProjectInfo.seek(os.path.join(i.contextworkspace(), name))
+                    addprojects(j)
+        addprojects(self)
+        for i in editables.values():
+            pipify(i)
+        return self.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), [])

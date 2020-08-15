@@ -77,7 +77,7 @@ def _nose(info, noseargs, files):
         venv = Venv(info, pyversion)
         nosetests = venv.programpath('nosetests')
         if not os.path.exists(nosetests):
-            venv.install(venv.projectdeps() + ['nose-cov'])
+            venv.install(info.depsaspipinstallargs() + ['nose-cov'])
         reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
         status = subprocess.call([
             nosetests, '--exe', '-v',
