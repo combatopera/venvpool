@@ -140,7 +140,7 @@ class ProjectInfo:
         def addprojects(i):
             for name in i.localrequires():
                 if name not in editables:
-                    editables[name] = j = ProjectInfo.seek(os.path.join(i.contextworkspace(), name))
+                    editables[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
                     addprojects(j)
         addprojects(self)
         for i in editables.values():
