@@ -78,11 +78,12 @@ def _nose(info, noseargs, files):
         nosetests = venv.programpath('nosetests')
         if not os.path.exists(nosetests):
             venv.install(venv.projectdeps() + ['nose-cov'])
+        reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
         status = subprocess.call([
             nosetests, '--exe', '-v',
-            '--with-xunit', '--xunit-file', files.reportpath,
+            '--with-xunit', '--xunit-file', reportpath,
             '--with-cov', '--cov-report', 'term-missing',
-        ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths() + noseargs)
+        ] + sum((['--cov', p] for p in chain(find_packages(info.projectdir), info.py_modules())), []) + files.testpaths(reportpath) + noseargs)
         reportname = '.coverage'
         if os.path.exists(reportname):
             os.rename(reportname, os.path.join(venv.venvpath, reportname)) # XXX: Even when status is non-zero?

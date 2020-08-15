@@ -17,11 +17,10 @@
 
 from __future__ import with_statement
 from .util import stripeol
-import subprocess, sys, os, xml.dom.minidom as dom, collections
+from collections import defaultdict
+import os, subprocess, xml.dom.minidom as dom
 
 class Files:
-
-    reportpath = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'nosetests.xml')
 
     @staticmethod
     def _findfiles(walkpath, suffixes, prefixes):
@@ -66,13 +65,13 @@ class Files:
         self.pypaths = [p for p in self.allsrcpaths if p.endswith('.py')]
         self.root = root
 
-    def testpaths(self):
+    def testpaths(self, reportpath):
         paths = [p for p in self.pypaths if os.path.basename(p).startswith('test_')]
-        if os.path.exists(self.reportpath):
-            with open(self.reportpath) as f:
+        if os.path.exists(reportpath):
+            with open(reportpath) as f:
                 doc = dom.parse(f)
             nametopath = dict([p[len(self.root + os.sep):-len('.py')].replace(os.sep, '.'), p] for p in paths)
-            pathtotime = collections.defaultdict(lambda: 0)
+            pathtotime = defaultdict(int)
             for e in doc.getElementsByTagName('testcase'):
                 name = e.getAttribute('classname')
                 while True:
