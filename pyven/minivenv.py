@@ -25,18 +25,28 @@ class Namespace:
         for name, value in kwargs.items():
             setattr(self, name, value)
 
-def bindir(info, pyversion):
-    venvpath = os.path.join(info.projectdir, '.pyven', str(pyversion))
-    if not os.path.exists(venvpath):
-        subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, venvpath])
+class Venv:
+
+    def __init__(self, info, pyversion):
+        self.venvpath = os.path.join(info.projectdir, '.pyven', str(pyversion))
+        if not os.path.exists(self.venvpath):
+            subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, self.venvpath])
+        self.info = info
+
+    def programpath(self, name):
+        return os.path.join(self.venvpath, 'bin', name)
+
+    def install(self, args):
+        subprocess.check_call([self.programpath('pip'), 'install'] + args)
+
+    def projectdeps(self): # TODO: Migrate elsewhere.
         editables = {}
         def addprojects(i):
             for name in i.localrequires():
                 if name not in editables:
                     editables[name] = j = ProjectInfo.seek(os.path.join(i.contextworkspace(), name))
                     addprojects(j)
-        addprojects(info)
+        addprojects(self.info)
         for i in editables.values():
             pipify(i)
-        subprocess.check_call([os.path.join(venvpath, 'bin', 'pip'), 'install'] + info.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), []))
-    return os.path.join(venvpath, 'bin')
+        return self.info.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), [])
