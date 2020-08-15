@@ -19,12 +19,6 @@ from .pipify import pipify
 from .projectinfo import ProjectInfo
 import os, subprocess
 
-class Namespace:
-
-    def __init__(self, **kwargs):
-        for name, value in kwargs.items():
-            setattr(self, name, value)
-
 class Venv:
 
     def __init__(self, info, pyversion):
