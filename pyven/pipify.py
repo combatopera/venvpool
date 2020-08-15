@@ -17,14 +17,9 @@
 
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
-from .util import tomlquote
 from argparse import ArgumentParser
-from aridity.model import Text
 from pkg_resources import resource_filename
 import itertools, os, subprocess, sys
-
-def pyquote(context, resolvable): # TODO LATER: Already exists in aridity.
-    return Text(repr(resolvable.resolve(context).value))
 
 def pipify(info, version = None):
     release = version is not None
@@ -42,8 +37,8 @@ def pipify(info, version = None):
     config.put('console_scripts', scalar = info.console_scripts())
     config.put('universal', number = int({2, 3} <= set(info.config.pyversions)))
     nametoquote = [
-        ['setup.py', pyquote],
-        ['setup.cfg', None],
+        ['setup.py', 'pystr'],
+        ['setup.cfg', 'void'],
     ]
     seen = set()
     for name in itertools.chain(pyvenbuildrequires(info), info.config.build.requires):
@@ -51,9 +46,9 @@ def pipify(info, version = None):
             seen.add(name)
             config.printf("build requires += %s", name)
     if seen != {'setuptools', 'wheel'}:
-        nametoquote.append(['pyproject.toml', lambda c, r: Text(tomlquote(r.resolve(c).cat()))])
+        nametoquote.append(['pyproject.toml', 'tomlquote'])
     for name, quote in nametoquote:
-        config.put('"', function = quote)
+        config.printf('" = $(%s)', quote)
         config.processtemplate(
                 resource_filename(__name__, name + '.aridt'), # TODO: Make aridity get the resource.
                 os.path.abspath(os.path.join(info.projectdir, name)))
