@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import itertools, os, re, sys
+import os, re, sys
 
 def stderr(obj):
     sys.stderr.write(str(obj))
@@ -24,13 +24,6 @@ def stderr(obj):
 def stripeol(line):
     line, = line.splitlines()
     return line
-
-tomlbasicbadchars = re.compile('[%s]+' % re.escape(r'\"' + ''.join(chr(x) for x in itertools.chain(range(0x08 + 1), range(0x0A, 0x1F + 1), [0x7F]))))
-
-def tomlquote(text): # TODO: Migrate to aridity.
-    def repl(m):
-        return ''.join(r"\u%04X" % ord(c) for c in m.group())
-    return '"%s"' % tomlbasicbadchars.sub(repl, text)
 
 class Excludes:
 
