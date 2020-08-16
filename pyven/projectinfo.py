@@ -134,7 +134,7 @@ class ProjectInfo:
                     v.append("%s=%s:%s" % (obj.name[len(prefix):].replace('_', '-'), path[:-len(extension)].replace(os.sep, '.'), obj.name))
         return v
 
-    def depsaspipinstallargs(self):
+    def installdeps(self, venv):
         from .pipify import pipify
         editables = {}
         def addprojects(i):
@@ -145,4 +145,4 @@ class ProjectInfo:
         addprojects(self)
         for i in editables.values():
             pipify(i)
-        return self.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), [])
+        venv.install(self.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), []))
