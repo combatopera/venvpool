@@ -20,6 +20,8 @@ from .files import Files
 from .minivenv import Venv
 from .projectinfo import ProjectInfo
 from .util import Excludes, stderr, stripeol
+from argparse import ArgumentParser
+from aridity.config import Config
 from itertools import chain
 from setuptools import find_packages
 import os, re, subprocess, sys
@@ -73,11 +75,14 @@ def _pyflakes(info, noseargs, files):
         _runcheck(pyversion, pyflakes)
 
 def _nose(info, noseargs, files):
+    parser = ArgumentParser()
+    parser.add_argument('--heads', action = 'store_true') # TODO: Dedicated buildbot entrypoint.
+    config, noseargs = parser.parse_known_args(noseargs)
     for pyversion in info.config.pyversions:
         venv = Venv(info, pyversion)
         nosetests = venv.programpath('nosetests')
         if not os.path.exists(nosetests):
-            info.installdeps(venv)
+            info.installdeps(venv, _localrepo() if config.heads else None)
             venv.install(['nose-cov'])
         reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
         status = subprocess.call([
@@ -89,6 +94,11 @@ def _nose(info, noseargs, files):
         if os.path.exists(reportname):
             os.rename(reportname, os.path.join(venv.venvpath, reportname)) # XXX: Even when status is non-zero?
         assert not status
+
+def _localrepo():
+    config = Config.blank()
+    config.loadsettings()
+    return config.buildbot.repo
 
 def _runcheck(variant, check, *args):
     sys.stderr.write("%s[%s]: " % (check.__name__, variant))

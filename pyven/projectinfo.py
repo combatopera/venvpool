@@ -19,7 +19,8 @@ from __future__ import with_statement
 from .files import Files
 from aridity.config import Config
 from pkg_resources import parse_requirements, resource_filename
-import logging, os, stat
+from tempfile import TemporaryDirectory
+import logging, os, stat, subprocess
 
 log = logging.getLogger(__name__)
 
@@ -134,15 +135,33 @@ class ProjectInfo:
                     v.append("%s=%s:%s" % (obj.name[len(prefix):].replace('_', '-'), path[:-len(extension)].replace(os.sep, '.'), obj.name))
         return v
 
-    def installdeps(self, venv):
+    def installdeps(self, venv, localrepo):
         from .pipify import pipify
-        editables = {}
-        def addprojects(i):
-            for name in i.localrequires():
-                if name not in editables:
-                    editables[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
-                    addprojects(j)
-        addprojects(self)
-        for i in editables.values():
-            pipify(i)
-        venv.install(self.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), []))
+        if localrepo is None:
+            editables = {}
+            def addprojects(i):
+                for name in i.localrequires():
+                    if name not in editables:
+                        editables[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
+                        addprojects(j)
+            addprojects(self)
+            for i in editables.values():
+                pipify(i)
+            venv.install(self.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), []))
+        else:
+            with TemporaryDirectory() as workspace:
+                heads = {}
+                def addprojects(i):
+                    for name in (r.namepart for r in i._parsedrequires()):
+                        if name not in heads:
+                            repopath = os.path.join(localrepo, "%s.git" % name)
+                            if os.path.exists(repopath):
+                                clonepath = os.path.join(workspace, name)
+                                subprocess.check_call(['git', 'clone', '--depth', '1', "file://%s" % repopath, clonepath])
+                                heads[name] = j = self.seek(clonepath)
+                                addprojects(j)
+                addprojects(self)
+                for i in heads.values():
+                    pipify(i)
+                remoterequires = [r.reqstr for r in self._parsedrequires() if r.namepart not in heads]
+                venv.install(remoterequires + [i.projectdir for i in heads.values()])
