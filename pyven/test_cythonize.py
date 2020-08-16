@@ -17,6 +17,7 @@
 
 from .cythonize import lazy
 from unittest import TestCase
+import sys
 
 class TestLazy(TestCase):
 
@@ -52,6 +53,8 @@ class TestLazy(TestCase):
             self.assertEqual(1, obj.k)
 
     def test_works2(self):
+        if sys.hexversion <= 0x020709F0:
+            return
         def init(v):
             v[:] = 0, 1, 2
         obj = lazy(list, init, '__iter__')
