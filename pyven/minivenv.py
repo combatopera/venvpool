@@ -28,4 +28,5 @@ class Venv:
         return os.path.join(self.venvpath, 'bin', name)
 
     def install(self, args):
-        subprocess.check_call([self.programpath('pip'), 'install'] + args)
+        if args:
+            subprocess.check_call([self.programpath('pip'), 'install'] + args)
