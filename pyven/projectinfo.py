@@ -141,17 +141,17 @@ class ProjectInfo:
             for i in itertools.chain(editableinfos, volatileinfos): # XXX: Assume editables already pipified?
                 pipify(i)
             venv.install(sum((['-e', i.projectdir] for i in editableinfos), []) + [i.projectdir for i in volatileinfos] + pypireqs)
-        if localrepo is None:
-            editables = {}
-            def addprojects(i):
-                for name in i.localrequires():
-                    if name not in editables:
-                        editables[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
-                        addprojects(j)
-            addprojects(self)
-            install(editables.values(), [], self.remoterequires())
-        else:
-            with TemporaryDirectory() as workspace:
+        with TemporaryDirectory() as workspace:
+            if localrepo is None:
+                editables = {}
+                def addprojects(i):
+                    for name in i.localrequires():
+                        if name not in editables:
+                            editables[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
+                            addprojects(j)
+                addprojects(self)
+                install(editables.values(), [], self.remoterequires())
+            else:
                 heads = {}
                 def addprojects(i):
                     for name in (r.namepart for r in i._parsedrequires()):
