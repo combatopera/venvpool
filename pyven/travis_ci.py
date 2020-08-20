@@ -30,11 +30,12 @@ class Workspace:
         self.workspace = workspace
 
     def clonerequires(self, info):
-        for req in info.allrequires(): # FIXME: Parse.
-            if req in self.projects:
-                path = os.path.join(self.workspace, req)
+        for req in info.parsedrequires():
+            name = req.namepart
+            if name in self.projects:
+                path = os.path.join(self.workspace, name)
                 if not os.path.exists(path): # Allow for diamond dependencies.
-                    subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/%s/%s.git" % (self.user, req)], cwd = self.workspace)
+                    subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/%s/%s.git" % (self.user, name)], cwd = self.workspace)
                     j = ProjectInfo.seek(path)
                     pipify(j)
                     self.clonerequires(j)

@@ -96,17 +96,17 @@ class ProjectInfo:
     def allrequires(self):
         return list(self.config.requires)
 
-    def _parsedrequires(self):
+    def parsedrequires(self):
         return Req.parsemany(self.allrequires())
 
     def localrequires(self):
-        return [r.namepart for r in self._parsedrequires() if r.isproject(self)]
+        return [r.namepart for r in self.parsedrequires() if r.isproject(self)]
 
     def remoterequires(self):
-        return [r.reqstr for r in self._parsedrequires() if not r.isproject(self)]
+        return [r.reqstr for r in self.parsedrequires() if not r.isproject(self)]
 
     def parsedremoterequires(self):
-        return [r for r in self._parsedrequires() if not r.isproject(self)]
+        return [r for r in self.parsedrequires() if not r.isproject(self)]
 
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
@@ -164,7 +164,7 @@ class ProjectInfo:
             volatileprojects = {}
             pypireqs = []
             def adddeps(i, root):
-                for r in i._parsedrequires():
+                for r in i.parsedrequires():
                     name = r.namepart
                     if name in editableprojects or name in volatileprojects:
                         continue
