@@ -135,7 +135,7 @@ class ProjectInfo:
                     v.append("%s=%s:%s" % (obj.name[len(prefix):].replace('_', '-'), path[:-len(extension)].replace(os.sep, '.'), obj.name))
         return v
 
-    def installdeps(self, venv, localrepo):
+    def installdeps(self, venv, siblings, localrepo):
         from .pipify import pipify
         if localrepo is None:
             editables = {}

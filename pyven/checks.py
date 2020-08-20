@@ -22,9 +22,18 @@ from .projectinfo import ProjectInfo
 from .util import Excludes, stderr, stripeol
 from argparse import ArgumentParser
 from aridity.config import Config
+from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
 import os, re, subprocess, sys
+
+@singleton
+class yesno:
+
+    d = dict(no = False, yes = True)
+
+    def __call__(self, s):
+        return self.d[s]
 
 def _localrepo():
     config = Config.blank()
@@ -39,10 +48,11 @@ def _runcheck(variant, check, *args):
 
 class EveryVersion:
 
-    def __init__(self, info, heads, noseargs):
+    def __init__(self, info, siblings, userepo, noseargs):
         self.files = Files(info.projectdir)
         self.info = info
-        self.heads = heads
+        self.siblings = siblings
+        self.userepo = userepo
         self.noseargs = noseargs
 
     def allchecks(self):
@@ -102,7 +112,7 @@ class EveryVersion:
             venv = Venv(self.info, pyversion)
             nosetests = venv.programpath('nosetests')
             if not os.path.exists(nosetests):
-                self.info.installdeps(venv, _localrepo() if self.heads else None)
+                self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
                 venv.install(['nose-cov'])
             reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
             status = subprocess.call([
@@ -117,6 +127,7 @@ class EveryVersion:
 
 def main_tests():
     parser = ArgumentParser()
-    parser.add_argument('--heads', action = 'store_true')
+    parser.add_argument('--siblings', type = yesno, default = True)
+    parser.add_argument('--repo', type = yesno, default = True)
     config, noseargs = parser.parse_known_args()
-    EveryVersion(ProjectInfo.seek('.'), config.heads, noseargs).allchecks()
+    EveryVersion(ProjectInfo.seek('.'), config.siblings, config.repo, noseargs).allchecks()
