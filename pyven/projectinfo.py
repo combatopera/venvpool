@@ -19,8 +19,8 @@ from __future__ import with_statement
 from .files import Files
 from aridity.config import Config
 from pkg_resources import parse_requirements, resource_filename
-from tempfile import TemporaryDirectory
-import logging, os, re, stat, subprocess
+from tempfile import mkdtemp
+import logging, os, re, shutil, stat, subprocess
 
 log = logging.getLogger(__name__)
 
@@ -159,7 +159,8 @@ class ProjectInfo:
 
     def installdeps(self, venv, siblings, localrepo):
         from .pipify import pipify
-        with TemporaryDirectory() as workspace:
+        workspace = mkdtemp()
+        try:
             editableprojects = {}
             volatileprojects = {}
             pypireqs = []
@@ -199,3 +200,5 @@ class ProjectInfo:
                 pipify(i)
             pypireqs = list(Req.published(venv, pypireqs))
             venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)
+        finally:
+            shutil.rmtree(workspace)
