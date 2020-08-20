@@ -195,8 +195,7 @@ class ProjectInfo:
                     nextinfos.extend(adddeps(i, isroot))
                 infos = nextinfos
                 isroot = False
-            for d in editableprojects, volatileprojects: # XXX: Assume editables already pipified?
-                for i in d.values():
-                    pipify(i)
+            for i in volatileprojects.values(): # Assume editables already pipified.
+                pipify(i)
             pypireqs = list(Req.published(venv, pypireqs))
             venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)

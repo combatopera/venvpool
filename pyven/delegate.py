@@ -26,6 +26,7 @@ class Interpreter:
             text = f.read()
         getattr(bash._c, 'exec')(text, *sys.argv)
 
+# FIXME: Migrate this back to where it came from.
 def delegate(*relpath):
     path = Path(Path(inspect.stack()[1].filename).parent, *relpath)
     name = path.name

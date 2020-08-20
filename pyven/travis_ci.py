@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .checks import EveryVersion
+from .pipify import pipify
 from .projectinfo import ProjectInfo
 import os, requests, subprocess
 
@@ -29,12 +30,14 @@ class Workspace:
         self.workspace = workspace
 
     def clonerequires(self, info):
-        for req in info.allrequires():
+        for req in info.allrequires(): # FIXME: Parse.
             if req in self.projects:
                 path = os.path.join(self.workspace, req)
                 if not os.path.exists(path): # Allow for diamond dependencies.
                     subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/%s/%s.git" % (self.user, req)], cwd = self.workspace)
-                    self.clonerequires(ProjectInfo.seek(path))
+                    j = ProjectInfo.seek(path)
+                    pipify(j)
+                    self.clonerequires(j)
 
 def main_travis_ci():
     info = ProjectInfo.seek('.')
