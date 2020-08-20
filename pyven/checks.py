@@ -17,6 +17,7 @@
 
 from __future__ import with_statement
 from .files import Files
+from .initlogging import initlogging
 from .minivenv import Venv
 from .projectinfo import ProjectInfo
 from .util import Excludes, stderr, stripeol
@@ -126,6 +127,7 @@ class EveryVersion:
             assert not status
 
 def main_tests():
+    initlogging()
     parser = ArgumentParser()
     parser.add_argument('--siblings', type = yesno, default = True)
     parser.add_argument('--repo', type = yesno, default = True)
