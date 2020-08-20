@@ -137,6 +137,11 @@ class ProjectInfo:
 
     def installdeps(self, venv, siblings, localrepo):
         from .pipify import pipify
+        def install(infos, editably, pypi):
+            for i in infos:
+                pipify(i)
+            dirargs = (lambda d: ['-e', d]) if editably else (lambda d: [d])
+            venv.install(sum((dirargs(i.projectdir) for i in infos), []) + pypi)
         if localrepo is None:
             editables = {}
             def addprojects(i):
@@ -145,9 +150,7 @@ class ProjectInfo:
                         editables[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
                         addprojects(j)
             addprojects(self)
-            for i in editables.values():
-                pipify(i)
-            venv.install(self.remoterequires() + sum((['-e', i.projectdir] for i in editables.values()), []))
+            install(editables.values(), True, self.remoterequires())
         else:
             with TemporaryDirectory() as workspace:
                 heads = {}
@@ -161,7 +164,4 @@ class ProjectInfo:
                                 heads[name] = j = self.seek(clonepath)
                                 addprojects(j)
                 addprojects(self)
-                for i in heads.values():
-                    pipify(i)
-                remoterequires = [r.reqstr for r in self._parsedrequires() if r.namepart not in heads]
-                venv.install(remoterequires + [i.projectdir for i in heads.values()])
+                install(heads.values(), False, [r.reqstr for r in self._parsedrequires() if r.namepart not in heads])
