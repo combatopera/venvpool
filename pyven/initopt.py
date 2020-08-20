@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .initlogging import initlogging
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from aridity.config import Config
@@ -56,7 +57,7 @@ class Pip:
         self._pipinstall(sum((['-e', i.projectdir] for i in infos), []))
 
 def main_initopt():
-    logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
+    initlogging()
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
     home = os.path.expanduser('~')
     def configpaths():

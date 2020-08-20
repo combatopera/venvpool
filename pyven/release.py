@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .checks import EveryVersion
+from .initlogging import initlogging
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
@@ -28,7 +29,7 @@ targetremote = 'origin'
 distrelpath = 'dist'
 
 def main_release():
-    logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
+    initlogging()
     parser = ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')
     parser.add_argument('path', nargs = '?', default = '.')
