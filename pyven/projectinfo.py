@@ -37,6 +37,23 @@ def textcontent(node):
             yield value
     return ''.join(iterparts(node))
 
+class Req:
+
+    @classmethod
+    def parsemany(cls, reqstrs):
+        return [cls(reqstr, req) for reqstr, req in zip(reqstrs, parse_requirements(reqstrs))]
+
+    def __init__(self, reqstr, req):
+        self.reqstr = reqstr
+        self.namepart = req.unsafe_name # XXX: Is unsafe_name the correct attribute?
+        self.specifier = req.specifier
+
+    def siblingpath(self, workspace):
+        return os.path.join(workspace, self.namepart)
+
+    def isproject(self, info):
+        return os.path.exists(self.siblingpath(info.contextworkspace()))
+
 class ProjectInfo:
 
     @classmethod
@@ -67,24 +84,16 @@ class ProjectInfo:
         return list(self.config.requires)
 
     def _parsedrequires(self):
-        class Req:
-            def __init__(self, reqstr, req):
-                self.reqstr = reqstr
-                self.namepart = req.unsafe_name # XXX: Is unsafe_name the correct attribute?
-                self.specifier = req.specifier
-            def isproject(this):
-                return os.path.isdir(os.path.join(self.contextworkspace(), this.namepart))
-        reqstrs = self.allrequires()
-        return (Req(reqstr, req) for reqstr, req in zip(reqstrs, parse_requirements(reqstrs)))
+        return Req.parsemany(self.allrequires())
 
     def localrequires(self):
-        return [r.namepart for r in self._parsedrequires() if r.isproject()]
+        return [r.namepart for r in self._parsedrequires() if r.isproject(self)]
 
     def remoterequires(self):
-        return [r.reqstr for r in self._parsedrequires() if not r.isproject()]
+        return [r.reqstr for r in self._parsedrequires() if not r.isproject(self)]
 
     def parsedremoterequires(self):
-        return [r for r in self._parsedrequires() if not r.isproject()]
+        return [r for r in self._parsedrequires() if not r.isproject(self)]
 
     def nextversion(self):
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
@@ -146,10 +155,12 @@ class ProjectInfo:
                     name = r.namepart
                     if name in editableprojects or name in volatileprojects:
                         continue
-                    if siblings and r.isproject():
-                        editableprojects[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
-                        yield j
-                        continue
+                    if siblings:
+                        siblingpath = r.siblingpath(i.contextworkspace())
+                        if os.path.exists(siblingpath):
+                            editableprojects[name] = j = self.seek(siblingpath)
+                            yield j
+                            continue
                     if localrepo is not None:
                         repopath = os.path.join(localrepo, "%s.git" % name)
                         if os.path.exists(repopath):
