@@ -20,7 +20,7 @@ from .files import Files
 from aridity.config import Config
 from pkg_resources import parse_requirements, resource_filename
 from tempfile import TemporaryDirectory
-import itertools, logging, os, stat, subprocess
+import logging, os, stat, subprocess
 
 log = logging.getLogger(__name__)
 
@@ -137,30 +137,36 @@ class ProjectInfo:
 
     def installdeps(self, venv, siblings, localrepo):
         from .pipify import pipify
-        def install(editableinfos, volatileinfos, pypireqs):
-            for i in itertools.chain(editableinfos, volatileinfos): # XXX: Assume editables already pipified?
-                pipify(i)
-            venv.install(sum((['-e', i.projectdir] for i in editableinfos), []) + [i.projectdir for i in volatileinfos] + pypireqs)
         with TemporaryDirectory() as workspace:
-            if localrepo is None:
-                editables = {}
-                def addprojects(i):
-                    for name in i.localrequires():
-                        if name not in editables:
-                            editables[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
-                            addprojects(j)
-                addprojects(self)
-                install(editables.values(), [], self.remoterequires())
-            else:
-                heads = {}
-                def addprojects(i):
-                    for name in (r.namepart for r in i._parsedrequires()):
-                        if name not in heads:
-                            repopath = os.path.join(localrepo, "%s.git" % name)
-                            if os.path.exists(repopath):
-                                clonepath = os.path.join(workspace, name)
-                                subprocess.check_call(['git', 'clone', '--depth', '1', "file://%s" % repopath, clonepath])
-                                heads[name] = j = self.seek(clonepath)
-                                addprojects(j)
-                addprojects(self)
-                install([], heads.values(), [r.reqstr for r in self._parsedrequires() if r.namepart not in heads])
+            editableprojects = {}
+            volatileprojects = {}
+            pypireqs = []
+            def adddeps(i, root = False):
+                nextinfos = []
+                for r in i._parsedrequires():
+                    name = r.namepart
+                    if name in editableprojects or name in volatileprojects:
+                        continue
+                    if siblings and r.isproject():
+                        editableprojects[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
+                        nextinfos.append(j)
+                        continue
+                    if localrepo is not None:
+                        repopath = os.path.join(localrepo, "%s.git" % name)
+                        if os.path.exists(repopath):
+                            if siblings:
+                                log.warning("Not a sibling, install from repo: %s", name)
+                            clonepath = os.path.join(workspace, name)
+                            subprocess.check_call(['git', 'clone', '--depth', '1', "file://%s" % repopath, clonepath])
+                            volatileprojects[name] = j = self.seek(clonepath)
+                            nextinfos.append(j)
+                            continue
+                    if root: # Otherwise pip will handle it.
+                        pypireqs.append(r.reqstr)
+                for j in nextinfos:
+                    adddeps(j)
+            adddeps(self, True)
+            for d in editableprojects, volatileprojects: # XXX: Assume editables already pipified?
+                for i in d.values():
+                    pipify(i)
+            venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)
