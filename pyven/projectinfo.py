@@ -20,7 +20,7 @@ from .files import Files
 from aridity.config import Config
 from pkg_resources import parse_requirements, resource_filename
 from tempfile import TemporaryDirectory
-import logging, os, stat, subprocess
+import logging, os, re, stat, subprocess
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +39,8 @@ def textcontent(node):
 
 class Req:
 
+    namematch = re.compile(r'\S+').search
+
     @classmethod
     def parsemany(cls, reqstrs):
         return [cls(reqstr, req) for reqstr, req in zip(reqstrs, parse_requirements(reqstrs))]
@@ -53,6 +55,17 @@ class Req:
 
     def isproject(self, info):
         return os.path.exists(self.siblingpath(info.contextworkspace()))
+
+    @classmethod
+    def published(cls, venv, reqstrs):
+        if reqstrs:
+            reqs = cls.parsemany(reqstrs)
+            names = {cls.namematch(line).group() for line in subprocess.check_output([venv.programpath('pip'), 'search'] + [r.namepart for r in reqs]).decode().splitlines()}
+            for r in reqs:
+                if r.namepart in names:
+                    yield r.reqstr
+                else:
+                    log.warning("Never published: %s", r.namepart)
 
 class ProjectInfo:
 
@@ -185,4 +198,5 @@ class ProjectInfo:
             for d in editableprojects, volatileprojects: # XXX: Assume editables already pipified?
                 for i in d.values():
                     pipify(i)
+            pypireqs = list(Req.published(venv, pypireqs))
             venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)
