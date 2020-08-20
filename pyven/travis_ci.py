@@ -34,7 +34,7 @@ class Workspace:
                 path = os.path.join(self.workspace, req)
                 if not os.path.exists(path): # Allow for diamond dependencies.
                     subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/%s/%s.git" % (self.user, req)], cwd = self.workspace)
-                self.clonerequires(ProjectInfo.seek(path))
+                    self.clonerequires(ProjectInfo.seek(path))
 
 def main_travis_ci():
     info = ProjectInfo.seek('.')
