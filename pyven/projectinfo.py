@@ -141,15 +141,14 @@ class ProjectInfo:
             editableprojects = {}
             volatileprojects = {}
             pypireqs = []
-            def adddeps(i, root = False):
-                nextinfos = []
+            def adddeps(i, root):
                 for r in i._parsedrequires():
                     name = r.namepart
                     if name in editableprojects or name in volatileprojects:
                         continue
                     if siblings and r.isproject():
                         editableprojects[name] = j = self.seek(os.path.join(i.contextworkspace(), name))
-                        nextinfos.append(j)
+                        yield j
                         continue
                     if localrepo is not None:
                         repopath = os.path.join(localrepo, "%s.git" % name)
@@ -159,13 +158,19 @@ class ProjectInfo:
                             clonepath = os.path.join(workspace, name)
                             subprocess.check_call(['git', 'clone', '--depth', '1', "file://%s" % repopath, clonepath])
                             volatileprojects[name] = j = self.seek(clonepath)
-                            nextinfos.append(j)
+                            yield j
                             continue
                     if root: # Otherwise pip will handle it.
                         pypireqs.append(r.reqstr)
-                for j in nextinfos:
-                    adddeps(j)
-            adddeps(self, True)
+            infos = [self]
+            isroot = True
+            while infos:
+                log.debug("Examine deps of: %s", ', '.join(i.config.name for i in infos))
+                nextinfos = []
+                for i in infos:
+                    nextinfos.extend(adddeps(i, isroot))
+                infos = nextinfos
+                isroot = False
             for d in editableprojects, volatileprojects: # XXX: Assume editables already pipified?
                 for i in d.values():
                     pipify(i)
