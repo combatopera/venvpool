@@ -41,4 +41,4 @@ def main_travis_ci():
     Workspace('..').clonerequires(info) # XXX: Use a subdirectory of here?
     with open('.gitignore', 'a') as f:
         f.write('/.pyven/\n')
-    EveryVersion(info, False, []).allchecks()
+    EveryVersion(info, True, False, []).allchecks()

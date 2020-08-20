@@ -69,7 +69,7 @@ def release(config, srcgit, info):
     scrub()
     version = info.nextversion()
     pipify(info, version) # Test against releases, in theory.
-    EveryVersion(info, False, []).allchecks()
+    EveryVersion(info, False, False, []).allchecks()
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
         for name in filenames:
