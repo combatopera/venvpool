@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .checks import everyversion
+from .checks import EveryVersion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
@@ -68,7 +68,7 @@ def release(config, srcgit, info):
     scrub()
     version = info.nextversion()
     pipify(info, version) # Test against releases, in theory.
-    everyversion(info, [])
+    EveryVersion(info, False, []).allchecks()
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
         for name in filenames:

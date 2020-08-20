@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import checks
+from .checks import EveryVersion
 from .projectinfo import ProjectInfo
 import os, requests, subprocess
 
@@ -41,4 +41,4 @@ def main_travis_ci():
     Workspace('..').clonerequires(info) # XXX: Use a subdirectory of here?
     with open('.gitignore', 'a') as f:
         f.write('/.pyven/\n')
-    checks.everyversion(info, [])
+    EveryVersion(info, False, []).allchecks()
