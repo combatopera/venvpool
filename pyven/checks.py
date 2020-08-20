@@ -26,72 +26,6 @@ from itertools import chain
 from setuptools import find_packages
 import os, re, subprocess, sys
 
-def _licheck(self):
-    from .licheck import licheck
-    def g():
-        excludes = Excludes(self.info.config.licheck.exclude.globs)
-        for path in self.files.allsrcpaths:
-            if os.path.relpath(path, self.files.root) not in excludes:
-                yield path
-    _runcheck('*', licheck, self.info, list(g()))
-
-def _nlcheck(self):
-    from .nlcheck import nlcheck
-    _runcheck('*', nlcheck, self.files.allsrcpaths)
-
-def _execcheck(self):
-    from .execcheck import execcheck
-    _runcheck('*', execcheck, self.files.pypaths)
-
-def _divcheck(self):
-    from . import divcheck
-    scriptpath = divcheck.__file__
-    def divcheck():
-        if pyversion < 3:
-            subprocess.check_call([Venv(self.info, pyversion).programpath('python'), scriptpath] + self.files.pypaths)
-        else:
-            sys.stderr.write('SKIP ')
-    for pyversion in self.info.config.pyversions:
-        _runcheck(pyversion, divcheck)
-
-def _pyflakes(self):
-    with open(os.path.join(self.files.root, '.flakesignore')) as f:
-        ignores = [re.compile(stripeol(l)) for l in f]
-    prefixlen = len(self.files.root + os.sep)
-    def accept(path):
-        for pattern in ignores:
-            if pattern.search(path[prefixlen:]) is not None:
-                return False
-        return True
-    paths = [p for p in self.files.pypaths if accept(p)]
-    def pyflakes():
-        if paths:
-            venv = Venv(self.info, pyversion)
-            pyflakesexe = venv.programpath('pyflakes')
-            if not os.path.exists(pyflakesexe):
-                venv.install(['pyflakes'])
-            subprocess.check_call([pyflakesexe] + paths)
-    for pyversion in self.info.config.pyversions:
-        _runcheck(pyversion, pyflakes)
-
-def _nose(self):
-    for pyversion in self.info.config.pyversions:
-        venv = Venv(self.info, pyversion)
-        nosetests = venv.programpath('nosetests')
-        if not os.path.exists(nosetests):
-            self.info.installdeps(venv, _localrepo() if self.heads else None)
-            venv.install(['nose-cov'])
-        reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
-        status = subprocess.call([
-            nosetests, '--exe', '-v',
-            '--with-xunit', '--xunit-file', reportpath,
-            '--with-cov', '--cov-report', 'term-missing',
-        ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
-        reportname = '.coverage'
-        if os.path.exists(reportname):
-            os.rename(reportname, os.path.join(venv.venvpath, reportname)) # XXX: Even when status is non-zero?
-        assert not status
-
 def _localrepo():
     config = Config.blank()
     config.loadsettings()
@@ -112,8 +46,74 @@ class EveryVersion:
         self.noseargs = noseargs
 
     def allchecks(self):
-        for check in _licheck, _nlcheck, _execcheck, _divcheck, _pyflakes, _nose:
-            check(self)
+        for check in self.licheck, self.nlcheck, self.execcheck, self.divcheck, self.pyflakes, self.nose:
+            check()
+
+    def licheck(self):
+        from .licheck import licheck
+        def g():
+            excludes = Excludes(self.info.config.licheck.exclude.globs)
+            for path in self.files.allsrcpaths:
+                if os.path.relpath(path, self.files.root) not in excludes:
+                    yield path
+        _runcheck('*', licheck, self.info, list(g()))
+
+    def nlcheck(self):
+        from .nlcheck import nlcheck
+        _runcheck('*', nlcheck, self.files.allsrcpaths)
+
+    def execcheck(self):
+        from .execcheck import execcheck
+        _runcheck('*', execcheck, self.files.pypaths)
+
+    def divcheck(self):
+        from . import divcheck
+        scriptpath = divcheck.__file__
+        def divcheck():
+            if pyversion < 3:
+                subprocess.check_call([Venv(self.info, pyversion).programpath('python'), scriptpath] + self.files.pypaths)
+            else:
+                sys.stderr.write('SKIP ')
+        for pyversion in self.info.config.pyversions:
+            _runcheck(pyversion, divcheck)
+
+    def pyflakes(self):
+        with open(os.path.join(self.files.root, '.flakesignore')) as f:
+            ignores = [re.compile(stripeol(l)) for l in f]
+        prefixlen = len(self.files.root + os.sep)
+        def accept(path):
+            for pattern in ignores:
+                if pattern.search(path[prefixlen:]) is not None:
+                    return False
+            return True
+        paths = [p for p in self.files.pypaths if accept(p)]
+        def pyflakes():
+            if paths:
+                venv = Venv(self.info, pyversion)
+                pyflakesexe = venv.programpath('pyflakes')
+                if not os.path.exists(pyflakesexe):
+                    venv.install(['pyflakes'])
+                subprocess.check_call([pyflakesexe] + paths)
+        for pyversion in self.info.config.pyversions:
+            _runcheck(pyversion, pyflakes)
+
+    def nose(self):
+        for pyversion in self.info.config.pyversions:
+            venv = Venv(self.info, pyversion)
+            nosetests = venv.programpath('nosetests')
+            if not os.path.exists(nosetests):
+                self.info.installdeps(venv, _localrepo() if self.heads else None)
+                venv.install(['nose-cov'])
+            reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
+            status = subprocess.call([
+                nosetests, '--exe', '-v',
+                '--with-xunit', '--xunit-file', reportpath,
+                '--with-cov', '--cov-report', 'term-missing',
+            ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
+            reportname = '.coverage'
+            if os.path.exists(reportname):
+                os.rename(reportname, os.path.join(venv.venvpath, reportname)) # XXX: Even when status is non-zero?
+            assert not status
 
 def main_tests():
     parser = ArgumentParser()
