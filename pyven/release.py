@@ -51,6 +51,7 @@ class Image:
 
     def makewheels(self, info):
         from lagoon import docker
+        log.info("Make wheels for platform: %s", self.plat)
         develpkgs = list(info.config.devel.packages)
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
         abis = list(itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))

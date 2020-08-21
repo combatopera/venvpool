@@ -17,18 +17,21 @@
 
 from argparse import ArgumentParser
 from tempfile import TemporaryDirectory
-import os, shutil, subprocess
+import logging, os, shutil, subprocess
 
+log = logging.getLogger(__name__)
 pythonroot = '/opt/python'
 distdir = 'dist'
 
 def main():
+    logging.basicConfig(format = "<%(levelname)s> %(message)s", level = logging.DEBUG)
     parser = ArgumentParser()
     parser.add_argument('--plat', required = True)
     parser.add_argument('abi', nargs = '+')
     args = parser.parse_args()
     with TemporaryDirectory() as holder:
         for abi in args.abi:
+            log.info("Make wheels for ABI: %s", abi)
             subprocess.check_call([os.path.join(pythonroot, abi, 'bin', 'pip'), 'wheel', '--no-deps', '-w', holder, '.'])
             wheelpath, = (os.path.join(holder, n) for n in os.listdir(holder))
             subprocess.check_call(['auditwheel', 'repair', '--plat', args.plat, '-w', distdir, wheelpath])
