@@ -26,7 +26,7 @@ from aridity.config import Config
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
-import os, re, subprocess, sys
+import os, re, shutil, subprocess, sys
 
 @singleton
 class yesno:
@@ -123,7 +123,8 @@ class EveryVersion:
             ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
             reportname = '.coverage'
             if os.path.exists(reportname):
-                os.rename(reportname, os.path.join(venv.venvpath, reportname)) # XXX: Even when status is non-zero?
+                shutil.copy2(reportname, os.path.join(venv.venvpath, reportname)) # XXX: Even when status is non-zero?
+                os.remove(reportname)
             assert not status
 
 def main_tests():
