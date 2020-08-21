@@ -22,6 +22,7 @@ from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .tryinstall import bgcontainer
 from argparse import ArgumentParser
+from diapyr.util import singleton
 from lagoon.program import Program
 from pkg_resources import resource_filename
 from tempfile import TemporaryDirectory
@@ -31,6 +32,11 @@ log = logging.getLogger(__name__)
 distrelpath = 'dist'
 
 class Image:
+
+    @singleton
+    def nearestabi():
+        prefix = "cp%s%s" % tuple(sys.version_info[:2])
+        return "%s-%s%s" % (prefix, prefix, sys.abiflags)
 
     def __init__(self, image, plat, linux32 = False):
         self.image = image
@@ -46,7 +52,7 @@ class Image:
             if develpkgs:
                 docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + develpkgs, stdout = None)
             docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
-            docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % nearestabi(), '/bdist.py', '--plat', self.plat] + abis, stdout = None)
+            docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + abis, stdout = None)
 
 # TODO: Use enum.
 images = [
@@ -90,10 +96,6 @@ def uploadableartifacts(artifactrelpaths):
             yield p
         else:
             log.warning("Not uploadable: %s", p)
-
-def nearestabi():
-    prefix = "cp%s%s" % tuple(sys.version_info[:2])
-    return "%s-%s%s" % (prefix, prefix, sys.abiflags)
 
 def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
