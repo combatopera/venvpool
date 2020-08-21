@@ -18,10 +18,20 @@
 from .initlogging import initlogging
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
+from contextlib import contextmanager
 import logging
 
 log = logging.getLogger(__name__)
 pyversions = '3.8', '3.7', '3.6'
+
+@contextmanager
+def bgcontainer(image):
+    from lagoon import docker
+    container = docker.run._d(image, 'sleep', 'inf').rstrip()
+    try:
+        yield container
+    finally:
+        docker.rm._f(container, stdout = None)
 
 def main_tryinstall():
     from lagoon import docker
@@ -34,6 +44,5 @@ def main_tryinstall():
         return
     for pyversion in pyversions:
         log.info("Python version: %s", pyversion)
-        container = docker.run._d("python:%s" % pyversion, 'sleep', 'inf').rstrip()
-        docker('exec', container, 'pip', 'install', config.project, stdout = None)
-        docker.rm._f(container, stdout = None)
+        with bgcontainer("python:%s" % pyversion) as container:
+            docker('exec', container, 'pip', 'install', config.project, stdout = None)
