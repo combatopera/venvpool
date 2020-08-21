@@ -23,6 +23,7 @@ import itertools, os, subprocess, sys
 
 def pipify(info, version = None):
     release = version is not None
+    # XXX: Surely in the release case descriptionandurl exists (and we want them) even if proprietary?
     description, url = info.descriptionandurl() if release and not info.config.proprietary else [None, None]
     config = info.config.createchild()
     config.put('version', scalar = version)
