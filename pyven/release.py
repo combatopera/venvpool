@@ -50,7 +50,7 @@ class Image:
         self.entrypoint = ['linux32'] if linux32 else []
         self.prune = ['--prune'] if prune else []
 
-    def makewheels(self, info):
+    def makewheels(self, info): # TODO: This code would benefit from modern syntax.
         from lagoon import docker
         log.info("Make wheels for platform: %s", self.plat)
         develpkgs = list(info.config.devel.packages)
