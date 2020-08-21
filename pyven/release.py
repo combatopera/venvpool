@@ -30,6 +30,31 @@ import itertools, lagoon, logging, os, shutil, sys
 log = logging.getLogger(__name__)
 distrelpath = 'dist'
 
+class Image:
+
+    def __init__(self, image, plat, linux32 = False):
+        self.image = image
+        self.plat = plat
+        self.entrypoint = ['linux32'] if linux32 else []
+
+    def makewheels(self, info):
+        from lagoon import docker
+        develpkgs = list(info.config.devel.packages)
+        # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
+        abis = list(itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
+        with bgcontainer('-v', "%s:/io" % info.projectdir, self.image) as container:
+            if develpkgs:
+                docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + develpkgs, stdout = None)
+            docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
+            docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % nearestabi(), '/bdist.py', '--plat', self.plat] + abis, stdout = None)
+
+# TODO: Use enum.
+images = [
+    Image('quay.io/pypa/manylinux1_x86_64', 'manylinux1_x86_64'),
+    Image('quay.io/pypa/manylinux1_i686', 'manylinux1_i686', True),
+    Image('quay.io/pypa/manylinux2010_x86_64', 'manylinux2010_x86_64'),
+]
+
 def main_release():
     initlogging()
     parser = ArgumentParser()
@@ -71,7 +96,6 @@ def nearestabi():
     return "%s-%s%s" % (prefix, prefix, sys.abiflags)
 
 def release(config, srcgit, info):
-    from lagoon import docker
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
     scrub()
     EveryVersion(info, False, False, []).allchecks()
@@ -84,14 +108,8 @@ def release(config, srcgit, info):
                 os.remove(path)
     version = info.nextversion()
     pipify(info, version)
-    develpkgs = list(info.config.devel.packages)
-    with bgcontainer('-v', "%s:/io" % info.projectdir, 'quay.io/pypa/manylinux1_x86_64') as container: # TODO: More images.
-        if develpkgs:
-            docker('exec', container, 'yum', 'install', '-y', *develpkgs, stdout = None)
-        docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
-        # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
-        abis = itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions))
-        docker('exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container, "/opt/python/%s/bin/python" % nearestabi(), '/bdist.py', *abis, stdout = None)
+    for image in images:
+        image.makewheels(info)
     python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
     python('setup.py', 'sdist') # FIXME: Assumes release venv has Cython etc.
     artifactrelpaths = [os.path.join(distrelpath, name) for name in os.listdir(os.path.join(info.projectdir, distrelpath))]
