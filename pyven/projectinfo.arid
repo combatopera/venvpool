@@ -25,3 +25,4 @@ build requires := $list()
 licenses := $list(GPL)
 MIT path = LICENSE
 licheck exclude globs := $list()
+pypi participant = true
