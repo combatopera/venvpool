@@ -25,9 +25,9 @@ log = logging.getLogger(__name__)
 pyversions = '3.8', '3.7', '3.6'
 
 @contextmanager
-def bgcontainer(image):
+def bgcontainer(*dockerrunargs):
     from lagoon import docker
-    container = docker.run._d(image, 'sleep', 'inf').rstrip()
+    container = docker.run._d(*dockerrunargs + ('sleep', 'inf')).rstrip()
     try:
         yield container
     finally:
