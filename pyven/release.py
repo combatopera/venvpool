@@ -99,7 +99,7 @@ def uploadableartifacts(artifactrelpaths):
         if not name.endswith('.whl') or acceptplatform(platformmatch(name).group(1)):
             yield p
         else:
-            log.warning("Not uploadable: %s", p)
+            log.debug("Not uploadable: %s", p)
 
 def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
