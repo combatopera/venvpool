@@ -67,8 +67,6 @@ def uploadableartifacts(artifactrelpaths):
 def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
     scrub()
-    version = info.nextversion()
-    pipify(info, version) # Test against releases, in theory.
     EveryVersion(info, False, False, []).allchecks()
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
@@ -77,6 +75,7 @@ def release(config, srcgit, info):
                 path = os.path.join(dirpath, name)
                 log.debug("Delete: %s", path)
                 os.remove(path)
+    version = info.nextversion()
     pipify(info, version)
     python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
     python('setup.py', 'sdist', 'bdist_wheel') # FIXME: Assumes release venv has Cython etc.
