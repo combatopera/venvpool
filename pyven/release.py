@@ -26,7 +26,7 @@ from diapyr.util import enum, singleton
 from lagoon.program import Program
 from pkg_resources import resource_filename
 from tempfile import TemporaryDirectory
-import itertools, lagoon, logging, os, shutil, sys
+import itertools, lagoon, logging, os, re, shutil, sys
 
 log = logging.getLogger(__name__)
 distrelpath = 'dist'
@@ -90,9 +90,12 @@ def main_release():
             shutil.copy2(os.path.join(copydir, relpath), destpath)
 
 def uploadableartifacts(artifactrelpaths):
+    def acceptplatform(platform):
+        return 'any' == platform or platform.startswith('manylinux')
+    platformmatch = re.compile('-([^-]+)[.]whl$').search
     for p in artifactrelpaths:
         name = os.path.basename(p)
-        if not name.endswith('.whl') or name.endswith('-any.whl'):
+        if not name.endswith('.whl') or acceptplatform(platformmatch(name).group(1)):
             yield p
         else:
             log.warning("Not uploadable: %s", p)
@@ -121,5 +124,5 @@ def release(config, srcgit, info):
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
         python('-m', 'twine', 'upload', *uploadableartifacts(artifactrelpaths))
     else:
-        log.warning('Upload skipped, use --upload to upload.')
+        log.warning("Upload skipped, use --upload to upload: %s", ' '.join(uploadableartifacts(artifactrelpaths)))
     return artifactrelpaths
