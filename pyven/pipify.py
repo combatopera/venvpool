@@ -51,7 +51,7 @@ def pipify(info, version = None):
     for name, quote in nametoquote:
         config.printf('" = $(%s)', quote)
         config.processtemplate(
-                resource_filename(__name__, name + '.aridt'), # TODO: Make aridity get the resource.
+                resource_filename(__name__, name + '.aridt'), # TODO LATER: Make aridity get the resource.
                 os.path.abspath(os.path.join(info.projectdir, name)))
 
 def pyvenbuildrequires(info):
