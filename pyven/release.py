@@ -34,7 +34,7 @@ distrelpath = 'dist'
 @enum(
     ['manylinux1_x86_64'],
     ['manylinux1_i686', True],
-    ['manylinux2010_x86_64'],
+    ['manylinux2010_x86_64', False, True],
 )
 class Image:
 
@@ -45,9 +45,10 @@ class Image:
         prefix = "cp%s%s" % tuple(sys.version_info[:2])
         return "%s-%s%s" % (prefix, prefix, sys.abiflags)
 
-    def __init__(self, plat, linux32 = False):
+    def __init__(self, plat, linux32 = False, prune = False):
         self.plat = plat
         self.entrypoint = ['linux32'] if linux32 else []
+        self.prune = ['--prune'] if prune else []
 
     def makewheels(self, info):
         from lagoon import docker
@@ -59,7 +60,7 @@ class Image:
             if develpkgs:
                 docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + develpkgs, stdout = None)
             docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
-            docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + abis, stdout = None)
+            docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + abis, stdout = None)
 
 def main_release():
     initlogging()

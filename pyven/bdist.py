@@ -27,6 +27,7 @@ def main():
     logging.basicConfig(format = "<%(levelname)s> %(message)s", level = logging.DEBUG)
     parser = ArgumentParser()
     parser.add_argument('--plat', required = True)
+    parser.add_argument('--prune', action = 'store_true')
     parser.add_argument('abi', nargs = '+')
     args = parser.parse_args()
     with TemporaryDirectory() as holder:
@@ -35,7 +36,8 @@ def main():
             subprocess.check_call([os.path.join(pythonroot, abi, 'bin', 'pip'), 'wheel', '--no-deps', '-w', holder, '.'])
             wheelpath, = (os.path.join(holder, n) for n in os.listdir(holder))
             subprocess.check_call(['auditwheel', 'repair', '--plat', args.plat, '-w', distdir, wheelpath])
-            shutil.copy2(wheelpath, distdir)
+            if not args.prune:
+                shutil.copy2(wheelpath, distdir)
             os.remove(wheelpath)
 
 if '__main__' == __name__:
