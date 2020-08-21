@@ -16,7 +16,8 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from argparse import ArgumentParser
-import os, subprocess
+from tempfile import TemporaryDirectory
+import os, shutil, subprocess
 
 pythonroot = '/opt/python'
 distdir = 'dist'
@@ -25,12 +26,13 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('abi', nargs = '+')
     args = parser.parse_args()
-    for abi in args.abi:
-        # TODO: Repair immediately.
-        subprocess.check_call([os.path.join(pythonroot, abi, 'bin', 'pip'), 'wheel', '--no-deps', '-w', distdir, '.'])
-    for wheelname in sorted(os.listdir(distdir)):
-        if wheelname.endswith('.whl'):
-            subprocess.check_call(['auditwheel', 'repair', '-w', distdir, os.path.join(distdir, wheelname)])
+    with TemporaryDirectory() as holder:
+        for abi in args.abi:
+            subprocess.check_call([os.path.join(pythonroot, abi, 'bin', 'pip'), 'wheel', '--no-deps', '-w', holder, '.'])
+            wheelpath, = (os.path.join(holder, n) for n in os.listdir(holder))
+            subprocess.check_call(['auditwheel', 'repair', '-w', distdir, wheelpath])
+            shutil.copy2(wheelpath, distdir)
+            os.remove(wheelpath)
 
 if '__main__' == __name__:
     main()
