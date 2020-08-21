@@ -32,20 +32,21 @@ log = logging.getLogger(__name__)
 distrelpath = 'dist'
 
 @enum(
-    ['manylinux1_x86_64', 'quay.io/pypa/manylinux1_x86_64'],
-    ['manylinux1_i686', 'quay.io/pypa/manylinux1_i686', True],
-    ['manylinux2010_x86_64', 'quay.io/pypa/manylinux2010_x86_64'],
+    ['manylinux1_x86_64'],
+    ['manylinux1_i686', True],
+    ['manylinux2010_x86_64'],
 )
 class Image:
+
+    prefix = 'quay.io/pypa/'
 
     @singleton
     def nearestabi():
         prefix = "cp%s%s" % tuple(sys.version_info[:2])
         return "%s-%s%s" % (prefix, prefix, sys.abiflags)
 
-    def __init__(self, plat, image, linux32 = False):
+    def __init__(self, plat, linux32 = False):
         self.plat = plat
-        self.image = image
         self.entrypoint = ['linux32'] if linux32 else []
 
     def makewheels(self, info):
@@ -53,7 +54,7 @@ class Image:
         develpkgs = list(info.config.devel.packages)
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
         abis = list(itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
-        with bgcontainer('-v', "%s:/io" % info.projectdir, self.image) as container:
+        with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
             if develpkgs:
                 docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + develpkgs, stdout = None)
             docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
