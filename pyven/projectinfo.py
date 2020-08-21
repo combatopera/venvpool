@@ -123,7 +123,12 @@ class ProjectInfo:
 
     def descriptionandurl(self):
         import urllib.request, json, re, subprocess
-        originurl = subprocess.check_output(['git', 'remote', 'get-url', 'origin'], cwd = self.projectdir).decode()
+        def originurls():
+            for line in subprocess.check_output(['git', 'remote', '-v'], cwd = self.projectdir).decode().splitlines():
+                fields = re.findall(r'\S+', line)
+                if 'origin' == fields[0]:
+                    yield fields[1]
+        originurl, = set(originurls())
         urlpath = re.search('^(?:git@github[.]com:|https://github[.]com/)(.+/.+)[.]git$', originurl).group(1)
         with urllib.request.urlopen("https://api.github.com/repos/%s" % urlpath) as f:
             return json.loads(f.read().decode())['description'], "https://github.com/%s" % urlpath
