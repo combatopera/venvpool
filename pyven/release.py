@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from . import targetremote
 from .checks import EveryVersion
 from .initlogging import initlogging
 from .pipify import pipify
@@ -25,7 +26,6 @@ from tempfile import TemporaryDirectory
 import lagoon, logging, os, shutil, sys
 
 log = logging.getLogger(__name__)
-targetremote = 'origin'
 distrelpath = 'dist'
 
 def main_release():

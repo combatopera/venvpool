@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
+from . import targetremote
 from .files import Files
 from aridity.config import Config
 from pkg_resources import parse_requirements, resource_filename
@@ -126,7 +127,7 @@ class ProjectInfo:
         def originurls():
             for line in subprocess.check_output(['git', 'remote', '-v'], cwd = self.projectdir).decode().splitlines():
                 fields = re.findall(r'\S+', line)
-                if 'origin' == fields[0]:
+                if targetremote == fields[0]:
                     yield fields[1]
         originurl, = set(originurls())
         urlpath = re.search('^(?:git@github[.]com:|https://github[.]com/)(.+/.+)[.]git$', originurl).group(1)
