@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .initlogging import initlogging
+from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
 import logging
 
@@ -28,6 +29,9 @@ def main_tryinstall():
     parser = ArgumentParser()
     parser.add_argument('project')
     config = parser.parse_args()
+    if not ProjectInfo.seek('.').config.pypi.participant:
+        log.info('Not user-installable.')
+        return
     for pyversion in pyversions:
         log.info("Python version: %s", pyversion)
         container = docker.run._d("python:%s" % pyversion, 'sleep', 'inf').rstrip()
