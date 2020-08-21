@@ -79,7 +79,7 @@ def release(config, srcgit, info):
                 os.remove(path)
     pipify(info, version)
     python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
-    python('setup.py', 'sdist', 'bdist_wheel')
+    python('setup.py', 'sdist', 'bdist_wheel') # FIXME: Assumes release venv has Cython etc.
     artifactrelpaths = [os.path.join(distrelpath, name) for name in os.listdir(os.path.join(info.projectdir, distrelpath))]
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
