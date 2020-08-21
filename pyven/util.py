@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, re, sys
+import logging, os, re, sys
+
+def initlogging():
+    logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
 
 def stderr(obj):
     sys.stderr.write(str(obj))

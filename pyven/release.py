@@ -17,10 +17,10 @@
 
 from . import targetremote
 from .checks import EveryVersion
-from .initlogging import initlogging
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .tryinstall import bgcontainer
+from .util import initlogging
 from argparse import ArgumentParser
 from diapyr.util import enum, singleton
 from lagoon.program import Program

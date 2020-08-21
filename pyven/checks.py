@@ -17,10 +17,9 @@
 
 from __future__ import with_statement
 from .files import Files
-from .initlogging import initlogging
 from .minivenv import Venv
 from .projectinfo import ProjectInfo
-from .util import Excludes, stderr, stripeol
+from .util import Excludes, initlogging, stderr, stripeol
 from argparse import ArgumentParser
 from aridity.config import Config
 from diapyr.util import singleton

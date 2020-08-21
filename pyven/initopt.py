@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .initlogging import initlogging
 from .pipify import pipify
 from .projectinfo import ProjectInfo
+from .util import initlogging
 from aridity.config import Config
 import logging, os, re, subprocess, sys
 
