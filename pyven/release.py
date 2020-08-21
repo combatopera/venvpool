@@ -20,10 +20,12 @@ from .checks import EveryVersion
 from .initlogging import initlogging
 from .pipify import pipify
 from .projectinfo import ProjectInfo
+from .tryinstall import bgcontainer
 from argparse import ArgumentParser
 from lagoon.program import Program
+from pkg_resources import resource_filename
 from tempfile import TemporaryDirectory
-import lagoon, logging, os, shutil, sys
+import itertools, lagoon, logging, os, shutil, sys
 
 log = logging.getLogger(__name__)
 distrelpath = 'dist'
@@ -64,7 +66,12 @@ def uploadableartifacts(artifactrelpaths):
         else:
             log.warning("Not uploadable: %s", p)
 
+def nearestabi():
+    prefix = "cp%s%s" % tuple(sys.version_info[:2])
+    return "%s-%s%s" % (prefix, prefix, sys.abiflags)
+
 def release(config, srcgit, info):
+    from lagoon import docker
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
     scrub()
     EveryVersion(info, False, False, []).allchecks()
@@ -77,8 +84,14 @@ def release(config, srcgit, info):
                 os.remove(path)
     version = info.nextversion()
     pipify(info, version)
+    with bgcontainer('-v', "%s:/io" % info.projectdir, 'quay.io/pypa/manylinux1_x86_64') as container: # TODO: More images.
+        docker('exec', container, 'yum', 'install', '-y', 'jack-audio-connection-kit-devel', stdout = None) # FIXME: Make configurable.
+        docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
+        # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
+        abis = itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions))
+        docker('exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container, "/opt/python/%s/bin/python" % nearestabi(), '/bdist.py', *abis, stdout = None)
     python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
-    python('setup.py', 'sdist', 'bdist_wheel') # FIXME: Assumes release venv has Cython etc.
+    python('setup.py', 'sdist') # FIXME: Assumes release venv has Cython etc.
     artifactrelpaths = [os.path.join(distrelpath, name) for name in os.listdir(os.path.join(info.projectdir, distrelpath))]
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
