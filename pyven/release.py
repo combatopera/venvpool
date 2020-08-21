@@ -22,7 +22,7 @@ from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .tryinstall import bgcontainer
 from argparse import ArgumentParser
-from diapyr.util import singleton
+from diapyr.util import enum, singleton
 from lagoon.program import Program
 from pkg_resources import resource_filename
 from tempfile import TemporaryDirectory
@@ -31,6 +31,11 @@ import itertools, lagoon, logging, os, shutil, sys
 log = logging.getLogger(__name__)
 distrelpath = 'dist'
 
+@enum(
+    ['manylinux1_x86_64', 'quay.io/pypa/manylinux1_x86_64'],
+    ['manylinux1_i686', 'quay.io/pypa/manylinux1_i686', True],
+    ['manylinux2010_x86_64', 'quay.io/pypa/manylinux2010_x86_64'],
+)
 class Image:
 
     @singleton
@@ -38,9 +43,9 @@ class Image:
         prefix = "cp%s%s" % tuple(sys.version_info[:2])
         return "%s-%s%s" % (prefix, prefix, sys.abiflags)
 
-    def __init__(self, image, plat, linux32 = False):
-        self.image = image
+    def __init__(self, plat, image, linux32 = False):
         self.plat = plat
+        self.image = image
         self.entrypoint = ['linux32'] if linux32 else []
 
     def makewheels(self, info):
@@ -53,13 +58,6 @@ class Image:
                 docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + develpkgs, stdout = None)
             docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
             docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + abis, stdout = None)
-
-# TODO: Use enum.
-images = [
-    Image('quay.io/pypa/manylinux1_x86_64', 'manylinux1_x86_64'),
-    Image('quay.io/pypa/manylinux1_i686', 'manylinux1_i686', True),
-    Image('quay.io/pypa/manylinux2010_x86_64', 'manylinux2010_x86_64'),
-]
 
 def main_release():
     initlogging()
@@ -110,7 +108,7 @@ def release(config, srcgit, info):
                 os.remove(path)
     version = info.nextversion()
     pipify(info, version)
-    for image in images:
+    for image in Image.enum:
         image.makewheels(info)
     python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
     python('setup.py', 'sdist') # FIXME: Assumes release venv has Cython etc.
