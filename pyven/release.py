@@ -31,6 +31,7 @@ import itertools, lagoon, logging, os, re, shutil, sys
 log = logging.getLogger(__name__)
 distrelpath = 'dist'
 
+# TODO: There are more of these.
 @enum(
     ['manylinux1_x86_64'],
     ['manylinux1_i686', True],
