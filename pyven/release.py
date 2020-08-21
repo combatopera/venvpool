@@ -84,8 +84,10 @@ def release(config, srcgit, info):
                 os.remove(path)
     version = info.nextversion()
     pipify(info, version)
+    develpkgs = list(info.config.devel.packages)
     with bgcontainer('-v', "%s:/io" % info.projectdir, 'quay.io/pypa/manylinux1_x86_64') as container: # TODO: More images.
-        docker('exec', container, 'yum', 'install', '-y', 'jack-audio-connection-kit-devel', stdout = None) # FIXME: Make configurable.
+        if develpkgs:
+            docker('exec', container, 'yum', 'install', '-y', *develpkgs, stdout = None)
         docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
         abis = itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions))
