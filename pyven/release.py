@@ -61,15 +61,14 @@ class Image:
         abis = list(itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
-            if devel_packages:
-                docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + devel_packages, stdout = None)
-            if devel_commands:
-                # TODO LATER: Run commands as ordinary sudo-capable user.
-                docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y', 'sudo'], stdout = None)
-                for command in devel_commands:
-                    dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
-                    log.debug("In container dir %s run command: %s", dirpath, command)
-                    docker('exec', '-w', dirpath, '-t', container, 'sh', '-c', command, stdout = None)
+            packages = devel_packages + (['sudo'] if devel_commands else [])
+            if packages:
+                docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + packages, stdout = None)
+            for command in devel_commands:
+                # TODO LATER: Run as ordinary sudo-capable user.
+                dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
+                log.debug("In container dir %s run command: %s", dirpath, command)
+                docker('exec', '-w', dirpath, '-t', container, 'sh', '-c', command, stdout = None)
             docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
             docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + abis, stdout = None)
 
