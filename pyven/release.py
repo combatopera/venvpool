@@ -58,6 +58,7 @@ class Image:
         develpkgs = list(info.config.devel.packages)
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
         abis = list(itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
+        # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
             if develpkgs:
                 docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + develpkgs, stdout = None)
