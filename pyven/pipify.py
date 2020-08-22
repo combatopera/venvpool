@@ -37,6 +37,7 @@ def pipify(info, version = None):
     config.put('scripts', scalar = info.scripts())
     config.put('console_scripts', scalar = info.console_scripts())
     config.put('universal', number = int({2, 3} <= set(info.config.pyversions)))
+    # XXX: Use soak to generate these?
     nametoquote = [
         ['setup.py', 'pystr'],
         ['setup.cfg', 'void'],
