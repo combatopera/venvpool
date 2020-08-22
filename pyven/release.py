@@ -60,7 +60,7 @@ class Image:
         devel_packages = list(info.config.devel.packages)
         devel_scripts = list(info.config.devel.scripts)
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
-        wheel_abi = list(chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
+        compatibilities = list(chain(*(getattr(info.config.wheel.compatibilities, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
             packages = devel_packages + (['sudo'] if devel_scripts else [])
@@ -72,7 +72,7 @@ class Image:
                 log.debug("In container dir %s run script: %s", dirpath, script)
                 docker_print('exec', '-w', dirpath, '-t', container, 'sh', '-c', script)
             docker_print.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container)
-            docker_print(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + wheel_abi)
+            docker_print(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + compatibilities)
 
 def main_release():
     initlogging()

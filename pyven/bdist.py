@@ -28,12 +28,12 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('--plat', required = True)
     parser.add_argument('--prune', action = 'store_true')
-    parser.add_argument('abi', nargs = '+')
+    parser.add_argument('compatibilities', nargs = '+')
     args = parser.parse_args()
     with TemporaryDirectory() as holder:
-        for abi in args.abi:
-            log.info("Make wheels for ABI: %s", abi)
-            subprocess.check_call([os.path.join(pythonroot, abi, 'bin', 'pip'), '--no-cache-dir', 'wheel', '--no-deps', '-w', holder, '.'])
+        for compatibility in args.compatibilities:
+            log.info("Make wheels for implementation-ABI: %s", compatibility)
+            subprocess.check_call([os.path.join(pythonroot, compatibility, 'bin', 'pip'), '--no-cache-dir', 'wheel', '--no-deps', '-w', holder, '.'])
             wheelpath, = (os.path.join(holder, n) for n in os.listdir(holder))
             subprocess.check_call(['auditwheel', 'repair', '--plat', args.plat, '-w', distdir, wheelpath])
             if not args.prune:
