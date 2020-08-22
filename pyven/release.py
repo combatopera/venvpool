@@ -58,19 +58,19 @@ class Image:
         docker_print = docker.partial(stdout = None)
         log.info("Make wheels for platform: %s", self.plat)
         devel_packages = list(info.config.devel.packages)
-        devel_commands = list(info.config.devel.commands)
+        devel_scripts = list(info.config.devel.scripts)
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
         wheel_abi = list(chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
-            packages = devel_packages + (['sudo'] if devel_commands else [])
+            packages = devel_packages + (['sudo'] if devel_scripts else [])
             if packages:
                 docker_print(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + packages)
-            for command in devel_commands:
+            for script in devel_scripts:
                 # TODO LATER: Run as ordinary sudo-capable user.
                 dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
-                log.debug("In container dir %s run command: %s", dirpath, command)
-                docker_print('exec', '-w', dirpath, '-t', container, 'sh', '-c', command)
+                log.debug("In container dir %s run script: %s", dirpath, script)
+                docker_print('exec', '-w', dirpath, '-t', container, 'sh', '-c', script)
             docker_print.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container)
             docker_print(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + wheel_abi)
 
