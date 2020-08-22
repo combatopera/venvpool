@@ -19,6 +19,7 @@ from . import targetremote
 from .checks import EveryVersion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
+from .sourceinfo import SourceInfo
 from .tryinstall import bgcontainer
 from .util import initlogging
 from argparse import ArgumentParser
@@ -115,10 +116,14 @@ def release(config, srcgit, info):
                 os.remove(path)
     version = info.nextversion()
     pipify(info, version)
-    for image in Image.enum:
-        image.makewheels(info)
+    setupcommands = []
+    if SourceInfo(info.projectdir).pyxpaths:
+        for image in Image.enum:
+            image.makewheels(info)
+    else:
+        setupcommands.append('bdist_wheel')
     python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
-    python('setup.py', 'sdist') # FIXME: Assumes release venv has Cython etc.
+    python('setup.py', *setupcommands + ['sdist']) # FIXME: Assumes release venv has Cython etc.
     artifactrelpaths = [os.path.join(distrelpath, name) for name in sorted(os.listdir(os.path.join(info.projectdir, distrelpath)))]
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
