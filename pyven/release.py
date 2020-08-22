@@ -54,6 +54,7 @@ class Image:
 
     def makewheels(self, info): # TODO: This code would benefit from modern syntax.
         from lagoon import docker
+        docker_print = docker.partial(stdout = None)
         log.info("Make wheels for platform: %s", self.plat)
         devel_packages = list(info.config.devel.packages)
         devel_commands = list(info.config.devel.commands)
@@ -63,14 +64,14 @@ class Image:
         with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
             packages = devel_packages + (['sudo'] if devel_commands else [])
             if packages:
-                docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + packages, stdout = None)
+                docker_print(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + packages)
             for command in devel_commands:
                 # TODO LATER: Run as ordinary sudo-capable user.
                 dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
                 log.debug("In container dir %s run command: %s", dirpath, command)
-                docker('exec', '-w', dirpath, '-t', container, 'sh', '-c', command, stdout = None)
-            docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
-            docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + abis, stdout = None)
+                docker_print('exec', '-w', dirpath, '-t', container, 'sh', '-c', command)
+            docker_print.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container)
+            docker_print(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + abis)
 
 def main_release():
     initlogging()
