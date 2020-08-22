@@ -55,21 +55,21 @@ class Image:
     def makewheels(self, info): # TODO: This code would benefit from modern syntax.
         from lagoon import docker
         log.info("Make wheels for platform: %s", self.plat)
-        develpkgs = list(info.config.devel.packages)
-        develcmds = list(info.config.devel.commands)
+        devel_packages = list(info.config.devel.packages)
+        devel_commands = list(info.config.devel.commands)
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
         abis = list(itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
-            if develpkgs:
-                docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + develpkgs, stdout = None)
-            if develcmds:
+            if devel_packages:
+                docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + devel_packages, stdout = None)
+            if devel_commands:
                 # TODO LATER: Run commands as ordinary sudo-capable user.
                 docker(*['exec', container] + self.entrypoint + ['yum', 'install', '-y', 'sudo'], stdout = None)
-                for command in develcmds:
+                for command in devel_commands:
                     dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
                     log.debug("In container dir %s run command: %s", dirpath, command)
-                    docker('exec', '-w', dirpath, '-t', container, 'bash', '-c', command, stdout = None)
+                    docker('exec', '-w', dirpath, '-t', container, 'sh', '-c', command, stdout = None)
             docker.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container, stdout = None)
             docker(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + abis, stdout = None)
 
