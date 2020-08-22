@@ -24,10 +24,11 @@ from .tryinstall import bgcontainer
 from .util import initlogging
 from argparse import ArgumentParser
 from diapyr.util import enum, singleton
+from itertools import chain
 from lagoon.program import Program
 from pkg_resources import resource_filename
 from tempfile import TemporaryDirectory
-import itertools, lagoon, logging, os, re, shutil, sys
+import lagoon, logging, os, re, shutil, sys
 
 log = logging.getLogger(__name__)
 distrelpath = 'dist'
@@ -59,7 +60,7 @@ class Image:
         devel_packages = list(info.config.devel.packages)
         devel_commands = list(info.config.devel.commands)
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
-        wheel_abi = list(itertools.chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
+        wheel_abi = list(chain(*(getattr(info.config.wheel.abi, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
             packages = devel_packages + (['sudo'] if devel_commands else [])
