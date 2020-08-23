@@ -58,8 +58,11 @@ def pipify(info, version = None):
 def pyvenbuildrequires(info):
     yield 'setuptools'
     yield 'wheel'
-    if SourceInfo(info.projectdir).pyxpaths:
-        yield 'Cython'
+    reqs = set()
+    for p in SourceInfo(info.projectdir).extpaths:
+        reqs.update(p.buildrequires())
+    for r in sorted(reqs):
+        yield r
 
 def main_pipify():
     parser = ArgumentParser()

@@ -128,7 +128,7 @@ def release(config, srcgit, info):
     version = info.nextversion()
     pipify(info, version)
     setupcommands = []
-    if SourceInfo(info.projectdir).pyxpaths:
+    if SourceInfo(info.projectdir).extpaths:
         for image in Image.enum:
             image.makewheels(info)
     else:

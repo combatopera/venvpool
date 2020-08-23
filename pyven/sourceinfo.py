@@ -25,6 +25,10 @@ class SourceInfo:
             self.module = module
             self.path = path
 
+        def buildrequires(self):
+            if self.path.endswith('.pyx'):
+                yield 'Cython'
+
         def make_ext(self):
             g = {}
             with open(self.path + 'bld') as f: # Assume project root.
@@ -34,7 +38,7 @@ class SourceInfo:
     def __init__(self, rootdir):
         import os, setuptools, subprocess
         self.packages = setuptools.find_packages(rootdir)
-        pyxpaths = {}
+        extpaths = {}
         for package in self.packages:
             dirpath = package.replace('.', os.sep)
             names = sorted(os.listdir(os.path.join(rootdir, dirpath)))
@@ -42,13 +46,13 @@ class SourceInfo:
                 for name in names:
                     if name.endswith(suffix):
                         module = "%s.%s" % (package, name[:-len(suffix)])
-                        if module not in pyxpaths:
-                            pyxpaths[module] = self.PYXPath(module, os.path.join(dirpath, name))
-        pyxpaths = pyxpaths.values()
-        if pyxpaths and os.path.isdir(os.path.join(rootdir, '.git')): # We could be an unpacked sdist.
-            check_ignore = subprocess.Popen(['git', 'check-ignore'] + [p.path for p in pyxpaths], cwd = rootdir, stdout = subprocess.PIPE)
+                        if module not in extpaths:
+                            extpaths[module] = self.PYXPath(module, os.path.join(dirpath, name))
+        extpaths = extpaths.values()
+        if extpaths and os.path.isdir(os.path.join(rootdir, '.git')): # We could be an unpacked sdist.
+            check_ignore = subprocess.Popen(['git', 'check-ignore'] + [p.path for p in extpaths], cwd = rootdir, stdout = subprocess.PIPE)
             ignoredpaths = set(check_ignore.communicate()[0].decode().splitlines())
             assert check_ignore.wait() in [0, 1]
-            self.pyxpaths = [path for path in pyxpaths if path.path not in ignoredpaths]
+            self.extpaths = [path for path in extpaths if path.path not in ignoredpaths]
         else:
-            self.pyxpaths = pyxpaths
+            self.extpaths = extpaths
