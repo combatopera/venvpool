@@ -44,9 +44,9 @@ class Image:
     prefix = 'quay.io/pypa/'
 
     @singleton
-    def nearestabi():
-        prefix = "cp%s%s" % tuple(sys.version_info[:2])
-        return "%s-%s%s" % (prefix, prefix, sys.abiflags)
+    def pythonexe():
+        impl = "cp%s%s" % tuple(sys.version_info[:2])
+        return "/opt/python/%s-%s%s/bin/python" % (impl, impl, sys.abiflags)
 
     def __init__(self, plat, linux32 = False, prune = False):
         self.plat = plat
@@ -73,7 +73,7 @@ class Image:
                 log.debug("In container dir %s run script: %s", dirpath, script)
                 run(['-w', dirpath, '-t'], ['sh', '-c', script])
             docker_print.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container)
-            run(['-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io'], chain(["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
+            run(['-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io'], chain([self.pythonexe, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
 
 def main_release():
     initlogging()
