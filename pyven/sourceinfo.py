@@ -41,7 +41,7 @@ class SourceInfo:
             for suffix in self.PYXPath.suffixes:
                 for name in names:
                     if name.endswith(suffix):
-                        module = package + name[:-len(suffix)]
+                        module = "%s.%s" % (package, name[:-len(suffix)])
                         if module not in pyxpaths:
                             pyxpaths[module] = self.PYXPath(module, os.path.join(dirpath, name))
         pyxpaths = pyxpaths.values()
