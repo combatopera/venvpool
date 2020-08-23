@@ -63,15 +63,17 @@ class Image:
         compatibilities = list(chain(*(getattr(info.config.wheel.compatibilities, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, "%s%s" % (self.prefix, self.plat)) as container:
+            def run(execargs, command):
+                docker_print(*chain(['exec'], execargs, [container], self.entrypoint, command))
             if packages:
-                docker_print(*chain(['exec', container], self.entrypoint, ['yum', 'install', '-y'], packages))
+                run([], chain(['yum', 'install', '-y'], packages))
             for script in scripts:
                 # TODO LATER: Run as ordinary sudo-capable user.
                 dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
                 log.debug("In container dir %s run script: %s", dirpath, script)
-                docker_print('exec', '-w', dirpath, '-t', container, 'sh', '-c', script)
+                run(['-w', dirpath, '-t'], ['sh', '-c', script])
             docker_print.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container)
-            docker_print(*chain(['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container], self.entrypoint, ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
+            run(['-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io'], chain(["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
 
 def main_release():
     initlogging()
