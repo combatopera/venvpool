@@ -28,7 +28,7 @@ from itertools import chain
 from lagoon.program import Program
 from pkg_resources import resource_filename
 from tempfile import TemporaryDirectory
-import lagoon, logging, os, re, shutil, sys
+import lagoon, logging, os, re, shutil, sys, sysconfig
 
 log = logging.getLogger(__name__)
 distrelpath = 'dist'
@@ -45,7 +45,7 @@ class Image:
 
     @singleton
     def pythonexe():
-        impl = "cp%s%s" % tuple(sys.version_info[:2])
+        impl = "cp%s" % sysconfig.get_config_var('py_version_nodot')
         return "/opt/python/%s-%s%s/bin/python" % (impl, impl, sys.abiflags)
 
     def __init__(self, plat, linux32 = False, prune = False):
