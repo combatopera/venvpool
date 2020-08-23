@@ -33,8 +33,14 @@ def lazy(clazz, init, *initbefore):
     return obj
 
 # FIXME: The idea was to defer anything Cython/numpy to pyximport time, but this doesn't achieve that.
-def cythonize(*args, **kwargs):
+def cythonize(extensions):
     def init(ext_modules):
-        from Cython.Build import cythonize
-        ext_modules[:] = cythonize(*args, **kwargs)
+        ordinary = []
+        cythonizable = []
+        for e in extensions:
+            (cythonizable if any(s.endswith('.pyx') for s in e.sources) else ordinary).append(e)
+        if cythonizable:
+            from Cython.Build import cythonize
+            ordinary += cythonize(cythonizable)
+        ext_modules[:] = ordinary
     return lazy(list, init, '__getitem__', '__iter__', '__len__')
