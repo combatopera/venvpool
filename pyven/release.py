@@ -57,16 +57,15 @@ class Image:
         from lagoon import docker
         docker_print = docker.partial(stdout = None)
         log.info("Make wheels for platform: %s", self.plat)
-        devel_packages = list(info.config.devel.packages)
-        devel_scripts = list(info.config.devel.scripts)
-        # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
+        scripts = list(info.config.devel.scripts)
+        packages = list(chain(info.config.devel.packages, ['sudo'] if scripts else []))
+        # TODO LATER: It would be cool if the complete list could be expressed in aridity.
         compatibilities = list(chain(*(getattr(info.config.wheel.compatibilities, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, "%s%s" % (self.prefix, self.plat)) as container:
-            packages = devel_packages + (['sudo'] if devel_scripts else [])
             if packages:
                 docker_print(*chain(['exec', container], self.entrypoint, ['yum', 'install', '-y'], packages))
-            for script in devel_scripts:
+            for script in scripts:
                 # TODO LATER: Run as ordinary sudo-capable user.
                 dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
                 log.debug("In container dir %s run script: %s", dirpath, script)
