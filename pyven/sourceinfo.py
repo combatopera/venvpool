@@ -39,15 +39,17 @@ class SourceInfo:
         import os, setuptools, subprocess
         self.packages = setuptools.find_packages(rootdir)
         extpaths = {}
-        for package in self.packages:
-            dirpath = package.replace('.', os.sep)
+        def addextpaths(dirpath, moduleprefix):
             names = sorted(os.listdir(os.path.join(rootdir, dirpath)))
             for suffix in self.PYXPath.suffixes:
                 for name in names:
                     if name.endswith(suffix):
-                        module = "%s.%s" % (package, name[:-len(suffix)])
+                        module = "%s%s" % (moduleprefix, name[:-len(suffix)])
                         if module not in extpaths:
                             extpaths[module] = self.PYXPath(module, os.path.join(dirpath, name))
+        addextpaths('.', '')
+        for package in self.packages:
+            addextpaths(package.replace('.', os.sep), "%s." % package)
         extpaths = extpaths.values()
         if extpaths and os.path.isdir(os.path.join(rootdir, '.git')): # We could be an unpacked sdist.
             check_ignore = subprocess.Popen(['git', 'check-ignore'] + [p.path for p in extpaths], cwd = rootdir, stdout = subprocess.PIPE)
