@@ -19,29 +19,32 @@ class SourceInfo:
 
     class PYXPath:
 
-        dotpyx = '.pyx'
+        suffixes = '.pyx', '.c'
 
-        def __init__(self, package, name, path):
-            self.package = package
-            self.name = name
+        def __init__(self, module, path):
+            self.module = module
             self.path = path
 
         def make_ext(self):
             g = {}
             with open(self.path + 'bld') as f: # Assume project root.
                 exec(f.read(), g)
-            return g['make_ext'](self.package + '.' + self.name[:-len(self.dotpyx)], self.path)
+            return g['make_ext'](self.module, self.path)
 
     def __init__(self, rootdir):
         import os, setuptools, subprocess
         self.packages = setuptools.find_packages(rootdir)
-        def g():
-            for package in self.packages:
-                dirpath = package.replace('.', os.sep)
-                for name in os.listdir(os.path.join(rootdir, dirpath)):
-                    if name.endswith(self.PYXPath.dotpyx):
-                        yield self.PYXPath(package, name, os.path.join(dirpath, name))
-        pyxpaths = list(g())
+        pyxpaths = {}
+        for package in self.packages:
+            dirpath = package.replace('.', os.sep)
+            names = sorted(os.listdir(os.path.join(rootdir, dirpath)))
+            for suffix in self.PYXPath.suffixes:
+                for name in names:
+                    if name.endswith(suffix):
+                        module = package + name[:-len(suffix)]
+                        if module not in pyxpaths:
+                            pyxpaths[module] = self.PYXPath(module, os.path.join(dirpath, name))
+        pyxpaths = pyxpaths.values()
         if pyxpaths and os.path.isdir(os.path.join(rootdir, '.git')): # We could be an unpacked sdist.
             check_ignore = subprocess.Popen(['git', 'check-ignore'] + [p.path for p in pyxpaths], cwd = rootdir, stdout = subprocess.PIPE)
             ignoredpaths = set(check_ignore.communicate()[0].decode().splitlines())
