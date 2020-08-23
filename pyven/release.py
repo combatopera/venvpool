@@ -62,17 +62,17 @@ class Image:
         # TODO LATER: It would be cool if the complete list of abis could be expressed in aridity.
         compatibilities = list(chain(*(getattr(info.config.wheel.compatibilities, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
-        with bgcontainer('-v', "%s:/io" % info.projectdir, self.prefix + self.plat) as container:
+        with bgcontainer('-v', "%s:/io" % info.projectdir, "%s%s" % (self.prefix, self.plat)) as container:
             packages = devel_packages + (['sudo'] if devel_scripts else [])
             if packages:
-                docker_print(*['exec', container] + self.entrypoint + ['yum', 'install', '-y'] + packages)
+                docker_print(*chain(['exec', container], self.entrypoint, ['yum', 'install', '-y'], packages))
             for script in devel_scripts:
                 # TODO LATER: Run as ordinary sudo-capable user.
                 dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
                 log.debug("In container dir %s run script: %s", dirpath, script)
                 docker_print('exec', '-w', dirpath, '-t', container, 'sh', '-c', script)
             docker_print.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container)
-            docker_print(*['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container] + self.entrypoint + ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat] + self.prune + compatibilities)
+            docker_print(*chain(['exec', '-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io', container], self.entrypoint, ["/opt/python/%s/bin/python" % self.nearestabi, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
 
 def main_release():
     initlogging()
@@ -133,7 +133,7 @@ def release(config, srcgit, info):
     else:
         setupcommands.append('bdist_wheel')
     python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
-    python('setup.py', *setupcommands + ['sdist']) # FIXME: Assumes release venv has Cython etc.
+    python('setup.py', *chain(setupcommands, ['sdist'])) # FIXME: Assumes release venv has Cython etc.
     artifactrelpaths = [os.path.join(distrelpath, name) for name in sorted(os.listdir(os.path.join(info.projectdir, distrelpath)))]
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
