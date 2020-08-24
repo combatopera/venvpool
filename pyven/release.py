@@ -66,7 +66,7 @@ class Image:
             def run(execargs, command):
                 docker_print(*chain(['exec'], execargs, [container], self.entrypoint, command))
             if packages:
-                run([], chain(['yum', '--disablerepo', 'epel', 'install', '-y'], packages))
+                run([], chain(['yum', 'install', '-y'], packages))
             for script in scripts:
                 # TODO LATER: Run as ordinary sudo-capable user.
                 dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
