@@ -117,6 +117,8 @@ def uploadableartifacts(artifactrelpaths):
 def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
     scrub()
+    version = info.nextversion()
+    pipify(info, version)
     EveryVersion(info, False, False, []).allchecks()
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
@@ -125,7 +127,6 @@ def release(config, srcgit, info):
                 path = os.path.join(dirpath, name)
                 log.debug("Delete: %s", path)
                 os.remove(path)
-    version = info.nextversion()
     pipify(info, version)
     setupcommands = []
     if SourceInfo(info.projectdir).extpaths:
