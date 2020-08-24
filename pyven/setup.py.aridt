@@ -7,7 +7,7 @@ def long_description():
 $readfile$./(sourceinfo.py)
 $readfile$./(cythonize.py)
 def ext_modules():
-    extensions = [path.make_ext() for path in sourceinfo.extpaths] # FIXME: Not all of these need cythonizing.
+    extensions = [path.make_ext() for path in sourceinfo.extpaths]
     return dict(ext_modules = cythonize(extensions)) if extensions else {}
 
 sourceinfo = SourceInfo('.')
