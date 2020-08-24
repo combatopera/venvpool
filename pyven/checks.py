@@ -114,7 +114,7 @@ class EveryVersion:
             if not os.path.exists(nosetests):
                 self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
                 venv.install(['nose-cov'])
-            subprocess.check_call([venv.programpath('python'), 'setup.py', 'build_ext', '--inplace'])
+            subprocess.check_call([venv.programpath('python'), 'setup.py', 'build_ext', '--inplace'], cwd = self.info.projectdir)
             reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
             status = subprocess.call([
                 nosetests, '--exe', '-v',
