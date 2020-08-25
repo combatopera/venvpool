@@ -35,7 +35,7 @@ class Workspace:
             if name in self.projects:
                 path = os.path.join(self.workspace, name)
                 if not os.path.exists(path): # Allow for diamond dependencies.
-                    subprocess.check_call(['git', 'clone', '-b', 'master', "https://github.com/%s/%s.git" % (self.user, name)], cwd = self.workspace)
+                    subprocess.check_call(['git', 'clone', '--depth', '1', "https://github.com/%s/%s.git" % (self.user, name)], cwd = self.workspace)
                     j = ProjectInfo.seek(path)
                     pipify(j)
                     self.clonerequires(j)
