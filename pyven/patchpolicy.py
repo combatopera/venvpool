@@ -18,7 +18,7 @@
 import json
 
 policypath = '/opt/_internal/cpython-3.7.9/lib/python3.7/site-packages/auditwheel/policy/policy.json'
-syslibs = 'libjack.so.0',
+syslibs = 'libasound.so.2', 'libjack.so.0', 'libportaudio.so.2'
 
 def main():
     with open(policypath) as f:
