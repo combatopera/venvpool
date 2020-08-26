@@ -72,6 +72,8 @@ class Image:
                 dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
                 log.debug("In container dir %s run script: %s", dirpath, script)
                 run(['-w', dirpath, '-t'], ['sh', '-c', script])
+            docker_print.cp(resource_filename(__name__, 'patchpolicy.py'), "%s:/patchpolicy.py" % container)
+            run([], [self.pythonexe, '/patchpolicy.py'])
             docker_print.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container)
             run(['-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io'], chain([self.pythonexe, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
 
