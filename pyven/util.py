@@ -18,7 +18,7 @@
 import logging, os, re, sys
 
 def initlogging():
-    logging.basicConfig(format = "[%(levelname)s] %(message)s", level = logging.DEBUG)
+    logging.basicConfig(format = "%(asctime)s [%(levelname)s] %(message)s", level = logging.DEBUG)
 
 def stderr(obj):
     sys.stderr.write(str(obj))
