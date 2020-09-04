@@ -18,7 +18,6 @@
 from __future__ import division
 from .projectinfo import ProjectInfo
 from .util import initlogging
-from argparse import ArgumentParser
 from contextlib import contextmanager
 from lagoon.program import Program
 from pathlib import Path
@@ -39,14 +38,13 @@ def bgcontainer(*dockerrunargs):
 def main_tryinstall():
     from lagoon import docker
     initlogging()
-    parser = ArgumentParser()
-    parser.add_argument('project')
-    config = parser.parse_args()
-    if not ProjectInfo.seek('.').config.pypi.participant:
+    headinfo = ProjectInfo.seek('.')
+    if not headinfo.config.pypi.participant: # XXX: Or look for tags?
         log.info('Not user-installable.')
         return
-    version, = re.findall("^%s [(]([^)]+)" % re.escape(config.project), Program.text(Path(sys.executable).parent / 'pip').search(config.project), re.MULTILINE)
-    req = "%s==%s" % (config.project, version)
+    project = headinfo.config.name
+    version, = re.findall("^%s [(]([^)]+)" % re.escape(project), Program.text(Path(sys.executable).parent / 'pip').search(project), re.MULTILINE)
+    req = "%s==%s" % (project, version)
     for pyversion in pyversions:
         log.info("Python version: %s", pyversion)
         with bgcontainer("python:%s" % pyversion) as container:
