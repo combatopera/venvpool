@@ -46,6 +46,7 @@ def main_tryinstall():
         log.info('Not user-installable.')
         return
     project = headinfo.config.name
+    # XXX: When building a tag use that same version?
     version, = re.findall("^%s [(]([^)]+)" % re.escape(project), Program.text(Path(sys.executable).parent / 'pip').search(project), re.MULTILINE)
     req = "%s==%s" % (project, version)
     for pyversion in pyversions:
