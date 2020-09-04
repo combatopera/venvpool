@@ -15,11 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import division
 from .projectinfo import ProjectInfo
 from .util import initlogging
 from argparse import ArgumentParser
 from contextlib import contextmanager
-import logging
+from lagoon.program import Program
+from pathlib import Path
+import logging, re, sys
 
 log = logging.getLogger(__name__)
 pyversions = '3.8', '3.7', '3.6'
@@ -42,7 +45,9 @@ def main_tryinstall():
     if not ProjectInfo.seek('.').config.pypi.participant:
         log.info('Not user-installable.')
         return
+    version, = re.findall("^%s [(]([^)]+)" % re.escape(config.project), Program.text(Path(sys.executable).parent / 'pip').search(config.project), re.MULTILINE)
+    req = "%s==%s" % (config.project, version)
     for pyversion in pyversions:
         log.info("Python version: %s", pyversion)
         with bgcontainer("python:%s" % pyversion) as container:
-            docker('exec', container, 'pip', 'install', config.project, stdout = None)
+            docker('exec', container, 'pip', 'install', req, stdout = None)
