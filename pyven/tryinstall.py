@@ -44,6 +44,7 @@ def main_tryinstall():
         log.info('Not user-installable.')
         return
     project = headinfo.config.name
+    # XXX: When building a tag use that same version?
     with urlopen("https://pypi.org/rss/project/%s/releases.xml" % project) as f:
         version = ET.parse(f).find('./channel/item/title').text
     req = "%s==%s" % (project, version)
