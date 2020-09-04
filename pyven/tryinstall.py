@@ -16,9 +16,11 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import division
+from .checks import EveryVersion
 from .projectinfo import ProjectInfo
 from .util import initlogging
 from contextlib import contextmanager
+from lagoon import git
 from lagoon.program import Program
 from pathlib import Path
 import logging, re, sys
@@ -49,3 +51,5 @@ def main_tryinstall():
         log.info("Python version: %s", pyversion)
         with bgcontainer("python:%s" % pyversion) as container:
             docker('exec', container, 'pip', 'install', req, stdout = None)
+    git.checkout("v%s" % version, stdout = None)
+    EveryVersion(ProjectInfo.seek('.'), False, False, []).allchecks()
