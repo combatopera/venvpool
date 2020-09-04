@@ -15,16 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
 from .checks import EveryVersion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .util import initlogging
 from contextlib import contextmanager
 from lagoon import git
-from lagoon.program import Program
-from pathlib import Path
-import logging, re, sys
+from urllib.request import urlopen
+import logging, xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)
 pyversions = '3.8', '3.7', '3.6'
@@ -46,7 +44,8 @@ def main_tryinstall():
         log.info('Not user-installable.')
         return
     project = headinfo.config.name
-    version, = re.findall("^%s [(]([^)]+)" % re.escape(project), Program.text(Path(sys.executable).parent / 'pip').search(project), re.MULTILINE)
+    with urlopen("https://pypi.org/rss/project/%s/releases.xml" % project) as f:
+        version = ET.parse(f).find('./channel/item/title').text
     req = "%s==%s" % (project, version)
     for pyversion in pyversions:
         log.info("Python version: %s", pyversion)
