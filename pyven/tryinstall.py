@@ -17,6 +17,7 @@
 
 from __future__ import division
 from .checks import EveryVersion
+from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .util import initlogging
 from contextlib import contextmanager
@@ -52,4 +53,6 @@ def main_tryinstall():
         with bgcontainer("python:%s" % pyversion) as container:
             docker('exec', container, 'pip', 'install', req, stdout = None)
     git.checkout("v%s" % version, stdout = None)
-    EveryVersion(ProjectInfo.seek('.'), False, False, []).allchecks()
+    info = ProjectInfo.seek('.')
+    pipify(info)
+    EveryVersion(info, False, False, []).allchecks()
