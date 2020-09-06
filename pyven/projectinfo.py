@@ -70,7 +70,7 @@ class Req:
                     log.warning("Never published: %s", r.namepart)
 
     def minstr(self):
-        version, = (s.version for s in self.specifier if '>=' == s.operator)
+        version, = (s.version for s in self.specifier if s.operator in {'>=', '=='})
         return "%s==%s" % (self.namepart, version)
 
 def main_minreqs():
