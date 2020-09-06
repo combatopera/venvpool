@@ -18,6 +18,7 @@
 from __future__ import with_statement
 from . import targetremote
 from .files import Files
+from .util import initlogging
 from aridity.config import Config
 from pkg_resources import parse_requirements, resource_filename
 from tempfile import mkdtemp
@@ -67,6 +68,14 @@ class Req:
                     yield r.reqstr
                 else:
                     log.warning("Never published: %s", r.namepart)
+
+    def minstr(self):
+        version, = (s.version for s in self.specifier if '>=' == s.operator)
+        return "%s==%s" % (self.namepart, version)
+
+def main_minreqs():
+    initlogging()
+    print("requires = $list(%s)" % ' '.join(r.minstr() for r in ProjectInfo.seek('.').parsedrequires()))
 
 class ProjectInfo:
 
