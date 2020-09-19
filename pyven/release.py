@@ -130,6 +130,7 @@ def release(config, srcgit, info):
                 log.debug("Delete: %s", path)
                 os.remove(path)
     pipify(info, version)
+    shutil.rmtree(os.path.join(info.projectdir, '.git'))
     setupcommands = []
     if SourceInfo(info.projectdir).extpaths:
         for image in Image.enum:
