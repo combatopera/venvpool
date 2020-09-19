@@ -129,6 +129,9 @@ def release(config, srcgit, info):
                 path = os.path.join(dirpath, name)
                 log.debug("Delete: %s", path)
                 os.remove(path)
+    python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
+    for m, f in (w.split(':') for w in info.config.warmups):
+        python._c("from %s import %s; %s()" % (m, f, f))
     pipify(info, version)
     shutil.rmtree(os.path.join(info.projectdir, '.git'))
     setupcommands = []
@@ -137,7 +140,6 @@ def release(config, srcgit, info):
             image.makewheels(info)
     else:
         setupcommands.append('bdist_wheel')
-    python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
     python('setup.py', *chain(setupcommands, ['sdist'])) # FIXME: Assumes release venv has Cython etc.
     artifactrelpaths = [os.path.join(distrelpath, name) for name in sorted(os.listdir(os.path.join(info.projectdir, distrelpath)))]
     if config.upload:

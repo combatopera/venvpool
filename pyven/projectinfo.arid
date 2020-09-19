@@ -32,3 +32,4 @@ wheel compatibilities
 devel
     packages := $list()
     scripts := $list()
+warmups := $list()
