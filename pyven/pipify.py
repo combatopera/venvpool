@@ -18,15 +18,19 @@
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
+from lagoon import git
 from pkg_resources import resource_filename
 import itertools, os, subprocess, sys
+
+def _devversion(info):
+    return "%s.dev0" % (max((int(t[1:]) for t in git.tag(cwd = info.projectdir).splitlines() if 'v' == t[0]), default = 0) + 1)
 
 def pipify(info, version = None):
     release = version is not None
     # XXX: Surely in the release case descriptionandurl exists (and we want them) even if proprietary?
     description, url = info.descriptionandurl() if release and not info.config.proprietary else [None, None]
     config = info.config.createchild()
-    config.put('version', scalar = version)
+    config.put('version', scalar = version if release else _devversion(info))
     config.put('description', scalar = description)
     config.put('long_description', text = 'long_description()' if release else repr(None))
     config.put('url', scalar = url)

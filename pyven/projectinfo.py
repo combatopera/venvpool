@@ -118,7 +118,7 @@ class ProjectInfo:
     def parsedremoterequires(self):
         return [r for r in self.parsedrequires() if not r.isproject(self)]
 
-    def nextversion(self):
+    def nextversion(self): # XXX: Deduce from tags instead?
         import urllib.request, urllib.error, re, xml.dom.minidom as dom
         pattern = re.compile('-([0-9]+)[-.]')
         try:
