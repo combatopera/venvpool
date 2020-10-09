@@ -125,10 +125,10 @@ def release(config, srcgit, info):
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
         for name in filenames:
-            if name.startswith('test_') and name.endswith('.py'): # TODO LATER: Allow project to add globs to exclude.
+            if name.startswith('test_'): # TODO LATER: Allow project to add globs to exclude.
                 path = os.path.join(dirpath, name)
                 log.debug("Delete: %s", path)
-                os.remove(path)
+                (os.remove if name.endswith('.py') else shutil.rmtree)(path)
     python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
     for m, f in (w.split(':') for w in info.config.warmups):
         python._c("from %s import %s; %s()" % (m, f, f))
