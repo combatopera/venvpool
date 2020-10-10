@@ -124,7 +124,7 @@ def release(config, srcgit, info):
     EveryVersion(info, False, False, []).allchecks()
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
-        for name in filenames:
+        for name in chain(filenames, dirnames):
             if name.startswith('test_'): # TODO LATER: Allow project to add globs to exclude.
                 path = os.path.join(dirpath, name)
                 log.debug("Delete: %s", path)
