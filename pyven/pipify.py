@@ -18,12 +18,12 @@
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
-from lagoon import git
 from pkg_resources import resource_filename
 import itertools, os, subprocess, sys
 
 def _devversion(info):
-    return "%s.dev0" % (max((int(t[1:]) for t in git.tag(cwd = info.projectdir).splitlines() if 'v' == t[0]), default = 0) + 1)
+    tags = subprocess.check_output(['git', 'tag'], cwd = info.projectdir, universal_newlines = True).splitlines()
+    return "%s.dev0" % (max((int(t[1:]) for t in tags if 'v' == t[0]), default = 0) + 1)
 
 def pipify(info, version = None):
     release = version is not None
