@@ -23,7 +23,7 @@ import itertools, os, subprocess, sys
 
 def _devversion(info):
     tags = subprocess.check_output(['git', 'tag'], cwd = info.projectdir, universal_newlines = True).splitlines()
-    return "%s.dev0" % (max((int(t[1:]) for t in tags if 'v' == t[0]), default = 0) + 1)
+    return "%s.dev0" % ((max(int(t[1:]) for t in tags if 'v' == t[0]) if tags else 0) + 1)
 
 def pipify(info, version = None):
     release = version is not None
