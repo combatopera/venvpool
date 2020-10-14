@@ -22,8 +22,8 @@ from pkg_resources import resource_filename
 import itertools, os, subprocess, sys
 
 def _devversion(info):
-    tags = subprocess.check_output(['git', 'tag'], cwd = info.projectdir, universal_newlines = True).splitlines()
-    return "%s.dev0" % ((max(int(t[1:]) for t in tags if 'v' == t[0]) if tags else 0) + 1)
+    releases = [int(t[1:]) for t in subprocess.check_output(['git', 'tag'], cwd = info.projectdir, universal_newlines = True).splitlines() if 'v' == t[0]]
+    return "%s.dev0" % ((max(releases) if releases else 0) + 1)
 
 def pipify(info, version = None):
     release = version is not None
