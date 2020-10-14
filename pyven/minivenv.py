@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 
 class Venv:
 
-    def __init__(self, info, pyversion):
-        self.venvpath = os.path.join(info.projectdir, '.pyven', str(pyversion))
+    def __init__(self, info, pyversion, prefix = ''):
+        self.venvpath = os.path.join(info.projectdir, '.pyven', "%s%s" % (prefix, pyversion))
         if not os.path.exists(self.venvpath):
             subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, self.venvpath])
 

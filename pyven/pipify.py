@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .minivenv import Venv
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
+from itertools import chain
 from pkg_resources import resource_filename
-import itertools, os, subprocess, sys
+import os, subprocess, sys
 
 def _devversion(info):
     releases = [int(t[1:]) for t in subprocess.check_output(['git', 'tag'], cwd = info.projectdir, universal_newlines = True).splitlines() if 'v' == t[0]]
@@ -47,7 +49,7 @@ def pipify(info, version = None):
         ['setup.cfg', 'void'],
     ]
     seen = set()
-    for name in itertools.chain(pyvenbuildrequires(info), info.config.build.requires):
+    for name in chain(pyvenbuildrequires(info), info.config.build.requires):
         if name not in seen:
             seen.add(name)
             config.printf("build requires += %s", name)
@@ -74,4 +76,11 @@ def main_pipify():
     config = parser.parse_args()
     info = ProjectInfo.seek('.') if config.f is None else ProjectInfo('.', config.f)
     pipify(info)
-    subprocess.check_call([sys.executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
+    buildreqs = list(chain(pyvenbuildrequires(info), info.config.build.requires))
+    if {'setuptools', 'wheel'} == set(buildreqs):
+        executable = sys.executable
+    else:
+        venv = Venv(info, sys.version_info.major, 'build')
+        venv.install(buildreqs)
+        executable = venv.programpath('python')
+    subprocess.check_call([executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
