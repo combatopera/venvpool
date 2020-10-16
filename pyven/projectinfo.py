@@ -92,9 +92,10 @@ class ProjectInfo:
             projectdir = parent
 
     def __init__(self, projectdir, infopath):
-        self.config = Config.blank()
+        config = Config.blank()
         for path in resource_filename(__name__, 'projectinfo.arid'), os.path.abspath(infopath):
-            self.config.load(path)
+            config.load(path)
+        self.config = config.node
         self.projectdir = projectdir
 
     def mitpath(self):

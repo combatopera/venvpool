@@ -38,7 +38,7 @@ class yesno:
 def _localrepo():
     config = Config.blank()
     config.loadsettings()
-    return config.buildbot.repo
+    return config.node.buildbot.repo
 
 def _runcheck(variant, check, *args):
     sys.stderr.write("%s[%s]: " % (check.__name__, variant))

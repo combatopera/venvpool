@@ -63,7 +63,7 @@ def main_initopt():
     def configpaths():
         config = Config.blank()
         config.loadsettings()
-        projectsdir = config.projectsdir
+        projectsdir = config.node.projectsdir
         for p in sorted(os.listdir(projectsdir)):
             configpath = os.path.join(projectsdir, p, 'project.arid')
             if os.path.exists(configpath):
