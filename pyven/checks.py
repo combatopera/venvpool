@@ -21,7 +21,7 @@ from .minivenv import Venv
 from .projectinfo import ProjectInfo
 from .util import Excludes, initlogging, stderr, stripeol
 from argparse import ArgumentParser
-from aridity.config import Config
+from aridity.config import ConfigCtrl
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
@@ -36,7 +36,7 @@ class yesno:
         return self.d[s]
 
 def _localrepo():
-    config = Config.blank()
+    config = ConfigCtrl()
     config.loadsettings()
     return config.node.buildbot.repo
 

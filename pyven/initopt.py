@@ -18,7 +18,7 @@
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .util import initlogging
-from aridity.config import Config
+from aridity.config import ConfigCtrl
 import logging, os, re, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ def main_initopt():
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
     home = os.path.expanduser('~')
     def configpaths():
-        config = Config.blank()
+        config = ConfigCtrl()
         config.loadsettings()
         projectsdir = config.node.projectsdir
         for p in sorted(os.listdir(projectsdir)):

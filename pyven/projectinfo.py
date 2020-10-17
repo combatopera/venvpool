@@ -19,7 +19,7 @@ from __future__ import with_statement
 from . import targetremote
 from .files import Files
 from .util import initlogging
-from aridity.config import Config
+from aridity.config import ConfigCtrl
 from pkg_resources import parse_requirements, resource_filename
 from tempfile import mkdtemp
 import logging, os, re, shutil, stat, subprocess
@@ -92,7 +92,7 @@ class ProjectInfo:
             projectdir = parent
 
     def __init__(self, projectdir, infopath):
-        config = Config.blank()
+        config = ConfigCtrl()
         for path in resource_filename(__name__, 'projectinfo.arid'), os.path.abspath(infopath):
             config.load(path)
         self.config = config.node
