@@ -31,7 +31,7 @@ def pipify(info, version = None):
     release = version is not None
     # XXX: Surely in the release case descriptionandurl exists (and we want them) even if proprietary?
     description, url = info.descriptionandurl() if release and not info.config.proprietary else [None, None]
-    config = info.config.createchild()
+    config = (-info.config).createchild()
     config.put('version', scalar = version if release else _devversion(info))
     config.put('description', scalar = description)
     config.put('long_description', text = 'long_description()' if release else repr(None))
