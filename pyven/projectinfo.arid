@@ -25,6 +25,7 @@ build requires := $list()
 licenses := $list(GPL)
 MIT path = LICENSE
 licheck exclude globs := $list()
+flakes exclude globs := $list()
 pypi participant = true
 wheel compatibilities
     2 := $list(cp27-cp27m cp27-cp27mu)

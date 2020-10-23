@@ -19,13 +19,13 @@ from __future__ import with_statement
 from .files import Files
 from .minivenv import Venv
 from .projectinfo import ProjectInfo
-from .util import Excludes, initlogging, stderr, stripeol
+from .util import Excludes, initlogging, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
-import os, re, shutil, subprocess, sys
+import os, shutil, subprocess, sys
 
 @singleton
 class yesno:
@@ -88,15 +88,8 @@ class EveryVersion:
             _runcheck(pyversion, divcheck)
 
     def pyflakes(self):
-        with open(os.path.join(self.files.root, '.flakesignore')) as f:
-            ignores = [re.compile(stripeol(l)) for l in f]
-        prefixlen = len(self.files.root + os.sep)
-        def accept(path):
-            for pattern in ignores:
-                if pattern.search(path[prefixlen:]) is not None:
-                    return False
-            return True
-        paths = [p for p in self.files.pypaths if accept(p)]
+        paths = [path for excludes in [Excludes(self.info.config.flakes.exclude.globs)]
+                for path in self.files.pypaths if os.path.relpath(path, self.files.root) not in excludes]
         def pyflakes():
             if paths:
                 venv = Venv(self.info, pyversion)
