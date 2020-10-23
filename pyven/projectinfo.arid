@@ -24,7 +24,9 @@ resource types := $list(pxd pyx pyxbld arid aridt)
 build requires := $list()
 licenses := $list(GPL)
 MIT path = LICENSE
-licheck exclude globs := $list()
+licheck
+    enabled = $¬$(proprietary)
+    exclude globs := $list()
 flakes exclude globs := $list()
 pypi participant = true
 wheel compatibilities

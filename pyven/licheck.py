@@ -40,7 +40,7 @@ intersection = '''# This file incorporates work covered by the following copyrig
 '''
 
 def licheck(info, paths):
-    if info.config.proprietary:
+    if not info.config.licheck.enabled:
         sys.stderr.write('SKIP ')
         return
     sections = []
