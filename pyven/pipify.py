@@ -19,9 +19,8 @@ from .minivenv import Venv
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
-from io import TextIOWrapper
 from itertools import chain
-from pkg_resources import resource_stream
+from pkg_resources import resource_filename
 import os, subprocess, sys
 
 def _devversion(info):
@@ -58,8 +57,9 @@ def pipify(info, version = None):
         nametoquote.append(['pyproject.toml', 'tomlquote'])
     for name, quote in nametoquote:
         config.printf('" = $(%s)', quote)
-        with resource_stream(__name__, "%s.aridt" % name) as f, TextIOWrapper(f, 'ascii') as f:
-            config.processtemplate(f, os.path.abspath(os.path.join(info.projectdir, name)))
+        config.processtemplate(
+                resource_filename(__name__, name + '.aridt'), # TODO LATER: Make aridity get the resource.
+                os.path.abspath(os.path.join(info.projectdir, name)))
 
 def pyvenbuildrequires(info):
     yield 'setuptools'
