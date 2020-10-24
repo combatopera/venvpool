@@ -29,8 +29,8 @@ def _devversion(info):
 
 def pipify(info, version = None):
     release = version is not None
-    # XXX: Surely in the release case descriptionandurl exists (and we want them) even if proprietary?
-    description, url = info.descriptionandurl() if release and not info.config.proprietary else [None, None]
+    # Allow release of project without origin:
+    description, url = info.descriptionandurl() if release and info.config.github.participant else [None, None]
     config = (-info.config).createchild()
     config.put('version', scalar = version if release else _devversion(info))
     config.put('description', scalar = description)
