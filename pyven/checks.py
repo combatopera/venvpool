@@ -18,14 +18,18 @@
 from __future__ import with_statement
 from .files import Files
 from .minivenv import Venv
-from .projectinfo import ProjectInfo
+from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .util import Excludes, initlogging, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 from diapyr.util import singleton
+from io import TextIOWrapper
 from itertools import chain
+from pkg_resources import resource_stream
 from setuptools import find_packages
-import os, shutil, subprocess, sys
+import logging, os, shutil, subprocess, sys
+
+log = logging.getLogger(__name__)
 
 @singleton
 class yesno:
@@ -127,4 +131,10 @@ def main_tests():
     parser.add_argument('--siblings', type = yesno, default = True)
     parser.add_argument('--repo', type = yesno, default = True)
     config, noseargs = parser.parse_known_args()
-    EveryVersion(ProjectInfo.seek('.'), config.siblings, config.repo, noseargs).allchecks()
+    try:
+        info = ProjectInfo.seek('.')
+    except ProjectInfoNotFoundException:
+        log.info('Use setuptools mode.')
+        with resource_stream(__name__, 'setuptools.arid') as f, TextIOWrapper(f, 'ascii') as f:
+            info = ProjectInfo('.', f)
+    EveryVersion(info, config.siblings, config.repo, noseargs).allchecks()

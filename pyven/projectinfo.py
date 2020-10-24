@@ -93,11 +93,11 @@ class ProjectInfo:
                 raise ProjectInfoNotFoundException(realdir)
             projectdir = parent
 
-    def __init__(self, projectdir, infopath):
+    def __init__(self, projectdir, infopathorstream):
         config = ConfigCtrl()
         with resource_stream(__name__, 'projectinfo.arid') as f, TextIOWrapper(f, 'utf-8') as f:
             config.load(f)
-        config.load(infopath)
+        config.load(infopathorstream)
         self.config = config.node
         self.projectdir = projectdir
 
