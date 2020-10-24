@@ -18,7 +18,7 @@
 from __future__ import with_statement
 from . import targetremote
 from .files import Files
-from .util import initlogging
+from .util import initlogging, Path
 from aridity.config import ConfigCtrl
 from io import TextIOWrapper
 from pkg_resources import parse_requirements, resource_stream
@@ -83,15 +83,10 @@ class ProjectInfo:
 
     @classmethod
     def seek(cls, realdir):
-        projectdir = realdir
-        while True:
-            infopath = os.path.join(projectdir, 'project.arid')
-            if os.path.exists(infopath):
-                return cls(projectdir, infopath)
-            parent = os.path.join(projectdir, '..')
-            if os.path.abspath(parent) == os.path.abspath(projectdir):
-                raise ProjectInfoNotFoundException(realdir)
-            projectdir = parent
+        path = Path.seek(realdir, 'project.arid')
+        if path is None:
+            raise ProjectInfoNotFoundException(realdir)
+        return cls(path.parent, path)
 
     def __init__(self, projectdir, infopathorstream):
         config = ConfigCtrl()

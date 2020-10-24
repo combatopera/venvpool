@@ -19,7 +19,7 @@ from __future__ import with_statement
 from .files import Files
 from .minivenv import Venv
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
-from .util import Excludes, initlogging, stderr
+from .util import Excludes, initlogging, Path, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 from diapyr.util import singleton
@@ -136,5 +136,5 @@ def main_tests():
     except ProjectInfoNotFoundException:
         log.info('Use setuptools mode.')
         with resource_stream(__name__, 'setuptools.arid') as f, TextIOWrapper(f, 'ascii') as f:
-            info = ProjectInfo('.', f)
+            info = ProjectInfo(Path.seek('.', 'setup.py').parent, f)
     EveryVersion(info, config.siblings, config.repo, noseargs).allchecks()

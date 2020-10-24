@@ -49,3 +49,17 @@ class Excludes:
 
     def __contains__(self, relpath):
         return self.pattern.search(relpath) is not None
+
+class Path(str):
+
+    @classmethod
+    def seek(cls, dirpath, name):
+        while True:
+            path = cls(os.path.join(dirpath, name))
+            if os.path.exists(path):
+                path.parent = dirpath
+                return path
+            parent = os.path.join(dirpath, '..')
+            if os.path.abspath(parent) == os.path.abspath(dirpath):
+                break
+            dirpath = parent
