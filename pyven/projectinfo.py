@@ -90,6 +90,7 @@ class ProjectInfo:
 
     def __init__(self, projectdir, infopathorstream):
         config = ConfigCtrl()
+        # FIXME: Broken in Python 2.
         with resource_stream(__name__, 'projectinfo.arid') as f, TextIOWrapper(f, 'utf-8') as f:
             config.load(f)
         config.load(infopathorstream)
