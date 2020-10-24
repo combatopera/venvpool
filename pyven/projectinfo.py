@@ -63,6 +63,7 @@ class Req:
     def published(cls, venv, reqstrs):
         if reqstrs:
             reqs = cls.parsemany(reqstrs)
+            # FIXME: This often triggers the pypi http rate limit.
             names = {cls.namematch(line).group() for line in subprocess.check_output([venv.programpath('pip'), 'search'] + [r.namepart for r in reqs]).decode().splitlines()}
             for r in reqs:
                 if r.namepart in names:
