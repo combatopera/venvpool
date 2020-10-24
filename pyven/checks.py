@@ -17,6 +17,7 @@
 
 from __future__ import with_statement
 from .files import Files
+from .setuproot import setuptools as fakesetuptools
 from .minivenv import Venv
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .util import Excludes, initlogging, Path, stderr
@@ -135,6 +136,11 @@ def main_tests():
         info = ProjectInfo.seek('.')
     except ProjectInfoNotFoundException:
         log.info('Use setuptools mode.')
+        setuppath = Path.seek('.', 'setup.py')
         with resource_stream(__name__, 'setuptools.arid') as f, TextIOWrapper(f, 'ascii') as f:
-            info = ProjectInfo(Path.seek('.', 'setup.py').parent, f)
+            info = ProjectInfo(setuppath.parent, f)
+        setupkwargs = eval(subprocess.check_output([sys.executable, fakesetuptools.__file__, setuppath]))
+        (-info.config).printf("name = %s", setupkwargs['name'])
+        for r in setupkwargs['install_requires']:
+            (-info.config).printf("requires += %s", r)
     EveryVersion(info, config.siblings, config.repo, noseargs).allchecks()
