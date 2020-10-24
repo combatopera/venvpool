@@ -97,7 +97,7 @@ class ProjectInfo:
         config = ConfigCtrl()
         with resource_stream(__name__, 'projectinfo.arid') as f, TextIOWrapper(f, 'utf-8') as f:
             config.load(f)
-        config.load(os.path.abspath(infopath))
+        config.load(infopath)
         self.config = config.node
         self.projectdir = projectdir
 
