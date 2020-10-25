@@ -17,9 +17,9 @@
 
 from __future__ import with_statement
 from .files import Files
-from .setuproot import setuptools as fakesetuptools
 from .minivenv import Venv
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
+from .setuproot import setuptools as fakesetuptools
 from .util import Excludes, initlogging, Path, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
