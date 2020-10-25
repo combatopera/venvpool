@@ -134,8 +134,10 @@ def main_tests():
     try:
         info = ProjectInfo.seek('.')
     except ProjectInfoNotFoundException:
-        log.info('Use setuptools mode.')
         setuppath = Path.seek('.', 'setup.py')
+        if setuppath is None:
+            raise
+        log.info('Use setuptools mode.')
         with openresource(__name__, 'setuptools.arid') as f:
             info = ProjectInfo(setuppath.parent, f)
         setupkwargs = eval(subprocess.check_output([sys.executable, fakesetuptools.__file__, setuppath]))
