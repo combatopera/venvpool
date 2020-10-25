@@ -21,13 +21,14 @@ log = logging.getLogger(__name__)
 
 class Pip:
 
-    env = dict(os.environ, PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring')
+    envpatch = dict(PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring')
+    envimage = dict(os.environ, **envpatch)
 
     def __init__(self, pippath):
         self.pippath = pippath
 
     def pipinstall(self, command):
-        subprocess.check_call([self.pippath, 'install'] + command, env = self.env)
+        subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage)
 
     def installeditable(self, infos):
         specifiers = {}

@@ -17,6 +17,7 @@
 
 from . import targetremote
 from .checks import EveryVersion
+from .minivenv import Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
@@ -146,7 +147,7 @@ def release(config, srcgit, info):
         srcgit.tag("v%s" % version, stdout = None)
         # TODO LATER: If tag succeeded but push fails, we're left with a bogus tag.
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
-        python('-m', 'twine', 'upload', *uploadableartifacts(artifactrelpaths), env = dict(PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring'))
+        python('-m', 'twine', 'upload', *uploadableartifacts(artifactrelpaths), env = Pip.envpatch)
     else:
         log.warning("Upload skipped, use --upload to upload: %s", ' '.join(uploadableartifacts(artifactrelpaths)))
     return artifactrelpaths
