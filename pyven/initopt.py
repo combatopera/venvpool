@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .minivenv import Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .util import initlogging
@@ -31,30 +32,6 @@ def _hasname(info): # XXX: Deduce a default name and install if executable is tr
         return True
     except AttributeError:
         log.debug("Skip: %s", info.projectdir)
-
-class Pip:
-
-    env = dict(os.environ, PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring')
-
-    def __init__(self, pippath):
-        self.pippath = pippath
-
-    def _pipinstall(self, command):
-        subprocess.check_call([self.pippath, 'install'] + command, env = self.env)
-
-    def installeditable(self, infos):
-        specifiers = {}
-        for i in infos:
-            for req in i.parsedremoterequires():
-                s = specifiers.get(req.namepart)
-                if s is None:
-                    s = req.specifier
-                else:
-                    log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifier)
-                    s &= req.specifier
-                specifiers[req.namepart] = s
-        self._pipinstall(["%s%s" % entry for entry in specifiers.items()])
-        self._pipinstall(sum((['-e', i.projectdir] for i in infos), []))
 
 def main_initopt():
     initlogging()

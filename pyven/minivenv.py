@@ -19,6 +19,30 @@ import logging, os, subprocess
 
 log = logging.getLogger(__name__)
 
+class Pip:
+
+    env = dict(os.environ, PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring')
+
+    def __init__(self, pippath):
+        self.pippath = pippath
+
+    def _pipinstall(self, command):
+        subprocess.check_call([self.pippath, 'install'] + command, env = self.env)
+
+    def installeditable(self, infos):
+        specifiers = {}
+        for i in infos:
+            for req in i.parsedremoterequires():
+                s = specifiers.get(req.namepart)
+                if s is None:
+                    s = req.specifier
+                else:
+                    log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifier)
+                    s &= req.specifier
+                specifiers[req.namepart] = s
+        self._pipinstall(["%s%s" % entry for entry in specifiers.items()])
+        self._pipinstall(sum((['-e', i.projectdir] for i in infos), []))
+
 class Venv:
 
     def __init__(self, info, pyversion, prefix = ''):
