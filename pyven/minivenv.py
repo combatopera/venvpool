@@ -26,7 +26,7 @@ class Pip:
     def __init__(self, pippath):
         self.pippath = pippath
 
-    def _pipinstall(self, command):
+    def pipinstall(self, command):
         subprocess.check_call([self.pippath, 'install'] + command, env = self.env)
 
     def installeditable(self, infos):
@@ -40,8 +40,8 @@ class Pip:
                     log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifier)
                     s &= req.specifier
                 specifiers[req.namepart] = s
-        self._pipinstall(["%s%s" % entry for entry in specifiers.items()])
-        self._pipinstall(sum((['-e', i.projectdir] for i in infos), []))
+        self.pipinstall(["%s%s" % entry for entry in specifiers.items()])
+        self.pipinstall(sum((['-e', i.projectdir] for i in infos), []))
 
 class Venv:
 
@@ -56,4 +56,4 @@ class Venv:
     def install(self, args):
         log.debug("Install: %s", ' '.join(args))
         if args:
-            subprocess.check_call([self.programpath('pip'), 'install'] + args, env = dict(os.environ, PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring'))
+            Pip(self.programpath('pip')).pipinstall(args)
