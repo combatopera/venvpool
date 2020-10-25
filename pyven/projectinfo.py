@@ -20,8 +20,8 @@ from . import targetremote
 from .files import Files
 from .util import initlogging, Path
 from aridity.config import ConfigCtrl
-from io import TextIOWrapper
-from pkg_resources import parse_requirements, resource_stream
+from aridity.util import openresource
+from pkg_resources import parse_requirements
 from tempfile import mkdtemp
 import logging, os, re, shutil, stat, subprocess
 
@@ -90,8 +90,7 @@ class ProjectInfo:
 
     def __init__(self, projectdir, infopathorstream):
         config = ConfigCtrl()
-        # FIXME: Broken in Python 2.
-        with resource_stream(__name__, 'projectinfo.arid') as f, TextIOWrapper(f, 'utf-8') as f:
+        with openresource(__name__, 'projectinfo.arid', 'utf-8') as f:
             config.load(f)
         config.load(infopathorstream)
         self.config = config.node

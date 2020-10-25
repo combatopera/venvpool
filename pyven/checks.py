@@ -23,10 +23,9 @@ from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .util import Excludes, initlogging, Path, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
+from aridity.util import openresource
 from diapyr.util import singleton
-from io import TextIOWrapper
 from itertools import chain
-from pkg_resources import resource_stream
 from setuptools import find_packages
 import logging, os, shutil, subprocess, sys
 
@@ -137,7 +136,7 @@ def main_tests():
     except ProjectInfoNotFoundException:
         log.info('Use setuptools mode.')
         setuppath = Path.seek('.', 'setup.py')
-        with resource_stream(__name__, 'setuptools.arid') as f, TextIOWrapper(f, 'ascii') as f:
+        with openresource(__name__, 'setuptools.arid') as f:
             info = ProjectInfo(setuppath.parent, f)
         setupkwargs = eval(subprocess.check_output([sys.executable, fakesetuptools.__file__, setuppath]))
         (-info.config).printf("name = %s", setupkwargs['name'])
