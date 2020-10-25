@@ -32,4 +32,4 @@ class Venv:
     def install(self, args):
         log.debug("Install: %s", ' '.join(args))
         if args:
-            subprocess.check_call([self.programpath('pip'), 'install'] + args)
+            subprocess.check_call([self.programpath('pip'), 'install'] + args, env = dict(os.environ, PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring'))
