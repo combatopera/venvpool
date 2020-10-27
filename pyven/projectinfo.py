@@ -61,15 +61,19 @@ class Req:
 
     @classmethod
     def published(cls, venv, reqstrs):
-        if reqstrs:
-            reqs = cls.parsemany(reqstrs)
-            # FIXME: This often triggers the pypi http rate limit.
-            names = {cls.namematch(line).group() for line in subprocess.check_output([venv.programpath('pip'), 'search'] + [r.namepart for r in reqs]).decode().splitlines()}
-            for r in reqs:
-                if r.namepart in names:
-                    yield r.reqstr
-                else:
-                    log.warning("Never published: %s", r.namepart)
+        from http import HTTPStatus
+        from urllib.error import HTTPError
+        from urllib.parse import quote
+        from urllib.request import Request, urlopen
+        for r in cls.parsemany(reqstrs):
+            try:
+                with urlopen(Request("https://pypi.org/simple/%s/" % quote(r.namepart, safe = ''), method = 'HEAD')):
+                    pass
+                yield r.reqstr
+            except HTTPError as e:
+                if e.code != HTTPStatus.NOT_FOUND:
+                    raise
+                log.warning("Never published: %s", r.namepart)
 
     def minstr(self):
         version, = (s.version for s in self.specifier if s.operator in {'>=', '=='})
