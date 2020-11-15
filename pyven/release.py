@@ -36,9 +36,9 @@ distrelpath = 'dist'
 
 # TODO: There are more of these.
 @enum(
-    ['manylinux1_x86_64', False, True],
-    ['manylinux1_i686', True, True],
-    ['manylinux2010_x86_64', False],
+    ['2020-11-11-0f1f128', 'manylinux1_x86_64', False, True],
+    ['2020-11-11-0f1f128', 'manylinux1_i686', True, True],
+    ['2020-11-11-201fb79', 'manylinux2010_x86_64', False],
 )
 class Image:
 
@@ -49,7 +49,8 @@ class Image:
         impl = "cp%s" % sysconfig.get_config_var('py_version_nodot')
         return "/opt/python/%s-%s%s/bin/python" % (impl, impl, sys.abiflags)
 
-    def __init__(self, plat, linux32, keepplainwhl = False):
+    def __init__(self, imagetag, plat, linux32, keepplainwhl = False):
+        self.imagetag = imagetag
         self.plat = plat
         self.entrypoint = ['linux32'] if linux32 else []
         self.prune = [] if keepplainwhl else ['--prune']
@@ -63,7 +64,7 @@ class Image:
         # TODO LATER: It would be cool if the complete list could be expressed in aridity.
         compatibilities = list(chain(*(getattr(info.config.wheel.compatibilities, str(pyversion)) for pyversion in info.config.pyversions)))
         # TODO: Copy not mount so we can run containers in parallel.
-        with bgcontainer('-v', "%s:/io" % info.projectdir, "%s%s" % (self.prefix, self.plat)) as container:
+        with bgcontainer('-v', "%s:/io" % info.projectdir, "%s%s:%s" % (self.prefix, self.plat, self.imagetag)) as container:
             def run(execargs, command):
                 docker_print(*chain(['exec'], execargs, [container], self.entrypoint, command))
             if packages:
