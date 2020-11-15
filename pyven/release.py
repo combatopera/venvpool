@@ -35,12 +35,12 @@ log = logging.getLogger(__name__)
 distrelpath = 'dist'
 
 @enum(
-    ['2020-08-20-a535ba4', 'manylinux1_x86_64', False, True],
-    ['2020-08-20-a535ba4', 'manylinux1_i686', True, True],
-    ['2020-08-20-df89e22', 'manylinux2010_x86_64', False],
-    ['2020-08-20-df89e22', 'manylinux2010_i686', True],
     ['2020-08-29-f97fd86', 'manylinux2014_x86_64', False],
     ['2020-08-29-f97fd86', 'manylinux2014_i686', True],
+    ['2020-08-20-df89e22', 'manylinux2010_x86_64', False],
+    ['2020-08-20-df89e22', 'manylinux2010_i686', True],
+    ['2020-08-20-a535ba4', 'manylinux1_x86_64', False, True],
+    ['2020-08-20-a535ba4', 'manylinux1_i686', True, True],
 )
 class Image:
 
