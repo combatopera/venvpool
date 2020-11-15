@@ -36,7 +36,7 @@ distrelpath = 'dist'
 
 # TODO: There are more of these.
 @enum(
-    ['manylinux1_x86_64'],
+    ['manylinux1_x86_64', False],
     ['manylinux1_i686', True],
     ['manylinux2010_x86_64', False, True],
 )
@@ -49,7 +49,7 @@ class Image:
         impl = "cp%s" % sysconfig.get_config_var('py_version_nodot')
         return "/opt/python/%s-%s%s/bin/python" % (impl, impl, sys.abiflags)
 
-    def __init__(self, plat, linux32 = False, prune = False):
+    def __init__(self, plat, linux32, prune = False):
         self.plat = plat
         self.entrypoint = ['linux32'] if linux32 else []
         self.prune = ['--prune'] if prune else []
