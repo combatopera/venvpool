@@ -34,11 +34,12 @@ import lagoon, logging, os, re, shutil, sys, sysconfig
 log = logging.getLogger(__name__)
 distrelpath = 'dist'
 
-# TODO: There are more of these.
+# TODO LATER: Add 2014 images.
 @enum(
-    ['2020-11-11-0f1f128', 'manylinux1_x86_64', False, True],
-    ['2020-11-11-0f1f128', 'manylinux1_i686', True, True],
-    ['2020-11-11-201fb79', 'manylinux2010_x86_64', False],
+    ['2020-08-20-a535ba4', 'manylinux1_x86_64', False, True],
+    ['2020-08-20-a535ba4', 'manylinux1_i686', True, True],
+    ['2020-08-20-df89e22', 'manylinux2010_x86_64', False],
+    ['2020-08-20-df89e22', 'manylinux2010_i686', True],
 )
 class Image:
 
