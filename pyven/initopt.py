@@ -40,9 +40,9 @@ def _namedinfos():
     config.loadsettings()
     projectsdir = config.node.projectsdir
     for p in sorted(os.listdir(projectsdir)):
-        configpath = os.path.join(projectsdir, p, 'project.arid')
-        if os.path.exists(configpath):
-            info = ProjectInfo.seek(os.path.dirname(configpath))
+        projectdir = os.path.join(projectsdir, p)
+        if os.path.exists(os.path.join(projectdir, 'project.arid')):
+            info = ProjectInfo.seek(projectdir)
             if _hasname(info):
                 yield info
 
