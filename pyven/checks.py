@@ -132,7 +132,6 @@ def setuptoolsinfo(setuppath):
     info.config.name = setupkwargs['name']
     for r in setupkwargs['install_requires']:
         (-info.config).printf("requires += %s", r)
-    info.config.executable = bool(setupkwargs.get('entry_points', {}).get('console_scripts'))
     return info
 
 def main_tests():
