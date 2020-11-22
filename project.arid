@@ -29,6 +29,7 @@ requires +=
     diapyr>=18
     lagoon>=17
     setuptools>=44.1.1
+    splut>=5
     twine>=1.15.0
 pyversions +=
     3

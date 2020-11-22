@@ -20,6 +20,8 @@ from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .util import initlogging
 from aridity.config import ConfigCtrl
+from concurrent.futures import ThreadPoolExecutor
+from splut import invokeall
 import logging, os, re, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -59,9 +61,11 @@ def main_initopt():
             for pyversion in info.config.pyversions:
                 if pyversion in versiontoinfos:
                     add(versiontoinfos[pyversion], info)
-    for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir):
+    def _pipify(info):
         log.debug("Prepare: %s", info.projectdir)
         pipify(info)
+    with ThreadPoolExecutor() as e:
+        invokeall([e.submit(_pipify, info).result for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir)])
     for pyversion, infos in versiontoinfos.items():
         venvpath = os.path.join(optpath, "venv%s" % pyversion)
         pythonname = "python%s" % pyversion
