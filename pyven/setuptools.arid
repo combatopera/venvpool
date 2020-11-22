@@ -16,4 +16,5 @@
 : along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 licheck enabled = false
+pypi participant = false
 pyversions += 3
