@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 pkg_resources = re.compile(br'\bpkg_resources\b')
 eolbytes = set(b'\r\n')
 
-def _hasname(info): # XXX: Deduce a default name and install if executable is true?
+def _hasname(info):
     try:
         info.config.name
         return True
