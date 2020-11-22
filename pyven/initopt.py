@@ -35,8 +35,11 @@ def _hasname(info): # XXX: Deduce a default name and install if executable is tr
 
 def main_initopt():
     initlogging()
+    try:
+        optpath, = sys.argv[1:]
+    except ValueError:
+        optpath = os.path.join(os.path.expanduser('~'), 'opt')
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
-    home = os.path.expanduser('~')
     def configpaths():
         config = ConfigCtrl()
         config.loadsettings()
@@ -60,7 +63,7 @@ def main_initopt():
         log.debug("Prepare: %s", info.projectdir)
         pipify(info)
     for pyversion, infos in versiontoinfos.items():
-        venvpath = os.path.join(home, 'opt', "venv%s" % pyversion)
+        venvpath = os.path.join(optpath, "venv%s" % pyversion)
         pythonname = "python%s" % pyversion
         if not os.path.exists(venvpath):
             subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
