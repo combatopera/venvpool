@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .minivenv import Venv
-from .projectinfo import devversion, ProjectInfo
+from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
 from itertools import chain
