@@ -129,11 +129,10 @@ def setuptoolsinfo(setuppath):
     with openresource(__name__, 'setuptools.arid') as f:
         info = ProjectInfo(os.path.dirname(setuppath), f)
     setupkwargs = eval(subprocess.check_output([sys.executable, fakesetuptools.__file__, setuppath]))
-    (-info.config).printf("name = %s", setupkwargs['name'])
+    info.config.name = setupkwargs['name']
     for r in setupkwargs['install_requires']:
         (-info.config).printf("requires += %s", r)
-    if setupkwargs.get('entry_points', {}).get('console_scripts'):
-        (-info.config).printf('executable = true')
+    info.config.executable = bool(setupkwargs.get('entry_points', {}).get('console_scripts'))
     return info
 
 def main_tests():
