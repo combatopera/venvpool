@@ -35,6 +35,17 @@ def _hasname(info): # XXX: Deduce a default name and install if executable is tr
     except AttributeError:
         log.debug("Skip: %s", info.projectdir)
 
+def namedinfos():
+    config = ConfigCtrl()
+    config.loadsettings()
+    projectsdir = config.node.projectsdir
+    for p in sorted(os.listdir(projectsdir)):
+        configpath = os.path.join(projectsdir, p, 'project.arid')
+        if os.path.exists(configpath):
+            info = ProjectInfo.seek(os.path.dirname(configpath))
+            if _hasname(info):
+                yield info
+
 def _prepare(info):
     log.debug("Prepare: %s", info.projectdir)
     pipify(info)
@@ -46,15 +57,7 @@ def main_initopt():
     except ValueError:
         optpath = os.path.join(os.path.expanduser('~'), 'opt')
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
-    def configpaths():
-        config = ConfigCtrl()
-        config.loadsettings()
-        projectsdir = config.node.projectsdir
-        for p in sorted(os.listdir(projectsdir)):
-            configpath = os.path.join(projectsdir, p, 'project.arid')
-            if os.path.exists(configpath):
-                yield configpath
-    allinfos = {i.config.name: i for i in (ProjectInfo.seek(os.path.dirname(p)) for p in configpaths()) if _hasname(i)}
+    allinfos = {i.config.name: i for i in namedinfos()}
     def add(infos, i):
         if i not in infos:
             infos.add(i)
