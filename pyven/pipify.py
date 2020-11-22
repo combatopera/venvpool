@@ -16,23 +16,19 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .minivenv import Venv
-from .projectinfo import ProjectInfo
+from .projectinfo import devversion, ProjectInfo
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
 from itertools import chain
 from pkg_resources import resource_filename
 import os, subprocess, sys
 
-def _devversion(info):
-    releases = [int(t[1:]) for t in subprocess.check_output(['git', 'tag'], cwd = info.projectdir, universal_newlines = True).splitlines() if 'v' == t[0]]
-    return "%s.dev0" % ((max(releases) if releases else 0) + 1)
-
 def pipify(info, version = None):
     release = version is not None
     # Allow release of project without origin:
     description, url = info.descriptionandurl() if release and info.config.github.participant else [None, None]
     config = (-info.config).createchild()
-    config.put('version', scalar = version if release else _devversion(info))
+    config.put('version', scalar = version if release else info.devversion())
     config.put('description', scalar = description)
     config.put('long_description', text = 'long_description()' if release else repr(None))
     config.put('url', scalar = url)
