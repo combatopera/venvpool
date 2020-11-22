@@ -125,6 +125,17 @@ class EveryVersion:
                 os.remove(reportname)
             assert not status
 
+def setuptoolsinfo(setuppath):
+    with openresource(__name__, 'setuptools.arid') as f:
+        info = ProjectInfo(os.path.dirname(setuppath), f)
+    setupkwargs = eval(subprocess.check_output([sys.executable, fakesetuptools.__file__, setuppath]))
+    (-info.config).printf("name = %s", setupkwargs['name'])
+    for r in setupkwargs['install_requires']:
+        (-info.config).printf("requires += %s", r)
+    if setupkwargs.get('entry_points', {}).get('console_scripts'):
+        (-info.config).printf('executable = true')
+    return info
+
 def main_tests():
     initlogging()
     parser = ArgumentParser()
@@ -138,10 +149,5 @@ def main_tests():
         if setuppath is None:
             raise
         log.info('Use setuptools mode.')
-        with openresource(__name__, 'setuptools.arid') as f:
-            info = ProjectInfo(setuppath.parent, f)
-        setupkwargs = eval(subprocess.check_output([sys.executable, fakesetuptools.__file__, setuppath]))
-        (-info.config).printf("name = %s", setupkwargs['name'])
-        for r in setupkwargs['install_requires']:
-            (-info.config).printf("requires += %s", r)
+        info = setuptoolsinfo(setuppath)
     EveryVersion(info, config.siblings, config.repo, noseargs).allchecks()
