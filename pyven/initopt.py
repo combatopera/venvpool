@@ -35,7 +35,7 @@ def _hasname(info):
     except AttributeError:
         log.debug("Skip: %s", info.projectdir)
 
-def namedinfos():
+def _namedinfos():
     config = ConfigCtrl()
     config.loadsettings()
     projectsdir = config.node.projectsdir
@@ -57,7 +57,7 @@ def main_initopt():
     except ValueError:
         optpath = os.path.join(os.path.expanduser('~'), 'opt')
     versiontoinfos = {version: set() for version in [sys.version_info.major]}
-    allinfos = {i.config.name: i for i in namedinfos()}
+    allinfos = {i.config.name: i for i in _namedinfos()}
     def add(infos, i):
         if i not in infos:
             infos.add(i)
