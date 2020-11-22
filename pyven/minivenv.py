@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .universe import Universe
 from pkg_resources import safe_name
+from tempfile import NamedTemporaryFile
 import logging, os, subprocess
 
 log = logging.getLogger(__name__)
@@ -32,16 +34,23 @@ class Pip:
         subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage)
 
     def installeditable(self, infos):
+        u = Universe(infos)
         specifiers = {}
-        for i in infos:
-            for req in i.parsedremoterequires():
-                s = specifiers.get(req.namepart)
-                if s is None:
-                    s = req.specifier
-                else:
-                    log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifier)
-                    s &= req.specifier
-                specifiers[req.namepart] = s
+        with NamedTemporaryFile('w') as f:
+            for i in infos:
+                f.write('package: %s\n' % i.config.name.replace(' ', ''))
+                f.write('version: %s\n' % u.devcudfversion(i))
+                deps = u.cudfdepends(i)
+                if deps:
+                    f.write('depends: %s\n' % ', '.join(deps))
+                f.write('\n')
+            f.write('request: \n') # Space is needed apparently!
+            f.write('install: %s\n' % ', '.join(i.config.name.replace(' ', '') for i in infos))
+            f.flush()
+            subprocess.check_call(['cat', f.name])
+            subprocess.check_call(['aspcud', '-V', '3', f.name])
+
+        raise
         solution = ["%s%s" % entry for entry in specifiers.items()]
         log.debug("Install solution: %s", ' '.join(solution))
         self.pipinstall(solution)
