@@ -35,6 +35,10 @@ def _hasname(info): # XXX: Deduce a default name and install if executable is tr
     except AttributeError:
         log.debug("Skip: %s", info.projectdir)
 
+def _prepare(info):
+    log.debug("Prepare: %s", info.projectdir)
+    pipify(info)
+
 def main_initopt():
     initlogging()
     try:
@@ -61,11 +65,8 @@ def main_initopt():
             for pyversion in info.config.pyversions:
                 if pyversion in versiontoinfos:
                     add(versiontoinfos[pyversion], info)
-    def _pipify(info):
-        log.debug("Prepare: %s", info.projectdir)
-        pipify(info)
     with ThreadPoolExecutor() as e:
-        invokeall([e.submit(_pipify, info).result for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir)])
+        invokeall([e.submit(_prepare, info).result for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir)])
     for pyversion, infos in versiontoinfos.items():
         venvpath = os.path.join(optpath, "venv%s" % pyversion)
         pythonname = "python%s" % pyversion
