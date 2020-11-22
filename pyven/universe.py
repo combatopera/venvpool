@@ -29,9 +29,9 @@ class Universe:
 
         def __init__(self, releases):
             releases = [str(r) for r in sorted(map(parse_version, releases))]
-            self.releases = {1 + i: r for i, r in enumerate(releases)}
-            self.cudfversions = {r: v for v, r in self.releases.items()}
-            self.devcudfversion = len(self.releases) + 1
+            self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
+            self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
+            self.devcudfversion = len(releases) + 1
 
     def __init__(self, infos):
         self.projects = {}
@@ -49,7 +49,8 @@ class Universe:
             with urlopen("https://pypi.org/pypi/%s/json" % name) as f:
                 return json.load(f)
         with ThreadPoolExecutor() as e:
-            self.projects.update([n, self.Project(j['releases'])] for n, j in zip(names, invokeall([e.submit(fetch, n).result for n in names])))
+            self.projects.update([name, self.Project(data['releases'])]
+                    for name, data in zip(names, invokeall([e.submit(fetch, name).result for name in names])))
 
     def devcudfversion(self, info):
         return self.projects[info.config.name].devcudfversion
@@ -57,8 +58,8 @@ class Universe:
     def cudfdepends(self, info):
         reqs = info.parsedremoterequires()
         self._update(r.namepart for r in reqs)
-        def hmm(r):
+        def cudfdepend(r):
             p = self.projects[r.namepart]
-            bounds = ["%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, p.cudfversions[s.version]) for s in r.specifier]
+            bounds = ["%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, p.releasetocudfversion[s.version]) for s in r.specifier]
             return ', '.join(bounds) if bounds else r.namepart
-        return [hmm(r) for r in reqs]
+        return [cudfdepend(r) for r in reqs]
