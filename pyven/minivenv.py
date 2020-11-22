@@ -42,7 +42,7 @@ class Pip:
                     s &= req.specifier
                 specifiers[req.namepart] = s
         self.pipinstall(["%s%s" % entry for entry in specifiers.items()])
-        self.pipinstall(sum((['-e', i.projectdir] for i in infos), []))
+        self.pipinstall(['--no-deps'] + sum((['-e', i.projectdir] for i in infos), []))
 
 class Venv:
 
