@@ -25,19 +25,27 @@ log = logging.getLogger(__name__)
 
 class Universe:
 
-    class Project:
+    class PypiProject:
 
         def __init__(self, releases):
             releases = [str(r) for r in sorted(map(parse_version, releases))]
-            self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
+            # self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
             self.devcudfversion = len(releases) + 1
+
+    class LocalProject:
+
+        releasetocudfversion = {}
+        devcudfversion = 1
+
+        def __init__(self):
+            pass
 
     def __init__(self, infos):
         self.projects = {}
         for i in infos:
             if not i.config.pypi.participant:
-                self.projects[i.config.name] = self.Project([])
+                self.projects[i.config.name] = self.LocalProject()
         self._update(i.config.name for i in infos if i.config.pypi.participant)
         self.infos = infos
 
@@ -50,7 +58,7 @@ class Universe:
             with urlopen("https://pypi.org/pypi/%s/json" % name) as f:
                 return json.load(f)
         with ThreadPoolExecutor() as e:
-            self.projects.update([name, self.Project(data['releases'])]
+            self.projects.update([name, self.PypiProject(data['releases'])]
                     for name, data in zip(names, invokeall([e.submit(fetch, name).result for name in names])))
 
     def _devcudfversion(self, info):
