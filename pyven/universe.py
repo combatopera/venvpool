@@ -53,10 +53,10 @@ class Universe:
             self.projects.update([name, self.Project(data['releases'])]
                     for name, data in zip(names, invokeall([e.submit(fetch, name).result for name in names])))
 
-    def devcudfversion(self, info):
+    def _devcudfversion(self, info):
         return self.projects[info.config.name].devcudfversion
 
-    def cudfdepends(self, info):
+    def _cudfdepends(self, info):
         reqs = info.parsedremoterequires()
         self._update(r.namepart for r in reqs)
         def cudfdepend(r):
@@ -68,8 +68,8 @@ class Universe:
     def writecudf(self, f):
         for i in self.infos:
             f.write('package: %s\n' % i.config.name.replace(' ', ''))
-            f.write('version: %s\n' % self.devcudfversion(i))
-            deps = self.cudfdepends(i)
+            f.write('version: %s\n' % self._devcudfversion(i))
+            deps = self._cudfdepends(i)
             if deps:
                 f.write('depends: %s\n' % ', '.join(deps))
             f.write('\n')
