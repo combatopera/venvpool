@@ -43,7 +43,6 @@ class Pip:
             f.flush()
             subprocess.check_call(['cat', f.name])
             subprocess.check_call(['aspcud', '-V', '3', f.name])
-
         raise
         solution = ["%s%s" % entry for entry in specifiers.items()]
         log.debug("Install solution: %s", ' '.join(solution))
