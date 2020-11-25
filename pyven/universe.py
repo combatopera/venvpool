@@ -39,6 +39,7 @@ class Universe:
             if not i.config.pypi.participant:
                 self.projects[i.config.name] = self.Project([])
         self._update(i.config.name for i in infos if i.config.pypi.participant)
+        self.infos = infos
 
     def _update(self, names):
         names = [n for n in names if n not in self.projects]
@@ -63,3 +64,12 @@ class Universe:
             bounds = ["%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, p.releasetocudfversion[s.version]) for s in r.specifier]
             return ', '.join(bounds) if bounds else r.namepart
         return [cudfdepend(r) for r in reqs]
+
+    def writecudf(self, f):
+        for i in self.infos:
+            f.write('package: %s\n' % i.config.name.replace(' ', ''))
+            f.write('version: %s\n' % self.devcudfversion(i))
+            deps = self.cudfdepends(i)
+            if deps:
+                f.write('depends: %s\n' % ', '.join(deps))
+            f.write('\n')

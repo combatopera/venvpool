@@ -37,13 +37,7 @@ class Pip:
         u = Universe(infos)
         specifiers = {}
         with NamedTemporaryFile('w') as f:
-            for i in infos:
-                f.write('package: %s\n' % i.config.name.replace(' ', ''))
-                f.write('version: %s\n' % u.devcudfversion(i))
-                deps = u.cudfdepends(i)
-                if deps:
-                    f.write('depends: %s\n' % ', '.join(deps))
-                f.write('\n')
+            u.writecudf(f)
             f.write('request: \n') # Space is needed apparently!
             f.write('install: %s\n' % ', '.join(i.config.name.replace(' ', '') for i in infos))
             f.flush()
