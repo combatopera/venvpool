@@ -38,12 +38,11 @@ class Universe:
         releasetocudfversion = {}
         devcudfversion = 1
 
-        def __init__(self):
-            pass
+        def __init__(self, info):
+            self.info = info
 
     def __init__(self, infos):
-        self.projects = {i.config.name: self.LocalProject() for i in infos}
-        self.infos = infos
+        self.projects = {i.config.name: self.LocalProject(i) for i in infos}
 
     def _update(self, names):
         names = [n for n in names if n not in self.projects]
@@ -57,9 +56,6 @@ class Universe:
             self.projects.update([name, self.PypiProject(data['releases'])]
                     for name, data in zip(names, invokeall([e.submit(fetch, name).result for name in names])))
 
-    def _devcudfversion(self, info):
-        return self.projects[info.config.name].devcudfversion
-
     def _cudfdepends(self, info):
         reqs = info.parsedremoterequires()
         self._update(r.namepart for r in reqs)
@@ -70,12 +66,13 @@ class Universe:
         return [cudfdepend(r) for r in reqs]
 
     def writecudf(self, f):
-        for i in self.infos:
-            f.write('package: %s\n' % i.config.name.replace(' ', ''))
-            f.write('version: %s\n' % self._devcudfversion(i))
-            deps = self._cudfdepends(i)
+        projects = list(self.projects.values())
+        for p in projects:
+            f.write('package: %s\n' % p.info.config.name.replace(' ', ''))
+            f.write('version: %s\n' % p.devcudfversion)
+            deps = self._cudfdepends(p.info)
             if deps:
                 f.write('depends: %s\n' % ', '.join(deps))
             f.write('\n')
         f.write('request: \n') # Space is needed apparently!
-        f.write('install: %s\n' % ', '.join(i.config.name.replace(' ', '') for i in self.infos))
+        f.write('install: %s\n' % ', '.join(p.info.config.name.replace(' ', '') for p in projects))
