@@ -52,8 +52,8 @@ class Universe:
                 return ', '.join(bounds) if bounds else r.namepart
             return [cudfdepend(r) for r in reqs]
 
-    def __init__(self, infos):
-        self.projects = {i.config.name: self.EditableProject(i) for i in infos}
+    def __init__(self, editableinfos):
+        self.projects = {i.config.name: self.EditableProject(i) for i in editableinfos}
 
     def _update(self, names):
         names = [n for n in names if n not in self.projects]
