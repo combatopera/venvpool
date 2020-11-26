@@ -41,41 +41,37 @@ class Universe:
         cudfversions = 1,
 
         def __init__(self, info):
-            self.info = info
+            self.name = info.config.name
+            self.requires = info.parsedremoterequires()
 
         def cudfdepends(self, cudfversion):
-            reqs = self.info.parsedremoterequires()
-            self._update(r.namepart for r in reqs)
             def cudfdepend(r):
-                p = self.projects[r.namepart]
+                p = self._project(r.namepart)
                 bounds = ["%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, p.releasetocudfversion[s.version]) for s in r.specifier]
                 return ', '.join(bounds) if bounds else r.namepart
-            return [cudfdepend(r) for r in reqs]
+            return [cudfdepend(r) for r in self.requires]
 
     def __init__(self, editableinfos):
         self.projects = {i.config.name: self.EditableProject(i) for i in editableinfos}
 
-    def _update(self, names):
-        names = [n for n in names if n not in self.projects]
-        if not names:
-            return
-        def fetch(name):
+    def _project(self, name):
+        try:
+            return self.projects[name]
+        except KeyError:
             log.info("Fetch: %s", name)
             with urlopen("https://pypi.org/pypi/%s/json" % name) as f:
-                return json.load(f)
-        with ThreadPoolExecutor() as e:
-            self.projects.update([name, self.PypiProject(data['releases'])]
-                    for name, data in zip(names, invokeall([e.submit(fetch, name).result for name in names])))
+                self.projects[name] = p = self.PypiProject(json.load(f)['releases'])
+            return p
 
     def writecudf(self, f):
         projects = list(self.projects.values())
         for p in projects:
             for cudfversion in p.cudfversions:
-                f.write('package: %s\n' % p.info.config.name.replace(' ', ''))
+                f.write('package: %s\n' % p.name.replace(' ', ''))
                 f.write('version: %s\n' % cudfversion)
                 cudfdepends = p.cudfdepends(cudfversion)
                 if cudfdepends:
                     f.write('depends: %s\n' % ', '.join(cudfdepends))
                 f.write('\n')
         f.write('request: \n') # Space is needed apparently!
-        f.write('install: %s\n' % ', '.join(p.info.config.name.replace(' ', '') for p in projects))
+        f.write('install: %s\n' % ', '.join(p.name.replace(' ', '') for p in projects))
