@@ -38,8 +38,6 @@ class Pip:
         specifiers = {}
         with NamedTemporaryFile('w') as f:
             u.writecudf(f)
-            f.write('request: \n') # Space is needed apparently!
-            f.write('install: %s\n' % ', '.join(i.config.name.replace(' ', '') for i in infos))
             f.flush()
             subprocess.check_call(['cat', f.name])
             subprocess.check_call(['aspcud', '-V', '3', f.name])

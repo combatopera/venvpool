@@ -81,3 +81,5 @@ class Universe:
             if deps:
                 f.write('depends: %s\n' % ', '.join(deps))
             f.write('\n')
+        f.write('request: \n') # Space is needed apparently!
+        f.write('install: %s\n' % ', '.join(i.config.name.replace(' ', '') for i in self.infos))
