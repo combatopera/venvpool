@@ -35,7 +35,7 @@ class Universe:
             self.devcudfversion = len(releases) + 1
 
     @innerclass
-    class LocalProject:
+    class EditableProject:
 
         releasetocudfversion = {}
         cudfversions = 1,
@@ -53,7 +53,7 @@ class Universe:
             return [cudfdepend(r) for r in reqs]
 
     def __init__(self, infos):
-        self.projects = {i.config.name: self.LocalProject(i) for i in infos}
+        self.projects = {i.config.name: self.EditableProject(i) for i in infos}
 
     def _update(self, names):
         names = [n for n in names if n not in self.projects]
