@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from concurrent.futures import ThreadPoolExecutor
+from diapyr.util import innerclass
 from pkg_resources import parse_version
 from splut import invokeall
 from urllib.request import urlopen
@@ -33,13 +34,23 @@ class Universe:
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
             self.devcudfversion = len(releases) + 1
 
+    @innerclass
     class LocalProject:
 
         releasetocudfversion = {}
-        devcudfversion = 1
+        cudfversions = 1,
 
         def __init__(self, info):
             self.info = info
+
+        def cudfdepends(self, cudfversion):
+            reqs = self.info.parsedremoterequires()
+            self._update(r.namepart for r in reqs)
+            def cudfdepend(r):
+                p = self.projects[r.namepart]
+                bounds = ["%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, p.releasetocudfversion[s.version]) for s in r.specifier]
+                return ', '.join(bounds) if bounds else r.namepart
+            return [cudfdepend(r) for r in reqs]
 
     def __init__(self, infos):
         self.projects = {i.config.name: self.LocalProject(i) for i in infos}
@@ -56,23 +67,15 @@ class Universe:
             self.projects.update([name, self.PypiProject(data['releases'])]
                     for name, data in zip(names, invokeall([e.submit(fetch, name).result for name in names])))
 
-    def _cudfdepends(self, info):
-        reqs = info.parsedremoterequires()
-        self._update(r.namepart for r in reqs)
-        def cudfdepend(r):
-            p = self.projects[r.namepart]
-            bounds = ["%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, p.releasetocudfversion[s.version]) for s in r.specifier]
-            return ', '.join(bounds) if bounds else r.namepart
-        return [cudfdepend(r) for r in reqs]
-
     def writecudf(self, f):
         projects = list(self.projects.values())
         for p in projects:
-            f.write('package: %s\n' % p.info.config.name.replace(' ', ''))
-            f.write('version: %s\n' % p.devcudfversion)
-            deps = self._cudfdepends(p.info)
-            if deps:
-                f.write('depends: %s\n' % ', '.join(deps))
-            f.write('\n')
+            for cudfversion in p.cudfversions:
+                f.write('package: %s\n' % p.info.config.name.replace(' ', ''))
+                f.write('version: %s\n' % cudfversion)
+                cudfdepends = p.cudfdepends(cudfversion)
+                if cudfdepends:
+                    f.write('depends: %s\n' % ', '.join(cudfdepends))
+                f.write('\n')
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(p.info.config.name.replace(' ', '') for p in projects))
