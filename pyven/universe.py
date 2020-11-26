@@ -28,11 +28,15 @@ class Universe:
 
     class PypiProject:
 
-        def __init__(self, releases):
+        def __init__(self, name, releases):
             releases = [str(r) for r in sorted(map(parse_version, releases))]
-            # self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
+            self.cudfversions = [1 + i for i, _ in enumerate(releases)]
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
             self.devcudfversion = len(releases) + 1
+            self.name = name
+
+        def cudfdepends(self, cudfversion):
+            return []
 
     @innerclass
     class EditableProject:
@@ -53,6 +57,7 @@ class Universe:
 
     def __init__(self, editableinfos):
         self.projects = {i.config.name: self.EditableProject(i) for i in editableinfos}
+        self.editables = list(self.projects.values())
 
     def _project(self, name):
         try:
@@ -60,18 +65,21 @@ class Universe:
         except KeyError:
             log.info("Fetch: %s", name)
             with urlopen("https://pypi.org/pypi/%s/json" % name) as f:
-                self.projects[name] = p = self.PypiProject(json.load(f)['releases'])
+                self.projects[name] = p = self.PypiProject(name, json.load(f)['releases'])
             return p
 
     def writecudf(self, f):
-        projects = list(self.projects.values())
-        for p in projects:
-            for cudfversion in p.cudfversions:
-                f.write('package: %s\n' % p.name.replace(' ', ''))
-                f.write('version: %s\n' % cudfversion)
-                cudfdepends = p.cudfdepends(cudfversion)
-                if cudfdepends:
-                    f.write('depends: %s\n' % ', '.join(cudfdepends))
-                f.write('\n')
+        done = set()
+        while len(self.projects) > len(done):
+            projects = [p for p in self.projects.values() if p not in done]
+            for p in projects:
+                for cudfversion in p.cudfversions:
+                    f.write('package: %s\n' % p.name.replace(' ', ''))
+                    f.write('version: %s\n' % cudfversion)
+                    cudfdepends = p.cudfdepends(cudfversion)
+                    if cudfdepends:
+                        f.write('depends: %s\n' % ', '.join(cudfdepends))
+                    f.write('\n')
+            done.update(projects)
         f.write('request: \n') # Space is needed apparently!
-        f.write('install: %s\n' % ', '.join(p.name.replace(' ', '') for p in projects))
+        f.write('install: %s\n' % ', '.join(p.name.replace(' ', '') for p in self.editables))
