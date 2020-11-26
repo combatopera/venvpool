@@ -42,11 +42,7 @@ class Universe:
             pass
 
     def __init__(self, infos):
-        self.projects = {}
-        for i in infos:
-            if not i.config.pypi.participant:
-                self.projects[i.config.name] = self.LocalProject()
-        self._update(i.config.name for i in infos if i.config.pypi.participant)
+        self.projects = {i.config.name: self.LocalProject() for i in infos}
         self.infos = infos
 
     def _update(self, names):
