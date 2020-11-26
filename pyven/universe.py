@@ -50,9 +50,8 @@ class Universe:
 
         def cudfdepends(self, cudfversion):
             def cudfdepend(r):
-                p = self._project(r.namepart)
-                bounds = ["%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, p.releasetocudfversion[s.version]) for s in r.specifier]
-                return ', '.join(bounds) if bounds else r.namepart
+                s, = r.specifier
+                return "%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, self._project(r.namepart).releasetocudfversion[s.version])
             return [cudfdepend(r) for r in self.requires]
 
     def __init__(self, editableinfos):
