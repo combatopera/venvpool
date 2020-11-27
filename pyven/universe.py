@@ -39,6 +39,8 @@ class Universe:
 
     class PypiProject:
 
+        editable = False
+
         def __init__(self, name, releases):
             releases = [str(r) for r in sorted(map(parse_version, releases))]
             self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
@@ -53,6 +55,7 @@ class Universe:
     @innerclass
     class EditableProject:
 
+        editable = True
         cudfversiontorelease = 1,
 
         def __init__(self, info):
@@ -63,8 +66,7 @@ class Universe:
             assert 1 == cudfversion
 
     def __init__(self, editableinfos):
-        self.projects = {i.config.name: self.EditableProject(i) for i in editableinfos}
-        self.editables = list(self.projects.values())
+        self.projects = {p.name: p for p in map(self.EditableProject, editableinfos)}
 
     def _project(self, name):
         try:
@@ -89,7 +91,7 @@ class Universe:
                     f.write('\n')
             done.update(p.name for p in projects)
         f.write('request: \n') # Space is needed apparently!
-        f.write('install: %s\n' % ', '.join(quote(p.name) for p in self.editables))
+        f.write('install: %s\n' % ', '.join(quote(name) for name, p in self.projects.items() if p.editable))
 
     def toreq(self, cudfname, cudfversion):
         return self.projects[unquote(cudfname)].toreq(cudfversion)
