@@ -32,21 +32,18 @@ class Universe:
             self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
             self.devcudfversion = len(releases) + 1
-            self.cudfversions = self.cudfversiontorelease.keys()
             self.name = name
 
         def cudfdepends(self, cudfversion):
             return []
 
         def toreq(self, cudfversion):
-            #print(self.name, self.cudfversiontorelease)
             return "%s==%s" % (self.name, self.cudfversiontorelease[cudfversion])
 
     @innerclass
     class EditableProject:
 
-        releasetocudfversion = {}
-        cudfversions = 1,
+        cudfversiontorelease = {1: None}
 
         def __init__(self, info):
             self.name = info.config.name
@@ -79,7 +76,7 @@ class Universe:
         while len(self.projects) > len(done):
             projects = [p for p in self.projects.values() if p not in done]
             for p in projects:
-                for cudfversion in p.cudfversions:
+                for cudfversion in p.cudfversiontorelease:
                     f.write('package: %s\n' % quote(p.name))
                     f.write('version: %s\n' % cudfversion)
                     cudfdepends = p.cudfdepends(cudfversion)
