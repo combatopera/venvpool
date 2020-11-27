@@ -53,7 +53,7 @@ class Universe:
     @innerclass
     class EditableProject:
 
-        cudfversiontorelease = {1: None}
+        cudfversiontorelease = 1,
 
         def __init__(self, info):
             self.name = info.config.name
@@ -77,8 +77,8 @@ class Universe:
 
     def writecudf(self, f):
         done = set()
-        while len(self.projects) > len(done):
-            projects = [p for p in self.projects.values() if p not in done]
+        while done < self.projects.keys():
+            projects = [p for name, p in self.projects.items() if name not in done]
             for p in projects:
                 for cudfversion in p.cudfversiontorelease:
                     f.write('package: %s\n' % quote(p.name))
@@ -87,7 +87,7 @@ class Universe:
                     if depends:
                         f.write('depends: %s\n' % ', '.join(d.cudfstr() for d in depends))
                     f.write('\n')
-            done.update(projects)
+            done.update(p.name for p in projects)
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(quote(p.name) for p in self.editables))
 
