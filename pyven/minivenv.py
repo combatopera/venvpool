@@ -35,21 +35,21 @@ class Pip:
 
     def installeditable(self, infos):
         u = Universe(infos)
-        specifiers = {}
         with NamedTemporaryFile('w') as f:
             u.writecudf(f)
             f.flush()
             #subprocess.check_call(['cat', f.name])
             lines = [l for l in subprocess.check_output(['aspcud', f.name], universal_newlines = True).splitlines() if l]
+        solution = []
         while lines:
             k, package = lines.pop(0).split(' ')
             assert 'package:' == k
             k, versionstr = lines.pop(0).split(' ')
             assert 'version:' == k
             assert 'installed: true' == lines.pop(0)
-            print(u.toreq(package, int(versionstr)))
-        raise
-        solution = ["%s%s" % entry for entry in specifiers.items()]
+            req = u.toreq(package, int(versionstr))
+            if not req.startswith('-e '):
+                solution.append(req)
         log.debug("Install solution: %s", ' '.join(solution))
         self.pipinstall(solution)
         log.debug("Install editable: %s", ' '.join(safe_name(i.config.name) for i in infos))
