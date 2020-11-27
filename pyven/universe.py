@@ -16,12 +16,23 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from diapyr.util import innerclass
+from hashlib import md5
 from pkg_resources import parse_requirements, parse_version
 from urllib.parse import quote, unquote
-from urllib.request import urlopen
-import json, logging
+import json, logging, os, shutil, urllib.request
 
 log = logging.getLogger(__name__)
+mirrordir = os.path.join(os.path.expanduser('~'), '.pyven', 'mirror')
+
+def urlopen(url):
+    mirrorpath = os.path.join(mirrordir, md5(url.encode('ascii')).hexdigest())
+    if not os.path.exists(mirrorpath):
+        os.makedirs(os.path.dirname(mirrorpath), exist_ok = True)
+        partialpath = "%s.part" % mirrorpath
+        with urllib.request.urlopen(url) as f, open(partialpath, 'wb') as g:
+            shutil.copyfileobj(f, g)
+        os.rename(partialpath, mirrorpath)
+    return open(mirrorpath, 'rb')
 
 class Universe:
 
