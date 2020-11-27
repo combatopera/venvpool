@@ -15,10 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from concurrent.futures import ThreadPoolExecutor
 from diapyr.util import innerclass
 from pkg_resources import parse_version
-from splut import invokeall
+from urllib.parse import quote, unquote
 from urllib.request import urlopen
 import json, logging
 
@@ -30,13 +29,18 @@ class Universe:
 
         def __init__(self, name, releases):
             releases = [str(r) for r in sorted(map(parse_version, releases))]
-            self.cudfversions = [1 + i for i, _ in enumerate(releases)]
+            self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
             self.devcudfversion = len(releases) + 1
+            self.cudfversions = self.cudfversiontorelease.keys()
             self.name = name
 
         def cudfdepends(self, cudfversion):
             return []
+
+        def toreq(self, cudfversion):
+            #print(self.name, self.cudfversiontorelease)
+            return "%s==%s" % (self.name, self.cudfversiontorelease[cudfversion])
 
     @innerclass
     class EditableProject:
@@ -53,6 +57,9 @@ class Universe:
                 s, = r.specifier
                 return "%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, self._project(r.namepart).releasetocudfversion[s.version])
             return [cudfdepend(r) for r in self.requires]
+
+        def toreq(self, cudfversion):
+            return "-e %s" % self.name
 
     def __init__(self, editableinfos):
         self.projects = {i.config.name: self.EditableProject(i) for i in editableinfos}
@@ -73,7 +80,7 @@ class Universe:
             projects = [p for p in self.projects.values() if p not in done]
             for p in projects:
                 for cudfversion in p.cudfversions:
-                    f.write('package: %s\n' % p.name.replace(' ', ''))
+                    f.write('package: %s\n' % quote(p.name))
                     f.write('version: %s\n' % cudfversion)
                     cudfdepends = p.cudfdepends(cudfversion)
                     if cudfdepends:
@@ -81,4 +88,7 @@ class Universe:
                     f.write('\n')
             done.update(projects)
         f.write('request: \n') # Space is needed apparently!
-        f.write('install: %s\n' % ', '.join(p.name.replace(' ', '') for p in self.editables))
+        f.write('install: %s\n' % ', '.join(quote(p.name) for p in self.editables))
+
+    def toreq(self, cudfname, cudfversion):
+        return self.projects[unquote(cudfname)].toreq(cudfversion)

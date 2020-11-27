@@ -39,8 +39,15 @@ class Pip:
         with NamedTemporaryFile('w') as f:
             u.writecudf(f)
             f.flush()
-            subprocess.check_call(['cat', f.name])
-            subprocess.check_call(['aspcud', '-V', '3', f.name])
+            #subprocess.check_call(['cat', f.name])
+            lines = [l for l in subprocess.check_output(['aspcud', f.name], universal_newlines = True).splitlines() if l]
+        while lines:
+            k, package = lines.pop(0).split(' ')
+            assert 'package:' == k
+            k, versionstr = lines.pop(0).split(' ')
+            assert 'version:' == k
+            assert 'installed: true' == lines.pop(0)
+            print(u.toreq(package, int(versionstr)))
         raise
         solution = ["%s%s" % entry for entry in specifiers.items()]
         log.debug("Install solution: %s", ' '.join(solution))
