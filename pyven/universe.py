@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from diapyr.util import innerclass
-from pkg_resources import parse_version
+from pkg_resources import parse_requirements, parse_version
 from urllib.parse import quote, unquote
 from urllib.request import urlopen
 import json, logging
@@ -45,9 +45,13 @@ class Universe:
             releases = [str(r) for r in sorted(map(parse_version, releases))]
             self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
-            self.devcudfversion = len(releases) + 1
+            self.cudfversiontodepends = {}
+            for cudfversion, release in self.cudfversiontorelease.items():
+                with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
+                    reqs = json.load(f)['info']['requires_dist']
+                reqs = [] if reqs is None else list(parse_requirements(reqs))
+                print(name, release, reqs)
             self.name = name
-            self.cudfversiontodepends = {v: [] for v in self.cudfversiontorelease}
 
         def toreq(self, cudfversion):
             return "%s==%s" % (self.name, self.cudfversiontorelease[cudfversion])
