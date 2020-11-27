@@ -25,6 +25,18 @@ log = logging.getLogger(__name__)
 
 class Universe:
 
+    @innerclass
+    class Depend:
+
+        def __init__(self, r):
+            self.name = r.namepart
+            s, = r.specifier
+            self.exact = {'>=': False, '==': True}[s.operator]
+            self.release = s.version
+
+        def cudfstr(self):
+            return "%s %s %s" % (self.name, '=' if self.exact else '>=', self._project(self.name).releasetocudfversion[self.release])
+
     class PypiProject:
 
         def __init__(self, name, releases):
@@ -33,9 +45,7 @@ class Universe:
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
             self.devcudfversion = len(releases) + 1
             self.name = name
-
-        def cudfdepends(self, cudfversion):
-            return []
+            self.cudfversiontodepends = {v: [] for v in self.cudfversiontorelease}
 
         def toreq(self, cudfversion):
             return "%s==%s" % (self.name, self.cudfversiontorelease[cudfversion])
@@ -47,16 +57,10 @@ class Universe:
 
         def __init__(self, info):
             self.name = info.config.name
-            self.requires = info.parsedremoterequires()
-
-        def cudfdepends(self, cudfversion):
-            def cudfdepend(r):
-                s, = r.specifier
-                return "%s %s %s" % (r.namepart, '=' if '==' == s.operator else s.operator, self._project(r.namepart).releasetocudfversion[s.version])
-            return [cudfdepend(r) for r in self.requires]
+            self.cudfversiontodepends = {1: [self.Depend(r) for r in info.parsedremoterequires()]}
 
         def toreq(self, cudfversion):
-            return "-e %s" % self.name
+            assert 1 == cudfversion
 
     def __init__(self, editableinfos):
         self.projects = {i.config.name: self.EditableProject(i) for i in editableinfos}
@@ -79,9 +83,9 @@ class Universe:
                 for cudfversion in p.cudfversiontorelease:
                     f.write('package: %s\n' % quote(p.name))
                     f.write('version: %s\n' % cudfversion)
-                    cudfdepends = p.cudfdepends(cudfversion)
-                    if cudfdepends:
-                        f.write('depends: %s\n' % ', '.join(cudfdepends))
+                    depends = p.cudfversiontodepends[cudfversion]
+                    if depends:
+                        f.write('depends: %s\n' % ', '.join(d.cudfstr() for d in depends))
                     f.write('\n')
             done.update(projects)
         f.write('request: \n') # Space is needed apparently!

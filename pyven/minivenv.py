@@ -48,7 +48,7 @@ class Pip:
             assert 'version:' == k
             assert 'installed: true' == lines.pop(0)
             req = u.toreq(package, int(versionstr))
-            if not req.startswith('-e '):
+            if req is not None:
                 solution.append(req)
         log.debug("Install solution: %s", ' '.join(solution))
         self.pipinstall(solution)
