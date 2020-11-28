@@ -136,8 +136,11 @@ class Universe:
             self.name = name
 
         def fetch(self, filter):
-            for release in filter(self.releasetocudfversion):
-                self.dependsof(self.releasetocudfversion[release])
+            releases = [r for r in filter(self.releasetocudfversion) if self.releasetocudfversion[r] not in self.cudfversiontodepends]
+            if releases:
+                log.info("Fetch %s releases of: %s", len(releases), self.name)
+                for release in releases:
+                    self.dependsof(self.releasetocudfversion[release])
 
         def dependsof(self, cudfversion):
             try:
@@ -190,6 +193,7 @@ class Universe:
             todo = {(cname, cudfversion) for cname in self.projects for cudfversion in self.projects[cname].cudfversiontodepends}
             if done >= todo:
                 break
+            log.debug("Releases remaining: %s", len(todo - done))
             newdone = set()
             for cname, p in list(self.projects.items()):
                 for cudfversion in p.cudfversiontodepends:
