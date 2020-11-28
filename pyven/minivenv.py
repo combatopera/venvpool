@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .universe import Universe
+from datetime import datetime
 from pkg_resources import safe_name
 from tempfile import NamedTemporaryFile
 import logging, os, subprocess
@@ -35,11 +36,10 @@ class Pip:
 
     def installeditable(self, infos):
         u = Universe(infos)
-        with NamedTemporaryFile('w') as f:
+        path = os.path.join(os.path.dirname(self.pippath), '..', "%s.cudf" % datetime.now().isoformat())
+        with open(path, 'w') as f:
             u.writecudf(f)
-            f.flush()
-            #subprocess.check_call(['cat', f.name])
-            lines = [l for l in subprocess.check_output(['aspcud', f.name], universal_newlines = True).splitlines() if l]
+        lines = [l for l in subprocess.check_output(['aspcud', path], universal_newlines = True).splitlines() if l]
         solution = []
         while lines:
             k, package = lines.pop(0).split(' ')

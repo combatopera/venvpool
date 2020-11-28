@@ -124,6 +124,7 @@ class Universe:
                 for cudfversion, release in p.cudfversiontorelease.items():
                     try:
                         dependsstr = ', '.join(d.cudfstr() for d in p.cudfversiontodepends[cudfversion])
+                        f.write('# %s %s\n' % (p.name, release))
                         f.write('package: %s\n' % quote(p.name))
                         f.write('version: %s\n' % cudfversion)
                         if dependsstr:
