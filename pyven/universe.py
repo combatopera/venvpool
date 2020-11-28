@@ -54,17 +54,18 @@ class Universe:
         def __init__(self, req):
             self.req = req
 
+        def _cudfstrs(self):
+            lookup = self._project(self.req.namepart).releasetocudfversion
+            for s in self.req.specifier:
+                release = parse_version(s.version)
+                try:
+                    cudfversion = lookup[release]
+                except KeyError:
+                    raise UnrenderableException
+                yield "%s %s %s" % (self.req.namepart, {'==': '='}.get(s.operator, s.operator), cudfversion)
+
         def cudfstr(self):
-            def g():
-                lookup = self._project(self.req.namepart).releasetocudfversion
-                for s in self.req.specifier:
-                    release = parse_version(s.version)
-                    try:
-                        cudfversion = lookup[release]
-                    except KeyError:
-                        raise UnrenderableException
-                    yield "%s %s %s" % (self.req.namepart, {'==': '='}.get(s.operator, s.operator), cudfversion)
-            return ', '.join(g()) if self.req.specifier else self.req.namepart
+            return ', '.join(self._cudfstrs()) if self.req.specifier else self.req.namepart
 
     @innerclass
     class PypiProject:
