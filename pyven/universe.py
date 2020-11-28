@@ -17,13 +17,11 @@
 
 from .projectinfo import Req
 from bisect import bisect
-from concurrent.futures import ThreadPoolExecutor
 from diapyr.util import innerclass
 from hashlib import md5
 from packaging.utils import canonicalize_name
 from pkg_resources import parse_version
 from pkg_resources.extern.packaging.requirements import InvalidRequirement
-from splut import invokeall
 from urllib.parse import quote, unquote
 import gzip, json, logging, os, shutil, urllib.request
 
@@ -75,7 +73,7 @@ class Universe:
                     i = bisect(releases, release)
                     if i < len(releases):
                         yield "%s < %s" % (self.qname, lookup[releases[i]])
-            lookup = self._project(self.cname).releasetocudfversion # TODO: Fetch heuristic.
+            lookup = self._project(self.cname).releasetocudfversion
             releases = list(lookup)
             for s in self.req.specifier:
                 release = parse_version(s.version)
@@ -134,16 +132,21 @@ class Universe:
             releases = sorted(map(parse_version, releases))
             self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
-            with ThreadPoolExecutor() as e:
-                def fetch(release):
-                    with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
-                        reqs = json.load(f)['info']['requires_dist'] # FIXME: If None that means we need to get it another way.
-                    try:
-                        return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs) if r.accept()]
-                    except InvalidRequirement as e:
-                        return UnrenderableDepends(e)
-                self.cudfversiontodepends = dict(zip(self.cudfversiontorelease, invokeall([e.submit(fetch, release).result for release in releases])))
+            self.cudfversiontodepends = {}
             self.name = name
+
+        def dependsof(self, cudfversion):
+            try:
+                return self.cudfversiontodepends[cudfversion]
+            except KeyError:
+                with urlopen("https://pypi.org/pypi/%s/%s/json" % (self.name, self.cudfversiontorelease[cudfversion])) as f:
+                    reqs = json.load(f)['info']['requires_dist'] # FIXME: If None that means we need to get it another way.
+                try:
+                    depends = [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs) if r.accept()]
+                except InvalidRequirement as e:
+                    depends = UnrenderableDepends(e)
+                self.cudfversiontodepends[cudfversion] = depends
+                return depends
 
         def toreq(self, cudfversion):
             return "%s==%s" % (self.name, self.cudfversiontorelease[cudfversion])
@@ -156,7 +159,11 @@ class Universe:
 
         def __init__(self, info):
             self.name = info.config.name
-            self.cudfversiontodepends = {1: [self.Depend(r) for r in info.parsedremoterequires()]}
+            self.depends = [self.Depend(r) for r in info.parsedremoterequires()]
+
+        def dependsof(self, cudfversion):
+            assert 1 == cudfversion
+            return self.depends
 
         def toreq(self, cudfversion):
             assert 1 == cudfversion
@@ -178,9 +185,10 @@ class Universe:
         while done < self.projects.keys():
             projects = [p for name, p in self.projects.items() if name not in done]
             for p in projects:
+                # TODO: Elide releases that aren't in any requirement.
                 for cudfversion, release in p.cudfversiontorelease.items():
                     try:
-                        dependsstr = ', '.join(d.cudfstr() for d in p.cudfversiontodepends[cudfversion])
+                        dependsstr = ', '.join(d.cudfstr() for d in p.dependsof(cudfversion))
                         f.write('# %s %s\n' % (p.name, release))
                         f.write('package: %s\n' % quote(p.name))
                         f.write('version: %s\n' % cudfversion)
