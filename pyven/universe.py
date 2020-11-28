@@ -20,6 +20,7 @@ from bisect import bisect
 from concurrent.futures import ThreadPoolExecutor
 from diapyr.util import innerclass
 from hashlib import md5
+from packaging.utils import canonicalize_name
 from pkg_resources import parse_version
 from pkg_resources.extern.packaging.requirements import InvalidRequirement
 from splut import invokeall
@@ -55,25 +56,26 @@ class Universe:
     class Depend:
 
         def __init__(self, req):
+            self.cname = canonicalize_name(req.namepart)
+            self.qname = quote(self.cname)
             self.req = req
 
         def _cudfstrs(self):
             def ge():
                 if release in lookup:
-                    yield "%s >= %s" % (name, lookup[release])
+                    yield "%s >= %s" % (self.qname, lookup[release])
                 else:
                     i = bisect(releases, release) - 1
                     if i >= 0:
-                        yield "%s > %s" % (name, lookup[releases[i]])
+                        yield "%s > %s" % (self.qname, lookup[releases[i]])
             def lt():
                 if release in lookup:
-                    yield "%s < %s" % (name, lookup[release])
+                    yield "%s < %s" % (self.qname, lookup[release])
                 else:
                     i = bisect(releases, release)
                     if i < len(releases):
-                        yield "%s < %s" % (name, lookup[releases[i]])
-            name = self.req.namepart # TODO: Canonicalise.
-            lookup = self._project(name).releasetocudfversion # TODO: Fetch heuristic.
+                        yield "%s < %s" % (self.qname, lookup[releases[i]])
+            lookup = self._project(self.cname).releasetocudfversion # TODO: Fetch heuristic.
             releases = list(lookup)
             for s in self.req.specifier:
                 release = parse_version(s.version)
@@ -81,27 +83,27 @@ class Universe:
                     for x in ge(): yield x
                 elif '<=' == s.operator:
                     if release in lookup:
-                        yield "%s <= %s" % (name, lookup[release])
+                        yield "%s <= %s" % (self.qname, lookup[release])
                     else:
                         i = bisect(releases, release)
                         if i < len(releases):
-                            yield "%s < %s" % (name, lookup[releases[i]])
+                            yield "%s < %s" % (self.qname, lookup[releases[i]])
                 elif '>' == s.operator:
                     if release in lookup:
-                        yield "%s > %s" % (name, lookup[release])
+                        yield "%s > %s" % (self.qname, lookup[release])
                     else:
                         i = bisect(releases, release) - 1
                         if i >= 0:
-                            yield "%s > %s" % (name, lookup[releases[i]])
+                            yield "%s > %s" % (self.qname, lookup[releases[i]])
                 elif '<' == s.operator:
                     for x in lt(): yield x
                 elif '!=' == s.operator:
                     if release in lookup:
-                        yield "%s != %s" % (name, lookup[release])
+                        yield "%s != %s" % (self.qname, lookup[release])
                 elif s.operator in {'==', '==='}:
                     if release not in lookup:
-                        raise UnrenderableException("No such %s release: %s" % (name, release))
-                    yield "%s = %s" % (name, lookup[release])
+                        raise UnrenderableException("No such %s release: %s" % (self.req.namepart, s.version))
+                    yield "%s = %s" % (self.qname, lookup[release])
                 elif '~=' == s.operator:
                     for x in ge(): yield x
                     v = list(release._version.release[:-1])
@@ -113,7 +115,7 @@ class Universe:
 
         def cudfstr(self):
             s = ', '.join(self._cudfstrs())
-            return s if s else self.req.namepart
+            return s if s else self.qname
 
     @innerclass
     class PypiProject:
