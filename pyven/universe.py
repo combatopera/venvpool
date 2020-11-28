@@ -42,14 +42,15 @@ class Universe:
     @innerclass
     class Depend:
 
-        def __init__(self, r):
-            self.name = r.namepart
-            s, = r.specifier
-            self.exact = {'>=': False, '==': True}[s.operator]
-            self.release = s.version
+        def __init__(self, req):
+            self.req = req
 
         def cudfstr(self):
-            return "%s %s %s" % (self.name, '=' if self.exact else '>=', self._project(self.name).releasetocudfversion[self.release])
+            def g():
+                lookup = self._project(self.req.namepart).releasetocudfversion
+                for s in self.req.specifier:
+                    yield "%s %s %s" % (self.req.namepart, {'==': '='}.get(s.operator, s.operator), lookup[s.version])
+            return ', '.join(g()) if self.req.specifier else self.req.namepart
 
     @innerclass
     class PypiProject:
