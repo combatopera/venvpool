@@ -50,7 +50,7 @@ class Universe:
             def g():
                 lookup = self._project(self.req.namepart).releasetocudfversion
                 for s in self.req.specifier:
-                    yield "%s %s %s" % (self.req.namepart, {'==': '='}.get(s.operator, s.operator), lookup[s.version])
+                    yield "%s %s %s" % (self.req.namepart, {'==': '='}.get(s.operator, s.operator), lookup[parse_version(s.version)])
             return ', '.join(g()) if self.req.specifier else self.req.namepart
 
     @innerclass
@@ -59,7 +59,7 @@ class Universe:
         editable = False
 
         def __init__(self, name, releases):
-            releases = [str(r) for r in sorted(map(parse_version, releases))]
+            releases = sorted(map(parse_version, releases))
             self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
             with ThreadPoolExecutor() as e:
