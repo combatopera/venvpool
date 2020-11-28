@@ -104,10 +104,7 @@ class Universe:
                     yield "%s = %s" % (name, lookup[release])
                 elif '~=' == s.operator:
                     yield from ge()
-                    v = list(release._version.release)
-                    while not v[-1]:
-                        v.pop(-1)
-                    v.pop(-1)
+                    v = list(release._version.release[:-1])
                     v[-1] += 1
                     release = parse_version('.'.join(map(str, v)))
                     yield from lt()
