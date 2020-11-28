@@ -52,6 +52,8 @@ class Req:
         self.reqstr = reqstr
         self.namepart = req.unsafe_name # XXX: Is unsafe_name the correct attribute?
         self.specifier = req.specifier
+        self.marker = req.marker
+        self.extras = req.extras
 
     def siblingpath(self, workspace):
         return os.path.join(workspace, self.namepart)
@@ -78,6 +80,11 @@ class Req:
     def minstr(self):
         version, = (s.version for s in self.specifier if s.operator in {'>=', '=='})
         return "%s==%s" % (self.namepart, version)
+
+    def accept(self):
+        if self.marker is None or self.marker.evaluate(dict(extra = None)):
+            assert not self.extras
+            return True
 
 def main_minreqs():
     initlogging()

@@ -139,7 +139,7 @@ class Universe:
                     with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
                         reqs = json.load(f)['info']['requires_dist']
                     try:
-                        return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs)]
+                        return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs) if r.accept()]
                     except InvalidRequirement as e:
                         return UnrenderableDepends(e)
                 self.cudfversiontodepends = dict(zip(self.cudfversiontorelease, invokeall([e.submit(fetch, release).result for release in releases])))
