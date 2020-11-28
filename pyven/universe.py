@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .projectinfo import Req
+from bisect import bisect
 from concurrent.futures import ThreadPoolExecutor
 from diapyr.util import innerclass, singleton
 from hashlib import md5
@@ -44,7 +45,7 @@ class UnrenderableException(Exception): pass
 class UnrenderableDepends:
 
     def __iter__(self):
-        raise UnrenderableException
+        raise UnrenderableException # TODO: Add detail.
 
 class Universe:
 
@@ -57,13 +58,43 @@ class Universe:
         def _cudfstrs(self):
             name = self.req.namepart
             lookup = self._project(name).releasetocudfversion
+            releases = list(lookup)
             for s in self.req.specifier:
                 release = parse_version(s.version)
-                try:
-                    cudfversion = lookup[release]
-                except KeyError:
-                    raise UnrenderableException("No such release: %s" % self.req.reqstr)
-                yield "%s %s %s" % (name, {'==': '='}.get(s.operator, s.operator), cudfversion)
+                if '>=' == s.operator:
+                    if release in lookup:
+                        yield "%s >= %s" % (name, lookup[release])
+                    else:
+                        i = bisect(releases, release) - 1
+                        if i >= 0:
+                            yield "%s > %s" % (name, lookup[releases[i]])
+                elif '<=' == s.operator:
+                    if release in lookup:
+                        yield "%s <= %s" % (name, lookup[release])
+                    else:
+                        i = bisect(releases, release)
+                        if i < len(releases):
+                            yield "%s < %s" % (name, lookup[releases[i]])
+                elif '>' == s.operator:
+                    if release in lookup:
+                        yield "%s > %s" % (name, lookup[release])
+                    else:
+                        i = bisect(releases, release) - 1
+                        if i >= 0:
+                            yield "%s > %s" % (name, lookup[releases[i]])
+                elif '<' == s.operator:
+                    if release in lookup:
+                        yield "%s < %s" % (name, lookup[release])
+                    else:
+                        i = bisect(releases, release)
+                        if i < len(releases):
+                            yield "%s < %s" % (name, lookup[releases[i]])
+                else:
+                    try:
+                        cudfversion = lookup[release]
+                    except KeyError:
+                        raise UnrenderableException("No such release: %s" % self.req.reqstr)
+                    yield "%s %s %s" % (name, {'==': '='}.get(s.operator, s.operator), cudfversion)
 
         def cudfstr(self):
             return ', '.join(self._cudfstrs()) if self.req.specifier else self.req.namepart
