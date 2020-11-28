@@ -62,7 +62,7 @@ class Universe:
                 try:
                     cudfversion = lookup[release]
                 except KeyError:
-                    raise UnrenderableException
+                    raise UnrenderableException("No such %s release: %s" % (name, release))
                 yield "%s %s %s" % (name, {'==': '='}.get(s.operator, s.operator), cudfversion)
 
         def cudfstr(self):
@@ -129,8 +129,8 @@ class Universe:
                         if dependsstr:
                             f.write('depends: %s\n' % dependsstr)
                         f.write('\n')
-                    except UnrenderableException:
-                        log.warning("Exclude: %s==%s", p.name, release)
+                    except UnrenderableException as e:
+                        log.warning("Exclude %s==%s because: %s", p.name, release, e)
             done.update(p.name for p in projects)
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(quote(name) for name, p in self.projects.items() if p.editable))
