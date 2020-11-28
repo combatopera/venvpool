@@ -18,7 +18,7 @@
 from .projectinfo import Req
 from bisect import bisect
 from concurrent.futures import ThreadPoolExecutor
-from diapyr.util import innerclass, singleton
+from diapyr.util import innerclass
 from hashlib import md5
 from pkg_resources import parse_version
 from pkg_resources.extern.packaging.requirements import InvalidRequirement
@@ -41,14 +41,13 @@ def urlopen(url):
 
 class UnrenderableException(Exception): pass
 
-@singleton
 class UnrenderableDepends:
 
     def __init__(self, cause):
         self.cause = cause
 
     def __iter__(self):
-        raise UnrenderableException(cause)
+        raise UnrenderableException(self.cause)
 
 class Universe:
 
@@ -60,7 +59,7 @@ class Universe:
 
         def _cudfstrs(self):
             name = self.req.namepart
-            lookup = self._project(name).releasetocudfversion
+            lookup = self._project(name).releasetocudfversion # TODO: Fetch heuristic.
             releases = list(lookup)
             for s in self.req.specifier:
                 release = parse_version(s.version)
@@ -92,12 +91,16 @@ class Universe:
                         i = bisect(releases, release)
                         if i < len(releases):
                             yield "%s < %s" % (name, lookup[releases[i]])
+                elif '!=' == s.operator:
+                    if release in lookup:
+                        yield "%s != %s" % (name, lookup[release])
+                elif '==' == s.operator:
+                    if release not in lookup:
+                        raise UnrenderableException("No such %s release: %s" % (name, release))
+                    yield "%s = %s" % (name, lookup[release])
                 else:
-                    try:
-                        cudfversion = lookup[release]
-                    except KeyError:
-                        raise UnrenderableException("No such release: %s" % self.req.reqstr)
-                    yield "%s %s %s" % (name, {'==': '='}.get(s.operator, s.operator), cudfversion)
+                    print(name, s)
+                    gerger
 
         def cudfstr(self):
             return ', '.join(self._cudfstrs()) if self.req.specifier else self.req.namepart
