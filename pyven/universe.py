@@ -78,7 +78,7 @@ class Universe:
             for s in self.req.specifier:
                 release = parse_version(s.version)
                 if '>=' == s.operator:
-                    yield from ge()
+                    for x in ge(): yield x
                 elif '<=' == s.operator:
                     if release in lookup:
                         yield "%s <= %s" % (name, lookup[release])
@@ -94,7 +94,7 @@ class Universe:
                         if i >= 0:
                             yield "%s > %s" % (name, lookup[releases[i]])
                 elif '<' == s.operator:
-                    yield from lt()
+                    for x in lt(): yield x
                 elif '!=' == s.operator:
                     if release in lookup:
                         yield "%s != %s" % (name, lookup[release])
@@ -103,11 +103,11 @@ class Universe:
                         raise UnrenderableException("No such %s release: %s" % (name, release))
                     yield "%s = %s" % (name, lookup[release])
                 elif '~=' == s.operator:
-                    yield from ge()
+                    for x in ge(): yield x
                     v = list(release._version.release[:-1])
                     v[-1] += 1
                     release = parse_version('.'.join(map(str, v)))
-                    yield from lt()
+                    for x in lt(): yield x
                 else:
                     raise UnrenderableException("Unsupported requirement: %s" % self.req.reqstr)
 
