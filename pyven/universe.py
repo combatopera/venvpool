@@ -20,6 +20,7 @@ from concurrent.futures import ThreadPoolExecutor
 from diapyr.util import innerclass
 from hashlib import md5
 from pkg_resources import parse_version
+from pkg_resources.extern.packaging.requirements import InvalidRequirement
 from splut import invokeall
 from urllib.parse import quote, unquote
 import gzip, json, logging, os, shutil, urllib.request
@@ -65,7 +66,10 @@ class Universe:
                 def fetch(release):
                     with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
                         reqs = json.load(f)['info']['requires_dist']
-                    return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs)]
+                    try:
+                        return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs)]
+                    except InvalidRequirement:
+                        log.warning("Exclude: %s==%s", name, release)
                 self.cudfversiontodepends = dict(zip(self.cudfversiontorelease, invokeall([e.submit(fetch, release).result for release in releases])))
             self.name = name
 
@@ -103,12 +107,13 @@ class Universe:
             projects = [p for name, p in self.projects.items() if name not in done]
             for p in projects:
                 for cudfversion in p.cudfversiontorelease:
-                    f.write('package: %s\n' % quote(p.name))
-                    f.write('version: %s\n' % cudfversion)
                     depends = p.cudfversiontodepends[cudfversion]
-                    if depends:
-                        f.write('depends: %s\n' % ', '.join(d.cudfstr() for d in depends))
-                    f.write('\n')
+                    if depends is not None:
+                        f.write('package: %s\n' % quote(p.name))
+                        f.write('version: %s\n' % cudfversion)
+                        if depends:
+                            f.write('depends: %s\n' % ', '.join(d.cudfstr() for d in depends))
+                        f.write('\n')
             done.update(p.name for p in projects)
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(quote(name) for name, p in self.projects.items() if p.editable))
