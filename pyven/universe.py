@@ -17,7 +17,7 @@
 
 from .projectinfo import Req
 from concurrent.futures import ThreadPoolExecutor
-from diapyr.util import innerclass
+from diapyr.util import innerclass, singleton
 from hashlib import md5
 from pkg_resources import parse_version
 from pkg_resources.extern.packaging.requirements import InvalidRequirement
@@ -38,6 +38,14 @@ def urlopen(url):
         os.rename(partialpath, mirrorpath)
     return gzip.open(mirrorpath, 'rb')
 
+class UnrenderableException(Exception): pass
+
+@singleton
+class UnrenderableDepends:
+
+    def __iter__(self):
+        raise UnrenderableException
+
 class Universe:
 
     @innerclass
@@ -50,7 +58,12 @@ class Universe:
             def g():
                 lookup = self._project(self.req.namepart).releasetocudfversion
                 for s in self.req.specifier:
-                    yield "%s %s %s" % (self.req.namepart, {'==': '='}.get(s.operator, s.operator), lookup[parse_version(s.version)])
+                    release = parse_version(s.version)
+                    try:
+                        cudfversion = lookup[release]
+                    except KeyError:
+                        raise UnrenderableException
+                    yield "%s %s %s" % (self.req.namepart, {'==': '='}.get(s.operator, s.operator), cudfversion)
             return ', '.join(g()) if self.req.specifier else self.req.namepart
 
     @innerclass
@@ -69,7 +82,7 @@ class Universe:
                     try:
                         return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs)]
                     except InvalidRequirement:
-                        log.warning("Exclude: %s==%s", name, release)
+                        return UnrenderableDepends
                 self.cudfversiontodepends = dict(zip(self.cudfversiontorelease, invokeall([e.submit(fetch, release).result for release in releases])))
             self.name = name
 
@@ -80,7 +93,7 @@ class Universe:
     class EditableProject:
 
         editable = True
-        cudfversiontorelease = 1,
+        cudfversiontorelease = {1: '-e'}
 
         def __init__(self, info):
             self.name = info.config.name
@@ -106,14 +119,16 @@ class Universe:
         while done < self.projects.keys():
             projects = [p for name, p in self.projects.items() if name not in done]
             for p in projects:
-                for cudfversion in p.cudfversiontorelease:
-                    depends = p.cudfversiontodepends[cudfversion]
-                    if depends is not None:
+                for cudfversion, release in p.cudfversiontorelease.items():
+                    try:
+                        dependsstr = ', '.join(d.cudfstr() for d in p.cudfversiontodepends[cudfversion])
                         f.write('package: %s\n' % quote(p.name))
                         f.write('version: %s\n' % cudfversion)
-                        if depends:
-                            f.write('depends: %s\n' % ', '.join(d.cudfstr() for d in depends))
+                        if dependsstr:
+                            f.write('depends: %s\n' % dependsstr)
                         f.write('\n')
+                    except UnrenderableException:
+                        log.warning("Exclude: %s==%s", p.name, release)
             done.update(p.name for p in projects)
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(quote(name) for name, p in self.projects.items() if p.editable))
