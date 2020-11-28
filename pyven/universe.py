@@ -112,7 +112,8 @@ class Universe:
                     raise UnrenderableException("Unsupported requirement: %s" % self.req.reqstr)
 
         def cudfstr(self):
-            return ', '.join(self._cudfstrs()) if self.req.specifier else self.req.namepart
+            s = ', '.join(self._cudfstrs())
+            return s if s else self.req.namepart
 
     @innerclass
     class PypiProject:
