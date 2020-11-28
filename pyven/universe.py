@@ -58,18 +58,27 @@ class Universe:
             self.req = req
 
         def _cudfstrs(self):
+            def ge():
+                if release in lookup:
+                    yield "%s >= %s" % (name, lookup[release])
+                else:
+                    i = bisect(releases, release) - 1
+                    if i >= 0:
+                        yield "%s > %s" % (name, lookup[releases[i]])
+            def lt():
+                if release in lookup:
+                    yield "%s < %s" % (name, lookup[release])
+                else:
+                    i = bisect(releases, release)
+                    if i < len(releases):
+                        yield "%s < %s" % (name, lookup[releases[i]])
             name = self.req.namepart
             lookup = self._project(name).releasetocudfversion # TODO: Fetch heuristic.
             releases = list(lookup)
             for s in self.req.specifier:
                 release = parse_version(s.version)
                 if '>=' == s.operator:
-                    if release in lookup:
-                        yield "%s >= %s" % (name, lookup[release])
-                    else:
-                        i = bisect(releases, release) - 1
-                        if i >= 0:
-                            yield "%s > %s" % (name, lookup[releases[i]])
+                    yield from ge()
                 elif '<=' == s.operator:
                     if release in lookup:
                         yield "%s <= %s" % (name, lookup[release])
@@ -85,22 +94,25 @@ class Universe:
                         if i >= 0:
                             yield "%s > %s" % (name, lookup[releases[i]])
                 elif '<' == s.operator:
-                    if release in lookup:
-                        yield "%s < %s" % (name, lookup[release])
-                    else:
-                        i = bisect(releases, release)
-                        if i < len(releases):
-                            yield "%s < %s" % (name, lookup[releases[i]])
+                    yield from lt()
                 elif '!=' == s.operator:
                     if release in lookup:
                         yield "%s != %s" % (name, lookup[release])
-                elif '==' == s.operator:
+                elif s.operator in {'==', '==='}:
                     if release not in lookup:
                         raise UnrenderableException("No such %s release: %s" % (name, release))
                     yield "%s = %s" % (name, lookup[release])
+                elif '~=' == s.operator:
+                    yield from ge()
+                    v = list(release._version.release)
+                    while not v[-1]:
+                        v.pop(-1)
+                    v.pop(-1)
+                    v[-1] += 1
+                    release = parse_version('.'.join(map(str, v)))
+                    yield from lt()
                 else:
-                    print(name, s)
-                    gerger
+                    raise UnrenderableException("Unsupported requirement: %s" % self.req.reqstr)
 
         def cudfstr(self):
             return ', '.join(self._cudfstrs()) if self.req.specifier else self.req.namepart
