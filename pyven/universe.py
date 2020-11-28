@@ -50,6 +50,7 @@ class Universe:
         def cudfstr(self):
             return "%s %s %s" % (self.name, '=' if self.exact else '>=', self._project(self.name).releasetocudfversion[self.release])
 
+    @innerclass
     class PypiProject:
 
         editable = False
@@ -58,15 +59,12 @@ class Universe:
             releases = [str(r) for r in sorted(map(parse_version, releases))]
             self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
-            self.cudfversiontodepends = {}
             with ThreadPoolExecutor() as e:
                 def fetch(release):
                     with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
                         reqs = json.load(f)['info']['requires_dist']
-                    reqs = [] if reqs is None else list(parse_requirements(reqs))
-                    print(name, release, reqs)
-                futures = [e.submit(fetch, release) for _, release in self.cudfversiontorelease.items()]
-                invokeall([f.result for f in futures])
+                    return [] if reqs is None else [self.Depend(r) for r in parse_requirements(reqs)]
+                self.cudfversiontodepends = dict(zip(self.cudfversiontorelease, invokeall([e.submit(fetch, release).result for release in releases])))
             self.name = name
 
         def toreq(self, cudfversion):
