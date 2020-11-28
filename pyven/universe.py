@@ -72,7 +72,7 @@ class Universe:
                     i = bisect(releases, release)
                     if i < len(releases):
                         yield "%s < %s" % (name, lookup[releases[i]])
-            name = self.req.namepart
+            name = self.req.namepart # TODO: Canonicalise.
             lookup = self._project(name).releasetocudfversion # TODO: Fetch heuristic.
             releases = list(lookup)
             for s in self.req.specifier:
