@@ -29,7 +29,7 @@ import gzip, json, logging, os, shutil, urllib.request
 log = logging.getLogger(__name__)
 mirrordir = os.path.join(os.path.expanduser('~'), '.pyven', 'mirror')
 
-def urlopen(url):
+def urlopen(url): # FIXME: Not thread-safe.
     mirrorpath = os.path.join(mirrordir, md5(url.encode('ascii')).hexdigest())
     if not os.path.exists(mirrorpath):
         os.makedirs(os.path.dirname(mirrorpath), exist_ok = True)
