@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .projectinfo import Req
 from concurrent.futures import ThreadPoolExecutor
 from diapyr.util import innerclass
 from hashlib import md5
-from pkg_resources import parse_requirements, parse_version
+from pkg_resources import parse_version
 from splut import invokeall
 from urllib.parse import quote, unquote
 import gzip, json, logging, os, shutil, urllib.request
@@ -63,7 +64,7 @@ class Universe:
                 def fetch(release):
                     with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
                         reqs = json.load(f)['info']['requires_dist']
-                    return [] if reqs is None else [self.Depend(r) for r in parse_requirements(reqs)]
+                    return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs)]
                 self.cudfversiontodepends = dict(zip(self.cudfversiontorelease, invokeall([e.submit(fetch, release).result for release in releases])))
             self.name = name
 
