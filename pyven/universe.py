@@ -55,14 +55,15 @@ class Universe:
             self.req = req
 
         def _cudfstrs(self):
-            lookup = self._project(self.req.namepart).releasetocudfversion
+            name = self.req.namepart
+            lookup = self._project(name).releasetocudfversion
             for s in self.req.specifier:
                 release = parse_version(s.version)
                 try:
                     cudfversion = lookup[release]
                 except KeyError:
                     raise UnrenderableException
-                yield "%s %s %s" % (self.req.namepart, {'==': '='}.get(s.operator, s.operator), cudfversion)
+                yield "%s %s %s" % (name, {'==': '='}.get(s.operator, s.operator), cudfversion)
 
         def cudfstr(self):
             return ', '.join(self._cudfstrs()) if self.req.specifier else self.req.namepart
