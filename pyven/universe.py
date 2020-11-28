@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from concurrent.futures import ThreadPoolExecutor
 from diapyr.util import innerclass
 from hashlib import md5
 from pkg_resources import parse_requirements, parse_version
+from splut import invokeall
 from urllib.parse import quote, unquote
-import json, logging, os, shutil, urllib.request
+import gzip, json, logging, os, shutil, urllib.request
 
 log = logging.getLogger(__name__)
 mirrordir = os.path.join(os.path.expanduser('~'), '.pyven', 'mirror')
@@ -29,10 +31,10 @@ def urlopen(url):
     if not os.path.exists(mirrorpath):
         os.makedirs(os.path.dirname(mirrorpath), exist_ok = True)
         partialpath = "%s.part" % mirrorpath
-        with urllib.request.urlopen(url) as f, open(partialpath, 'wb') as g:
+        with urllib.request.urlopen(url) as f, gzip.open(partialpath, 'wb') as g:
             shutil.copyfileobj(f, g)
         os.rename(partialpath, mirrorpath)
-    return open(mirrorpath, 'rb')
+    return gzip.open(mirrorpath, 'rb')
 
 class Universe:
 
@@ -57,11 +59,14 @@ class Universe:
             self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
             self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
             self.cudfversiontodepends = {}
-            for cudfversion, release in self.cudfversiontorelease.items():
-                with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
-                    reqs = json.load(f)['info']['requires_dist']
-                reqs = [] if reqs is None else list(parse_requirements(reqs))
-                print(name, release, reqs)
+            with ThreadPoolExecutor() as e:
+                def fetch(release):
+                    with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
+                        reqs = json.load(f)['info']['requires_dist']
+                    reqs = [] if reqs is None else list(parse_requirements(reqs))
+                    print(name, release, reqs)
+                futures = [e.submit(fetch, release) for _, release in self.cudfversiontorelease.items()]
+                invokeall([f.result for f in futures])
             self.name = name
 
         def toreq(self, cudfversion):
