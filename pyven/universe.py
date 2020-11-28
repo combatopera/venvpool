@@ -100,10 +100,18 @@ class Universe:
                 elif '!=' == s.operator:
                     if release in lookup:
                         yield "%s != %s" % (self.qname, lookup[release])
-                elif s.operator in {'==', '==='}:
-                    if release not in lookup:
-                        raise UnrenderableException("No such %s release: %s" % (self.req.namepart, s.version))
-                    yield "%s = %s" % (self.qname, lookup[release])
+                elif '==' == s.operator:
+                    if s.version.endswith('.*'):
+                        release = parse_version(s.version[:-2])
+                        for x in ge(): yield x
+                        v = list(release._version.release)
+                        v[-1] += 1
+                        release = parse_version('.'.join(map(str, v)))
+                        for x in lt(): yield x
+                    else:
+                        if release not in lookup:
+                            raise UnrenderableException("No such %s release: %s" % (self.req.namepart, s.version))
+                        yield "%s = %s" % (self.qname, lookup[release])
                 elif '~=' == s.operator:
                     for x in ge(): yield x
                     v = list(release._version.release[:-1])
