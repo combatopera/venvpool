@@ -62,7 +62,7 @@ class Universe:
                 try:
                     cudfversion = lookup[release]
                 except KeyError:
-                    raise UnrenderableException("No such %s release: %s" % (name, release))
+                    raise UnrenderableException("No such release: %s" % self.req.reqstr)
                 yield "%s %s %s" % (name, {'==': '='}.get(s.operator, s.operator), cudfversion)
 
         def cudfstr(self):
