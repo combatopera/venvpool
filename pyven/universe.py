@@ -137,7 +137,7 @@ class Universe:
             with ThreadPoolExecutor() as e:
                 def fetch(release):
                     with urlopen("https://pypi.org/pypi/%s/%s/json" % (name, release)) as f:
-                        reqs = json.load(f)['info']['requires_dist']
+                        reqs = json.load(f)['info']['requires_dist'] # FIXME: If None that means we need to get it another way.
                     try:
                         return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs) if r.accept()]
                     except InvalidRequirement as e:
