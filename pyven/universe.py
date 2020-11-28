@@ -44,8 +44,11 @@ class UnrenderableException(Exception): pass
 @singleton
 class UnrenderableDepends:
 
+    def __init__(self, cause):
+        self.cause = cause
+
     def __iter__(self):
-        raise UnrenderableException # TODO: Add detail.
+        raise UnrenderableException(cause)
 
 class Universe:
 
@@ -114,8 +117,8 @@ class Universe:
                         reqs = json.load(f)['info']['requires_dist']
                     try:
                         return [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs)]
-                    except InvalidRequirement:
-                        return UnrenderableDepends
+                    except InvalidRequirement as e:
+                        return UnrenderableDepends(e)
                 self.cudfversiontodepends = dict(zip(self.cudfversiontorelease, invokeall([e.submit(fetch, release).result for release in releases])))
             self.name = name
 
