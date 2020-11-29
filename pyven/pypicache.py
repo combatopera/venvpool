@@ -40,7 +40,7 @@ class PypiCache:
         from .checks import getsetupkwargs
         key = "%s==%s" % (cname, release)
         try:
-            return self.d[key]
+            requires = self.d[key]
         except KeyError:
             with urlopen("https://pypi.org/pypi/%s/%s/json" % (cname, release)) as f:
                 data = json.load(f)
@@ -48,8 +48,8 @@ class PypiCache:
             if requires is None:
                 try:
                     url = min((d for d in data['releases'][release] if 'sdist' == d['packagetype'] and not d['yanked']), key = lambda d: d['size'])['url']
-                except ValueError:
-                    pass
+                except ValueError as e:
+                    requires = e
                 else:
                     with TemporaryDirectory() as tempdir, urlopen(url) as f:
                         if url.endswith('.zip'):
@@ -59,10 +59,12 @@ class PypiCache:
                         d, = os.listdir(tempdir)
                         try:
                             requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py')).get('install_requires', [])
-                        except Exception: # TODO LATER: Store it somehow.
-                            pass
+                        except Exception as e:
+                            requires = e
             self.d[key] = requires
-            return requires
+        if isinstance(requires, BaseException):
+            raise requires
+        return requires
 
     def __exit__(self, *exc_info):
         self.d.close()
