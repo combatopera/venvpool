@@ -57,7 +57,7 @@ class PypiCache:
                         else:
                             tar._xz(input = f.read(), cwd = tempdir, stdout = None)
                         d, = os.listdir(tempdir)
-                        requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'))['install_requires']
+                        requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py')).get('install_requires', [])
             self.d[key] = requires
             return requires
 
