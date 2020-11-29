@@ -135,7 +135,7 @@ class Universe:
                 return self.cudfversiontodepends[cudfversion]
             except KeyError:
                 try:
-                    reqs = self.pypicache.requires_dist(self.name, str(self.cudfversiontorelease[cudfversion]))
+                    reqs = self.pypicache.requires_dist(self.name, str(self.cudfversiontorelease[cudfversion])) # FIXME: Use unparsed release.
                 except Exception as e:
                     depends = UnrenderableDepends(e)
                 else:
