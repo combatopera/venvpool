@@ -61,7 +61,7 @@ class Universe:
                     i = bisect(releases, release)
                     if i < len(releases):
                         yield "%s < %s" % (self.qname, lookup[releases[i]])
-            lookup = self._project(self.cname, self.req.specifier.filter).releasetocudfversion
+            lookup = self._project(self.cname, self.req.specifier.filter).releaseobjtocudfversion
             releases = list(lookup)
             for s in self.req.specifier:
                 release = parse_version(s.version)
@@ -117,25 +117,25 @@ class Universe:
         editable = False
 
         def __init__(self, name, releases):
-            releases = sorted(map(parse_version, releases))
-            self.cudfversiontorelease = {1 + i: r for i, r in enumerate(releases)}
-            self.releasetocudfversion = {r: 1 + i for i, r in enumerate(releases)}
+            releaseobjtostr = sorted((o, s) for o, s in zip(map(parse_version, releases), releases))
+            self.cudfversiontoreleasestr = {1 + i: s for i, (_, s) in enumerate(releaseobjtostr)}
+            self.releaseobjtocudfversion = {o: 1 + i for i, (o, _) in enumerate(releaseobjtostr)}
             self.cudfversiontodepends = {}
             self.name = name
 
         def fetch(self, filter):
-            releases = [r for r in filter(self.releasetocudfversion) if self.releasetocudfversion[r] not in self.cudfversiontodepends]
-            if releases:
-                log.info("Fetch %s releases of: %s", len(releases), self.name)
-                for release in releases:
-                    self.dependsof(self.releasetocudfversion[release])
+            releaseobjs = [r for r in filter(self.releaseobjtocudfversion) if self.releaseobjtocudfversion[r] not in self.cudfversiontodepends]
+            if releaseobjs:
+                log.info("Fetch %s releases of: %s", len(releaseobjs), self.name)
+                for releaseobj in releaseobjs:
+                    self.dependsof(self.releaseobjtocudfversion[releaseobj])
 
         def dependsof(self, cudfversion):
             try:
                 return self.cudfversiontodepends[cudfversion]
             except KeyError:
                 try:
-                    reqs = self.pypicache.requires_dist(self.name, str(self.cudfversiontorelease[cudfversion])) # FIXME: Use unparsed release.
+                    reqs = self.pypicache.requires_dist(self.name, self.cudfversiontoreleasestr[cudfversion])
                 except Exception as e:
                     depends = UnrenderableDepends(e)
                 else:
@@ -147,13 +147,13 @@ class Universe:
                 return depends
 
         def toreq(self, cudfversion):
-            return "%s==%s" % (self.name, self.cudfversiontorelease[cudfversion])
+            return "%s==%s" % (self.name, self.cudfversiontoreleasestr[cudfversion])
 
     @innerclass
     class EditableProject:
 
         editable = True
-        cudfversiontorelease = {1: '-e'}
+        cudfversiontoreleasestr = {1: '-e'}
 
         def __init__(self, info):
             self.name = info.config.name
@@ -190,17 +190,17 @@ class Universe:
                 for cudfversion in p.cudfversiontodepends:
                     if (cname, cudfversion) in done:
                         continue
-                    release = p.cudfversiontorelease[cudfversion]
+                    releasestr = p.cudfversiontoreleasestr[cudfversion]
                     try:
                         dependsstr = ', '.join(d.cudfstr() for d in p.dependsof(cudfversion))
-                        f.write('# %s %s\n' % (p.name, release))
+                        f.write('# %s %s\n' % (p.name, releasestr))
                         f.write('package: %s\n' % quote(p.name))
                         f.write('version: %s\n' % cudfversion)
                         if dependsstr:
                             f.write('depends: %s\n' % dependsstr)
                         f.write('\n')
                     except UnrenderableException as e:
-                        log.warning("Exclude %s==%s because: %s", p.name, release, e)
+                        log.warning("Exclude %s==%s because: %s", p.name, releasestr, e)
                     newdone.add((cname, cudfversion))
             done.update(newdone)
         f.write('request: \n') # Space is needed apparently!
