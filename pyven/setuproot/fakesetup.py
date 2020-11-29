@@ -15,13 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, setuptools, sys
+from importlib import import_module
+import os, sys
+
+def _patch(modulename, setup):
+    try:
+        import_module(modulename).setup = setup
+    except Exception as e:
+        sys.stderr.write("Failed to patch %s: %s\n" % (modulename, e))
 
 def main():
     path, = sys.argv[1:]
     sys.path.insert(0, os.path.dirname(path))
     stack = []
-    setuptools.setup = lambda **kwargs: stack.append(kwargs)
+    setup = lambda **kwargs: stack.append(kwargs)
+    for m in 'distutils.core', 'setuptools':
+        _patch(m, setup)
     with open(path) as f:
         exec(f.read())
     setupkwargs, = stack
