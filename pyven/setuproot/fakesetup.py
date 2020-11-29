@@ -24,13 +24,17 @@ def _patch(modulename, setup):
     except Exception as e:
         sys.stderr.write("Failed to patch %s: %s\n" % (modulename, e))
 
+class Stack(list):
+
+    def setup(self, **kwargs):
+        self.append(kwargs)
+
 def main():
     path, = sys.argv[1:]
     sys.path.insert(0, os.path.dirname(path))
-    stack = []
-    setup = lambda **kwargs: stack.append(kwargs)
+    stack = Stack()
     for m in 'distutils.core', 'setuptools':
-        _patch(m, setup)
+        _patch(m, stack.setup)
     with open(path) as f:
         exec(f.read())
     setupkwargs, = stack
