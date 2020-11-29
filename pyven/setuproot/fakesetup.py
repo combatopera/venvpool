@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from contextlib import contextmanager
 from importlib import import_module
 import os, sys
 
@@ -29,6 +30,14 @@ class Stack(list):
     def setup(self, **kwargs):
         self.append(kwargs)
 
+@contextmanager
+def _outtoerr():
+    stdout, sys.stdout = sys.stdout, sys.stderr
+    try:
+        yield
+    finally:
+        sys.stdout = stdout
+
 def main():
     sys.argv.pop(0)
     path = sys.argv[0]
@@ -36,7 +45,7 @@ def main():
     stack = Stack()
     for m in 'distutils.core', 'setuptools':
         _patch(m, stack.setup)
-    with open(path) as f:
+    with _outtoerr(), open(path) as f:
         exec(f.read())
     setupkwargs, = stack
     sys.stdout.write(repr(setupkwargs))
