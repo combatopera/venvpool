@@ -63,7 +63,7 @@ class Universe:
                         yield "%s < %s" % (self.qname, lookup[releases[i]])
             lookup = self._project(self.cname, self.req.specifier.filter).releaseobjtocudfversion
             releases = list(lookup)
-            for s in self.req.specifier:
+            for s in sorted(self.req.specifier, key = str):
                 release = parse_version(s.version)
                 if '>=' == s.operator:
                     for x in ge(): yield x
