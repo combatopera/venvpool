@@ -49,7 +49,7 @@ class PypiCache:
                 try:
                     url = min((d for d in data['releases'][release] if 'sdist' == d['packagetype'] and not d['yanked']), key = lambda d: d['size'])['url']
                 except ValueError:
-                    requires = ['!']
+                    pass
                 else:
                     with TemporaryDirectory() as tempdir, urlopen(url) as f:
                         if url.endswith('.zip'):
