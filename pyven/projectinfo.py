@@ -82,7 +82,7 @@ class Req:
         return "%s==%s" % (self.namepart, version)
 
     def accept(self):
-        if self.marker is None or self.marker.evaluate(dict(extra = None)):
+        if self.marker is None or self.marker.evaluate(dict(extra = None)): # TODO: Catch error instead of specifying extra.
             assert not self.extras
             return True
 
