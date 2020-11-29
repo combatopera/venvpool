@@ -30,7 +30,8 @@ class Stack(list):
         self.append(kwargs)
 
 def main():
-    path, = sys.argv[1:]
+    sys.argv.pop(0)
+    path = sys.argv[0]
     sys.path.insert(0, os.path.dirname(path))
     stack = Stack()
     for m in 'distutils.core', 'setuptools':
