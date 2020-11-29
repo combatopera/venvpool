@@ -19,7 +19,6 @@ from .pypicache import PypiCache
 from .universe import Universe
 from datetime import datetime
 from pkg_resources import safe_name
-from tempfile import NamedTemporaryFile
 import logging, os, subprocess
 
 log = logging.getLogger(__name__)
@@ -42,6 +41,7 @@ class Pip:
             path = os.path.join(os.path.dirname(self.pippath), '..', "%s.cudf" % datetime.now().isoformat())
             with open(path, 'w') as f:
                 u.writecudf(f)
+            log.info("Run mccs solver, this can take a minute.")
             lines = [l for l in subprocess.check_output(['mccs', '-i', path, '-lexsemiagregate[-removed,-notuptodate,-new]'], universal_newlines = True).splitlines() if l and not l.startswith(('#', 'depends:', 'conflicts:'))]
             while lines:
                 k, package = lines.pop(0).split(' ')
