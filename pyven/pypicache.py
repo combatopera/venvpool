@@ -37,7 +37,7 @@ class PypiCache:
             return releases
 
     def requires_dist(self, cname, release):
-        from .checks import setuptoolsinfo
+        from .checks import getsetupkwargs
         key = "%s==%s" % (cname, release)
         try:
             return self.d[key]
@@ -57,7 +57,7 @@ class PypiCache:
                         else:
                             tar._xz(input = f.read(), cwd = tempdir, stdout = None)
                         d, = os.listdir(tempdir)
-                        requires = list(setuptoolsinfo(os.path.join(tempdir, d, 'setup.py')).config.requires)
+                        requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'))['install_requires']
             self.d[key] = requires
             return requires
 
