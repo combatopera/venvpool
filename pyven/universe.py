@@ -18,25 +18,13 @@
 from .projectinfo import Req
 from bisect import bisect
 from diapyr.util import innerclass
-from hashlib import md5
 from packaging.utils import canonicalize_name
 from pkg_resources import parse_version
 from pkg_resources.extern.packaging.requirements import InvalidRequirement
 from urllib.parse import quote, unquote
-import gzip, json, logging, os, shutil, urllib.request
+import logging
 
 log = logging.getLogger(__name__)
-mirrordir = os.path.join(os.path.expanduser('~'), '.pyven', 'mirror')
-
-def urlopen(url): # FIXME: Not thread-safe.
-    mirrorpath = os.path.join(mirrordir, md5(url.encode('ascii')).hexdigest())
-    if not os.path.exists(mirrorpath):
-        os.makedirs(os.path.dirname(mirrorpath), exist_ok = True)
-        partialpath = "%s.part" % mirrorpath
-        with urllib.request.urlopen(url) as f, gzip.open(partialpath, 'wb') as g:
-            shutil.copyfileobj(f, g)
-        os.rename(partialpath, mirrorpath)
-    return gzip.open(mirrorpath, 'rb')
 
 class UnrenderableException(Exception): pass
 
@@ -146,10 +134,9 @@ class Universe:
             try:
                 return self.cudfversiontodepends[cudfversion]
             except KeyError:
-                with urlopen("https://pypi.org/pypi/%s/%s/json" % (self.name, self.cudfversiontorelease[cudfversion])) as f:
-                    reqs = json.load(f)['info']['requires_dist'] # FIXME: If None that means we need to get it another way.
+                reqs = self.pypicache.requires_dist(self.name, str(self.cudfversiontorelease[cudfversion]))
                 try:
-                    depends = [] if reqs is None else [self.Depend(r) for r in Req.parsemany(reqs) if r.accept()]
+                    depends = [self.Depend(r) for r in Req.parsemany(reqs) if r.accept()]
                 except InvalidRequirement as e:
                     depends = UnrenderableDepends(e)
                 self.cudfversiontodepends[cudfversion] = depends
@@ -174,16 +161,16 @@ class Universe:
         def toreq(self, cudfversion):
             assert 1 == cudfversion
 
-    def __init__(self, editableinfos):
+    def __init__(self, pypicache, editableinfos):
         self.projects = {p.name: p for p in map(self.EditableProject, editableinfos)}
+        self.pypicache = pypicache
 
     def _project(self, name, fetchfilter):
         try:
             p = self.projects[name]
         except KeyError:
             log.info("Fetch: %s", name)
-            with urlopen("https://pypi.org/pypi/%s/json" % name) as f:
-                self.projects[name] = p = self.PypiProject(name, json.load(f)['releases'])
+            self.projects[name] = p = self.PypiProject(name, self.pypicache.releases(name))
         p.fetch(fetchfilter)
         return p
 

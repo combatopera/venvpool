@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .pypicache import PypiCache
 from .universe import Universe
 from datetime import datetime
 from pkg_resources import safe_name
@@ -35,21 +36,22 @@ class Pip:
         subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage)
 
     def installeditable(self, infos):
-        u = Universe(infos)
-        path = os.path.join(os.path.dirname(self.pippath), '..', "%s.cudf" % datetime.now().isoformat())
-        with open(path, 'w') as f:
-            u.writecudf(f)
-        lines = [l for l in subprocess.check_output(['aspcud', '-c', '-notuptodate(solution)', '-V', '2', path], universal_newlines = True).splitlines() if l]
         solution = []
-        while lines:
-            k, package = lines.pop(0).split(' ')
-            assert 'package:' == k
-            k, versionstr = lines.pop(0).split(' ')
-            assert 'version:' == k
-            assert 'installed: true' == lines.pop(0)
-            req = u.toreq(package, int(versionstr))
-            if req is not None:
-                solution.append(req)
+        with PypiCache(os.path.join(os.path.expanduser('~'), '.pyven', 'pypi.shelf')) as pypicache:
+            u = Universe(pypicache, infos)
+            path = os.path.join(os.path.dirname(self.pippath), '..', "%s.cudf" % datetime.now().isoformat())
+            with open(path, 'w') as f:
+                u.writecudf(f)
+            lines = [l for l in subprocess.check_output(['aspcud', '-c', '-notuptodate(solution)', '-V', '2', path], universal_newlines = True).splitlines() if l]
+            while lines:
+                k, package = lines.pop(0).split(' ')
+                assert 'package:' == k
+                k, versionstr = lines.pop(0).split(' ')
+                assert 'version:' == k
+                assert 'installed: true' == lines.pop(0)
+                req = u.toreq(package, int(versionstr))
+                if req is not None:
+                    solution.append(req)
         log.debug("Install solution: %s", ' '.join(solution))
         self.pipinstall(solution)
         log.debug("Install editable: %s", ' '.join(safe_name(i.config.name) for i in infos))
