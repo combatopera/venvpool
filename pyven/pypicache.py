@@ -49,9 +49,9 @@ class PypiCache:
                 url = min((d for d in data['releases'][release] if 'sdist' == d['packagetype']), key = lambda d: d['size'])['url']
                 with TemporaryDirectory() as tempdir, urlopen(url) as f:
                     if url.endswith('.zip'):
-                        busybox.unzip._q._.print(input = f.read(), cwd = tempdir)
+                        busybox.unzip._q._(input = f.read(), cwd = tempdir, stdout = None)
                     else:
-                        tar._xz.print(input = f.read(), cwd = tempdir)
+                        tar._xz(input = f.read(), cwd = tempdir, stdout = None)
                     d, = os.listdir(tempdir)
                     requires = list(setuptoolsinfo(os.path.join(tempdir, d, 'setup.py')).config.requires)
             self.d[key] = requires
