@@ -42,7 +42,7 @@ class Pip:
             path = os.path.join(os.path.dirname(self.pippath), '..', "%s.cudf" % datetime.now().isoformat())
             with open(path, 'w') as f:
                 u.writecudf(f)
-            lines = [l for l in subprocess.check_output(['aspcud', '-c', '-notuptodate(solution)', '-V', '2', path], universal_newlines = True).splitlines() if l]
+            lines = [l for l in subprocess.check_output(['aspcud', '-c', 'trendy', '-V', '2', path], universal_newlines = True).splitlines() if l]
             while lines:
                 k, package = lines.pop(0).split(' ')
                 assert 'package:' == k
