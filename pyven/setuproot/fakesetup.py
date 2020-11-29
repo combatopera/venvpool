@@ -17,21 +17,15 @@
 
 import os, setuptools, sys
 
-def find_packages():
-    pass
-
-def setup(**kwargs):
-    stack.append(kwargs)
-
 def main():
     path, = sys.argv[1:]
     sys.path.insert(0, os.path.dirname(path))
+    stack = []
+    setuptools.setup = lambda **kwargs: stack.append(kwargs)
     with open(path) as f:
         exec(f.read())
-    setupkwargs, = setuptools.stack
+    setupkwargs, = stack
     sys.stdout.write(repr(setupkwargs))
 
 if '__main__' == __name__:
     main()
-else:
-    stack = []

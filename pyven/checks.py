@@ -19,7 +19,7 @@ from __future__ import with_statement
 from .files import Files
 from .minivenv import Venv
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
-from .setuproot import setuptools as fakesetuptools
+from .setuproot import fakesetup
 from .util import Excludes, initlogging, Path, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
@@ -128,7 +128,7 @@ class EveryVersion:
 def setuptoolsinfo(setuppath):
     with openresource(__name__, 'setuptools.arid') as f:
         info = ProjectInfo(os.path.dirname(setuppath), f)
-    setupkwargs = eval(subprocess.check_output([sys.executable, fakesetuptools.__file__, setuppath]))
+    setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, setuppath]))
     info.config.name = setupkwargs['name']
     for r in setupkwargs['install_requires']:
         (-info.config).printf("requires += %s", r)
