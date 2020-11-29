@@ -198,6 +198,7 @@ class Universe:
                         f.write('version: %s\n' % cudfversion)
                         if dependsstr:
                             f.write('depends: %s\n' % dependsstr)
+                        f.write('conflicts: %s\n' % quote(p.name)) # At most one version of package.
                         f.write('\n')
                     except UnrenderableException as e:
                         log.warning("Exclude %s==%s because: %s", p.name, releasestr, e)
