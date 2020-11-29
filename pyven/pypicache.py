@@ -18,7 +18,7 @@
 from lagoon.binary import busybox, tar
 from tempfile import TemporaryDirectory
 from urllib.request import urlopen
-import json, os, shelve
+import json, lagoon, os, shelve
 
 class PypiCache:
 
@@ -53,7 +53,9 @@ class PypiCache:
                     else:
                         tar._xz(input = f.read(), cwd = tempdir, stdout = None)
                     d, = os.listdir(tempdir)
-                    requires = list(setuptoolsinfo(os.path.join(tempdir, d, 'setup.py')).config.requires)
+                    setuppath = os.path.join(tempdir, d, 'setup.py')
+                    getattr(lagoon, '2to3')._wn(setuppath, stdout = None)
+                    requires = list(setuptoolsinfo(setuppath).config.requires)
             self.d[key] = requires
             return requires
 
