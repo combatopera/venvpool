@@ -41,6 +41,8 @@ def _outtoerr():
 def main():
     sys.argv.pop(0)
     path = sys.argv[0]
+    fields = set(sys.argv[1:])
+    sys.argv[1:] = ['--name'] # Invoke as little around setup itself as possible.
     sys.path.insert(0, os.path.dirname(path))
     stack = Stack()
     for m in 'distutils.core', 'setuptools':
@@ -52,7 +54,7 @@ def main():
         sys.stdout.write(repr(e))
     else:
         setupkwargs, = stack
-        sys.stdout.write(repr({k: v for k, v in setupkwargs.items() if k in {'name', 'install_requires'}}))
+        sys.stdout.write(repr({k: v for k, v in setupkwargs.items() if k in fields}))
 
 if '__main__' == __name__:
     main()

@@ -125,9 +125,8 @@ class EveryVersion:
                 os.remove(reportname)
             assert not status
 
-def getsetupkwargs(setuppath):
-    # Use --name to invoke as little as possible, and we expect no output from it due to patched setup function:
-    setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath), '--name'], cwd = os.path.dirname(setuppath)))
+def getsetupkwargs(setuppath, fields):
+    setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath)] + fields, cwd = os.path.dirname(setuppath)))
     if isinstance(setupkwargs, BaseException):
         raise setupkwargs
     return setupkwargs
@@ -135,7 +134,7 @@ def getsetupkwargs(setuppath):
 def setuptoolsinfo(setuppath):
     with openresource(__name__, 'setuptools.arid') as f:
         info = ProjectInfo(os.path.dirname(setuppath), f)
-    setupkwargs = getsetupkwargs(setuppath)
+    setupkwargs = getsetupkwargs(setuppath, ['name', 'install_requires'])
     info.config.name = setupkwargs['name']
     for r in setupkwargs['install_requires']:
         (-info.config).printf("requires += %s", r)
