@@ -15,5 +15,5 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-def use_setuptools():
+def use_setuptools(*args, **kwargs):
     pass # Do nothing.
