@@ -135,7 +135,8 @@ def setuptoolsinfo(setuppath):
     with openresource(__name__, 'setuptools.arid') as f:
         info = ProjectInfo(os.path.dirname(setuppath), f)
     setupkwargs = getsetupkwargs(setuppath, ['name', 'install_requires'])
-    info.config.name = setupkwargs['name']
+    if 'name' in setupkwargs:
+        info.config.name = setupkwargs['name']
     for r in setupkwargs['install_requires']:
         (-info.config).printf("requires += %s", r)
     return info
