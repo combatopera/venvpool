@@ -22,6 +22,7 @@ from .util import initlogging, Path
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
 from pkg_resources import parse_requirements
+from pkg_resources.extern.packaging.markers import UndefinedEnvironmentName
 from tempfile import mkdtemp
 import logging, os, re, shutil, stat, subprocess
 
@@ -82,9 +83,12 @@ class Req:
         return "%s==%s" % (self.namepart, version)
 
     def accept(self):
-        if self.marker is None or self.marker.evaluate(dict(extra = None)): # TODO: Catch error instead of specifying extra.
-            assert not self.extras
-            return True
+        try:
+            if self.marker is None or self.marker.evaluate():
+                assert not self.extras # Not supported.
+                return True
+        except UndefinedEnvironmentName:
+            pass
 
 def main_minreqs():
     initlogging()
