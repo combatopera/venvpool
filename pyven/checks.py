@@ -137,7 +137,7 @@ def setuptoolsinfo(setuppath):
     setupkwargs = getsetupkwargs(setuppath, ['name', 'install_requires'])
     if 'name' in setupkwargs:
         info.config.name = setupkwargs['name']
-    for r in setupkwargs['install_requires']:
+    for r in setupkwargs.get('install_requires', []):
         (-info.config).printf("requires += %s", r)
     return info
 
