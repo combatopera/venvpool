@@ -56,11 +56,11 @@ def main_initopt():
         optpath, = sys.argv[1:]
     except ValueError:
         optpath = os.path.join(os.path.expanduser('~'), 'opt')
-    versiontoinfos = {version: set() for version in [sys.version_info.major]}
+    versiontoinfos = {version: {} for version in [sys.version_info.major]}
     allinfos = {i.config.name: i for i in _namedinfos()}
     def add(infos, i):
         if i not in infos:
-            infos.add(i)
+            infos[i] = None
             for p in i.localrequires():
                 add(infos, allinfos[p])
     for info in allinfos.values():
