@@ -126,7 +126,7 @@ class EveryVersion:
             assert not status
 
 def getsetupkwargs(setuppath):
-    return eval(subprocess.check_output([sys.executable, fakesetup.__file__, setuppath]))
+    return eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath)], cwd = os.path.dirname(setuppath)))
 
 def setuptoolsinfo(setuppath):
     with openresource(__name__, 'setuptools.arid') as f:
