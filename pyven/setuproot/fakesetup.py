@@ -46,7 +46,7 @@ def main():
     for m in 'distutils.core', 'setuptools':
         _patch(m, stack.setup)
     with _outtoerr(), open(path) as f:
-        exec(f.read())
+        exec(f.read(), dict(__name__ = '__main__', __file__ = path))
     setupkwargs, = stack
     sys.stdout.write(repr(setupkwargs))
 
