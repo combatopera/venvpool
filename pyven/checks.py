@@ -125,10 +125,13 @@ class EveryVersion:
                 os.remove(reportname)
             assert not status
 
+def getsetupkwargs(setuppath):
+    return eval(subprocess.check_output([sys.executable, fakesetup.__file__, setuppath]))
+
 def setuptoolsinfo(setuppath):
     with openresource(__name__, 'setuptools.arid') as f:
         info = ProjectInfo(os.path.dirname(setuppath), f)
-    setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, setuppath]))
+    setupkwargs = getsetupkwargs(setuppath)
     info.config.name = setupkwargs['name']
     for r in setupkwargs['install_requires']:
         (-info.config).printf("requires += %s", r)
