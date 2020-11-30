@@ -16,4 +16,4 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 def cythonize(*args, **kwargs):
-    return 'FIXME'
+    pass # Do nothing.
