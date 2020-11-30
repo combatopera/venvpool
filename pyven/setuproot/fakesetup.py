@@ -45,10 +45,14 @@ def main():
     stack = Stack()
     for m in 'distutils.core', 'setuptools':
         _patch(m, stack.setup)
-    with _outtoerr(), open(path) as f:
-        exec(f.read(), dict(__name__ = '__main__', __file__ = path))
-    setupkwargs, = stack
-    sys.stdout.write(repr({k: v for k, v in setupkwargs.items() if k in {'name', 'install_requires'}}))
+    try:
+        with _outtoerr(), open(path) as f:
+            exec(f.read(), dict(__name__ = '__main__', __file__ = path))
+    except BaseException as e: # Such as SystemExit for bad interpreter version.
+        sys.stdout.write(repr(e))
+    else:
+        setupkwargs, = stack
+        sys.stdout.write(repr({k: v for k, v in setupkwargs.items() if k in {'name', 'install_requires'}}))
 
 if '__main__' == __name__:
     main()

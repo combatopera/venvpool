@@ -127,7 +127,10 @@ class EveryVersion:
 
 def getsetupkwargs(setuppath):
     # Use --name to invoke as little as possible, and we expect no output from it due to patched setup function:
-    return eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath), '--name'], cwd = os.path.dirname(setuppath)))
+    setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath), '--name'], cwd = os.path.dirname(setuppath)))
+    if isinstance(setupkwargs, BaseException):
+        raise setupkwargs
+    return setupkwargs
 
 def setuptoolsinfo(setuppath):
     with openresource(__name__, 'setuptools.arid') as f:
