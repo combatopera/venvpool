@@ -58,7 +58,7 @@ class PypiCache:
                             tar._xz(input = f.read(), cwd = tempdir, stdout = None)
                         d, = os.listdir(tempdir)
                         try:
-                            requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py')).get('install_requires', [])
+                            requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'), ['install_requires']).get('install_requires', [])
                         except Exception as e:
                             requires = e
             self.d[key] = requires
