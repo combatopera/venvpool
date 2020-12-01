@@ -23,7 +23,7 @@ def _patch(modulename, setup):
     try:
         import_module(modulename).setup = setup
     except Exception as e:
-        sys.stderr.write("Failed to patch %s: %s\n" % (modulename, e))
+        sys.stderr.write("Leave %s unpatched: %s\n" % (modulename, e))
 
 class Stack(list):
 
