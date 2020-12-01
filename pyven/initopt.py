@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .checks import setuptoolsinfo
 from .minivenv import Pip
 from .pipify import pipify
 from .pool import ThreadPoolExecutor
@@ -26,6 +27,9 @@ import logging, os, re, subprocess, sys
 log = logging.getLogger(__name__)
 pkg_resources = re.compile(br'\bpkg_resources\b')
 eolbytes = set(b'\r\n')
+
+def _ispyvenproject(projectdir):
+    return os.path.exists(os.path.join(projectdir, 'project.arid'))
 
 def _hasname(info):
     try:
@@ -40,12 +44,17 @@ def _projectinfos():
     projectsdir = config.node.projectsdir
     for p in sorted(os.listdir(projectsdir)):
         projectdir = os.path.join(projectsdir, p)
-        if os.path.exists(os.path.join(projectdir, 'project.arid')):
+        if _ispyvenproject(projectdir):
             yield ProjectInfo.seek(projectdir)
+        else:
+            setuppath = os.path.join(projectdir, 'setup.py')
+            if os.path.exists(setuppath):
+                yield setuptoolsinfo(setuppath)
 
 def _prepare(info):
-    log.debug("Prepare: %s", info.projectdir)
-    pipify(info)
+    if _ispyvenproject(info.projectdir):
+        log.debug("Prepare: %s", info.projectdir)
+        pipify(info)
 
 def main_initopt():
     initlogging()
