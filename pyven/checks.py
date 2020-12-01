@@ -125,10 +125,12 @@ class EveryVersion:
                 os.remove(reportname)
             assert not status
 
+class SetupException(Exception): pass
+
 def getsetupkwargs(setuppath, fields):
     setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath)] + fields, cwd = os.path.dirname(setuppath)))
     if isinstance(setupkwargs, BaseException):
-        raise setupkwargs
+        raise SetupException(setupkwargs)
     return setupkwargs
 
 def setuptoolsinfo(setuppath):
