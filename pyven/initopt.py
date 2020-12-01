@@ -35,16 +35,14 @@ def _hasname(info):
     except AttributeError:
         log.debug("Skip: %s", info.projectdir)
 
-def _namedinfos():
+def _projectinfos():
     config = ConfigCtrl()
     config.loadsettings()
     projectsdir = config.node.projectsdir
     for p in sorted(os.listdir(projectsdir)):
         projectdir = os.path.join(projectsdir, p)
         if os.path.exists(os.path.join(projectdir, 'project.arid')):
-            info = ProjectInfo.seek(projectdir)
-            if _hasname(info):
-                yield info
+            yield ProjectInfo.seek(projectdir)
 
 def _prepare(info):
     log.debug("Prepare: %s", info.projectdir)
@@ -57,7 +55,7 @@ def main_initopt():
     except ValueError:
         optpath = os.path.join(os.path.expanduser('~'), 'opt')
     versiontoinfos = {version: {} for version in [sys.version_info.major]}
-    allinfos = {i.config.name: i for i in _namedinfos()}
+    allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
     def add(infos, i):
         if i not in infos:
             infos[i] = None
