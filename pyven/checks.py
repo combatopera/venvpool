@@ -27,6 +27,7 @@ from aridity.util import openresource
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
+from traceback import format_exception_only
 import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -130,7 +131,8 @@ class SetupException(Exception): pass
 def getsetupkwargs(setuppath, fields):
     setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath)] + fields, cwd = os.path.dirname(setuppath)))
     if isinstance(setupkwargs, BaseException):
-        raise SetupException(setupkwargs) # Wrap in something that can be caught.
+        # Can't simply propagate SystemExit for example:
+        raise SetupException(format_exception_only(setupkwargs.__class__, setupkwargs)[-1].rstrip())
     return setupkwargs
 
 def setuptoolsinfo(setuppath):
