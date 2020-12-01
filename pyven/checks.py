@@ -130,7 +130,7 @@ class SetupException(Exception): pass
 def getsetupkwargs(setuppath, fields):
     setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath)] + fields, cwd = os.path.dirname(setuppath)))
     if isinstance(setupkwargs, BaseException):
-        raise SetupException(setupkwargs)
+        raise SetupException(setupkwargs) # Wrap in something that can be caught.
     return setupkwargs
 
 def setuptoolsinfo(setuppath):
