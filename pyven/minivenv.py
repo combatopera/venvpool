@@ -42,7 +42,8 @@ class Pip:
             with open(path, 'w') as f:
                 u.writecudf(f)
             log.info("Run mccs solver, this can take a minute.")
-            lines = [l for l in subprocess.check_output(['mccs', '-i', path, '-lexsemiagregate[-removed,-notuptodate,-new]'], universal_newlines = True).splitlines() if l and not l.startswith(('#', 'depends:', 'conflicts:'))]
+            lines = [l for l in subprocess.check_output(['mccs', '-i', path, '-lexsemiagregate[-removed,-notuptodate,-new]'], universal_newlines = True).splitlines()
+                    if l and not l.startswith(('#', 'depends:', 'conflicts:'))]
             while lines:
                 k, package = lines.pop(0).split(' ')
                 assert 'package:' == k
