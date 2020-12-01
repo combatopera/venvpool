@@ -51,11 +51,11 @@ class PypiCache:
                 for major in 2, 3:
                     self.d[keystr(major)] = requires
             else:
-                try:
-                    url = min((d for d in data['releases'][release] if 'sdist' == d['packagetype'] and not d['yanked']), key = lambda d: d['size'])['url']
-                except ValueError as e:
-                    requires = e # TODO: Improve message.
+                sdists = [d for d in data['releases'][release] if 'sdist' == d['packagetype'] and not d['yanked']]
+                if not sdists:
+                    requires = Exception('No unyanked sdist.')
                 else:
+                    url = min(sdists, key = lambda d: d['size'])['url']
                     with TemporaryDirectory() as tempdir, urlopen(url) as f:
                         if url.endswith('.zip'):
                             busybox.unzip._q._(input = f.read(), cwd = tempdir, stdout = None)
