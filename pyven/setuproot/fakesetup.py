@@ -22,7 +22,7 @@ import os, sys
 def _patch(modulename, setup):
     try:
         import_module(modulename).setup = setup
-    except Exception as e:
+    except Exception as e: # XXX: Not BaseException?
         sys.stderr.write("Leave %s unpatched: %s\n" % (modulename, e))
 
 class Stack(list):
