@@ -18,7 +18,7 @@
 from lagoon.binary import busybox, tar
 from tempfile import TemporaryDirectory
 from urllib.request import urlopen
-import json, os, shelve
+import json, os, shelve, sys
 
 class PypiCache:
 
@@ -38,14 +38,19 @@ class PypiCache:
 
     def requires_dist(self, cname, release):
         from .checks import getsetupkwargs
-        key = "%s==%s" % (cname, release)
+        def keystr(major = sys.version_info.major):
+            return "%s %s %s" % (cname, release, major)
+        majorkey = keystr()
         try:
-            requires = self.d[key]
+            requires = self.d[majorkey]
         except KeyError:
             with urlopen("https://pypi.org/pypi/%s/%s/json" % (cname, release)) as f:
                 data = json.load(f)
             requires = data['info']['requires_dist']
-            if requires is None:
+            if requires is not None:
+                for major in 2, 3:
+                    self.d[keystr(major)] = requires
+            else:
                 try:
                     url = min((d for d in data['releases'][release] if 'sdist' == d['packagetype'] and not d['yanked']), key = lambda d: d['size'])['url']
                 except ValueError as e:
@@ -59,9 +64,9 @@ class PypiCache:
                         d, = os.listdir(tempdir)
                         try:
                             requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'), ['install_requires']).get('install_requires', [])
-                        except Exception as e:
+                        except Exception as e: # XXX: What if setup raises SystemExit?
                             requires = e
-            self.d[key] = requires
+                self.d[majorkey] = requires
         if isinstance(requires, BaseException):
             raise requires
         return requires
