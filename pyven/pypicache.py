@@ -25,6 +25,9 @@ log = logging.getLogger(__name__)
 class PypiCache:
 
     def __init__(self, path):
+        parent = os.path.dirname(path)
+        if not os.path.exists(parent):
+            os.makedirs(parent)
         self.d = shelve.open(path)
 
     def __enter__(self):
