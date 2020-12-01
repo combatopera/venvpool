@@ -40,6 +40,9 @@ class PypiCache:
         from .checks import getsetupkwargs
         def keystr(major = sys.version_info.major):
             return "%s %s %s" % (cname, release, major)
+        def savemulti():
+            for major in 2, 3:
+                self.d[keystr(major)] = requires
         majorkey = keystr()
         try:
             requires = self.d[majorkey]
@@ -48,12 +51,12 @@ class PypiCache:
                 data = json.load(f)
             requires = data['info']['requires_dist']
             if requires is not None:
-                for major in 2, 3:
-                    self.d[keystr(major)] = requires
+                savemulti()
             else:
                 sdists = [d for d in data['releases'][release] if 'sdist' == d['packagetype'] and not d['yanked']]
                 if not sdists:
                     requires = Exception('No unyanked sdist.')
+                    savemulti()
                 else:
                     url = min(sdists, key = lambda d: d['size'])['url']
                     with TemporaryDirectory() as tempdir, urlopen(url) as f:
@@ -63,7 +66,7 @@ class PypiCache:
                             requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'), ['install_requires']).get('install_requires', [])
                         except BaseException as e:
                             requires = e
-                self.d[majorkey] = requires
+                    self.d[majorkey] = requires # Result is interpreter-specific.
         if isinstance(requires, BaseException):
             raise requires
         return requires
