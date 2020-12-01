@@ -64,7 +64,7 @@ class PypiCache:
                         d, = os.listdir(tempdir)
                         try:
                             requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'), ['install_requires']).get('install_requires', [])
-                        except Exception as e: # XXX: What if setup raises SystemExit?
+                        except BaseException as e:
                             requires = e
                 self.d[majorkey] = requires
         if isinstance(requires, BaseException):
