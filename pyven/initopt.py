@@ -17,11 +17,10 @@
 
 from .minivenv import Pip
 from .pipify import pipify
+from .pool import ThreadPoolExecutor
 from .projectinfo import ProjectInfo
 from .util import initlogging
 from aridity.config import ConfigCtrl
-from concurrent.futures import ThreadPoolExecutor
-from splut import invokeall
 import logging, os, re, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -67,7 +66,8 @@ def main_initopt():
                 if pyversion in versiontoinfos:
                     add(versiontoinfos[pyversion], info)
     with ThreadPoolExecutor() as e:
-        invokeall([e.submit(_prepare, info).result for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir)])
+        for future in [e.submit(_prepare, info) for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir)]:
+            future.result()
     for pyversion, infos in versiontoinfos.items():
         venvpath = os.path.join(optpath, "venv%s" % pyversion)
         pythonname = "python%s" % pyversion
