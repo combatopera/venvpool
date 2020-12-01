@@ -67,7 +67,7 @@ class PypiCache:
                         d, = os.listdir(tempdir)
                         try:
                             requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'), ['install_requires']).get('install_requires', [])
-                        except BaseException as e:
+                        except Exception as e: # Do not catch KeyboardInterrupt!
                             requires = e
                     self.d[majorkey] = requires # Result is interpreter-specific.
         if isinstance(requires, BaseException):
