@@ -18,9 +18,8 @@
 from .checks import setuptoolsinfo
 from .minivenv import Pip
 from .pipify import pipify
-from .pool import ThreadPoolExecutor
 from .projectinfo import ProjectInfo
-from .util import initlogging
+from .util import initlogging, ThreadPoolExecutor
 from aridity.config import ConfigCtrl
 import logging, os, re, subprocess, sys
 
