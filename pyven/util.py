@@ -15,7 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging, os, re, sys
+from contextlib import contextmanager
+from tempfile import mkdtemp
+import logging, os, re, shutil, sys
 
 def initlogging():
     logging.basicConfig(format = "%(asctime)s [%(levelname)s] %(message)s", level = logging.DEBUG)
@@ -83,3 +85,11 @@ try:
     from concurrent.futures import ThreadPoolExecutor
 except ImportError:
     pass
+
+@contextmanager
+def TemporaryDirectory():
+    tempdir = mkdtemp()
+    try:
+        yield tempdir
+    finally:
+        shutil.rmtree(tempdir)

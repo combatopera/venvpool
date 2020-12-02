@@ -15,25 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from contextlib import contextmanager
-from tempfile import mkdtemp
+from .util import TemporaryDirectory
 try:
     from urllib.request import urlopen
 except ImportError:
     from urllib2 import urlopen
-import json, logging, os, shelve, shutil, subprocess, sys
+import json, logging, os, shelve, subprocess, sys
 
 log = logging.getLogger(__name__)
 unzip = 'busybox', 'unzip', '-q', '-'
 untar = 'tar', '-xz'
-
-@contextmanager
-def TemporaryDirectory():
-    tempdir = mkdtemp()
-    try:
-        yield tempdir
-    finally:
-        shutil.rmtree(tempdir)
 
 class PypiCache:
 
