@@ -19,15 +19,13 @@ from __future__ import with_statement
 from .files import Files
 from .minivenv import Venv
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
-from .setuproot import fakesetup
+from .setuproot import setuptoolsinfo
 from .util import Excludes, initlogging, Path, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
-from aridity.util import openresource
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
-from traceback import format_exception_only
 import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -125,26 +123,6 @@ class EveryVersion:
                 shutil.copy2(reportname, venv.venvpath) # XXX: Even when status is non-zero?
                 os.remove(reportname)
             assert not status
-
-class SetupException(Exception): pass
-
-def getsetupkwargs(setuppath, fields):
-    setupkwargs = eval(subprocess.check_output([sys.executable, fakesetup.__file__, os.path.basename(setuppath)] + fields, cwd = os.path.dirname(setuppath)))
-    if isinstance(setupkwargs, BaseException):
-        # Can't simply propagate SystemExit for example:
-        raise SetupException(format_exception_only(setupkwargs.__class__, setupkwargs)[-1].rstrip())
-    return setupkwargs
-
-def setuptoolsinfo(setuppath):
-    with openresource(__name__, 'setuptools.arid') as f:
-        info = ProjectInfo(os.path.dirname(setuppath), f)
-    setupkwargs = getsetupkwargs(setuppath, ['name', 'install_requires', 'entry_points'])
-    if 'name' in setupkwargs:
-        info.config.name = setupkwargs['name']
-    for r in setupkwargs.get('install_requires', []):
-        (-info.config).printf("requires += %s", r)
-    info.config.executable = bool(setupkwargs.get('entry_points', {}).get('console_scripts'))
-    return info
 
 def main_tests():
     initlogging()

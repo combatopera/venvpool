@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .checks import setuptoolsinfo
 from .minivenv import Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
+from .setuproot import setuptoolsinfo
 from .util import initlogging, ThreadPoolExecutor
 from aridity.config import ConfigCtrl
 import logging, os, re, subprocess, sys
