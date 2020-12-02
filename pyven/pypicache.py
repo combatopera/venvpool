@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from lagoon.binary import busybox, tar
 from tempfile import TemporaryDirectory
 from urllib.request import urlopen
-import json, logging, os, shelve, sys
+import json, logging, os, shelve, subprocess, sys
 
 log = logging.getLogger(__name__)
+unzip = 'busybox', 'unzip', '-q', '-'
+untar = 'tar', '-xz'
 
 class PypiCache:
 
@@ -66,7 +67,7 @@ class PypiCache:
                     url = min(sdists, key = lambda d: d['size'])['url']
                     log.info("Execute: %s", url.split('/')[-1])
                     with TemporaryDirectory() as tempdir, urlopen(url) as f:
-                        (busybox.unzip._q._ if url.endswith('.zip') else tar._xz)(input = f.read(), cwd = tempdir, stdout = None)
+                        subprocess.check_call(unzip if url.endswith('.zip') else untar, input = f.read(), cwd = tempdir)
                         d, = os.listdir(tempdir)
                         try:
                             requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'), ['install_requires']).get('install_requires', [])
