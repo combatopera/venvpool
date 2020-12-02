@@ -184,10 +184,10 @@ class Universe:
     def writecudf(self, f):
         donereleases = set()
         while True:
-            allreleases = {(cname, cudfversion) for cname in self.projects for cudfversion in self.projects[cname].cudfversiontodepends}
-            if donereleases >= allreleases:
+            releasecount = sum(1 for cname in self.projects for cudfversion in self.projects[cname].cudfversiontodepends)
+            if len(donereleases) == releasecount:
                 break
-            log.debug("Releases remaining: %s", len(allreleases - donereleases))
+            log.debug("Releases remaining: %s", releasecount - len(donereleases))
             for cname, p in list(self.projects.items()):
                 for cudfversion in p.cudfversiontodepends:
                     if (cname, cudfversion) in donereleases:
