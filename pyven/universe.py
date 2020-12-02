@@ -182,16 +182,15 @@ class Universe:
         return p
 
     def writecudf(self, f):
-        done = set()
+        donereleases = set()
         while True:
-            todo = {(cname, cudfversion) for cname in self.projects for cudfversion in self.projects[cname].cudfversiontodepends}
-            if done >= todo:
+            allreleases = {(cname, cudfversion) for cname in self.projects for cudfversion in self.projects[cname].cudfversiontodepends}
+            if donereleases >= allreleases:
                 break
-            log.debug("Releases remaining: %s", len(todo - done))
-            newdone = set()
+            log.debug("Releases remaining: %s", len(allreleases - donereleases))
             for cname, p in list(self.projects.items()):
                 for cudfversion in p.cudfversiontodepends:
-                    if (cname, cudfversion) in done:
+                    if (cname, cudfversion) in donereleases:
                         continue
                     releasestr = p.cudfversiontoreleasestr[cudfversion]
                     try:
@@ -205,8 +204,7 @@ class Universe:
                         f.write('\n')
                     except UnrenderableException as e:
                         log.warning("Exclude %s==%s because: %s", p.name, releasestr, e)
-                    newdone.add((cname, cudfversion))
-            done.update(newdone)
+                    donereleases.add((cname, cudfversion))
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(quote(cname) for cname, p in self.projects.items() if p.editable))
 
