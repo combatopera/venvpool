@@ -149,7 +149,7 @@ class Universe:
                 self.cudfversiontodepends[cudfversion] = depends
                 return depends
 
-        def toreq(self, cudfversion):
+        def reqornone(self, cudfversion):
             return "%s==%s" % (self.name, self.cudfversiontoreleasestr[cudfversion])
 
     @innerclass
@@ -165,7 +165,7 @@ class Universe:
         def dependsof(self, cudfversion):
             return self.cudfversiontodepends[cudfversion]
 
-        def toreq(self, cudfversion):
+        def reqornone(self, cudfversion):
             assert 1 == cudfversion
 
     def __init__(self, pypicache, editableinfos):
@@ -210,5 +210,5 @@ class Universe:
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(quote(name) for name, p in self.projects.items() if p.editable))
 
-    def toreq(self, cudfname, cudfversion):
-        return self.projects[unquote(cudfname)].toreq(cudfversion)
+    def reqornone(self, cudfname, cudfversion):
+        return self.projects[unquote(cudfname)].reqornone(cudfversion)

@@ -50,7 +50,7 @@ class Pip:
                 k, versionstr = lines.pop(0).split(' ')
                 assert 'version:' == k
                 assert 'installed: true' == lines.pop(0)
-                req = u.toreq(package, int(versionstr))
+                req = u.reqornone(package, int(versionstr))
                 if req is not None:
                     solution.append(req)
         log.debug("Install solution: %s", ' '.join(solution))
