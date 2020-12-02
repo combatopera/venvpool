@@ -17,7 +17,10 @@
 
 from contextlib import contextmanager
 from tempfile import mkdtemp
-from urllib.request import urlopen
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 import json, logging, os, shelve, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
