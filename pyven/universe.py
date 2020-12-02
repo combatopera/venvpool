@@ -208,7 +208,7 @@ class Universe:
                     newdone.add((cname, cudfversion))
             done.update(newdone)
         f.write('request: \n') # Space is needed apparently!
-        f.write('install: %s\n' % ', '.join(quote(name) for name, p in self.projects.items() if p.editable))
+        f.write('install: %s\n' % ', '.join(quote(cname) for cname, p in self.projects.items() if p.editable))
 
     def reqornone(self, cudfname, cudfversion):
         return self.projects[unquote(cudfname)].reqornone(cudfversion)
