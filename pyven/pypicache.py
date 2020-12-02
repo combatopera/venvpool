@@ -69,8 +69,11 @@ class PypiCache:
                 else:
                     url = min(sdists, key = lambda d: d['size'])['url']
                     log.info("Execute: %s", url.split('/')[-1])
-                    with TemporaryDirectory() as tempdir, urlopen(url) as f:
-                        subprocess.check_call(unzip if url.endswith('.zip') else untar, input = f.read(), cwd = tempdir)
+                    with TemporaryDirectory() as tempdir:
+                        with subprocess.Popen(['curl', url], stdout = subprocess.PIPE) as curl:
+                            subprocess.check_call(unzip if url.endswith('.zip') else untar, stdin = curl.stdout, cwd = tempdir)
+                        if curl.returncode:
+                            log.warning("Bad curl status: %s", curl.returncode)
                         d, = os.listdir(tempdir)
                         try:
                             requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'), ['install_requires']).get('install_requires', [])
