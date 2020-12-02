@@ -21,7 +21,10 @@ from diapyr.util import innerclass
 from packaging.utils import canonicalize_name
 from pkg_resources import parse_version
 from pkg_resources.extern.packaging.requirements import InvalidRequirement
-from urllib.parse import quote, unquote
+try:
+    from urllib.parse import quote, unquote
+except ImportError:
+    from urllib import quote, unquote
 import logging
 
 log = logging.getLogger(__name__)
