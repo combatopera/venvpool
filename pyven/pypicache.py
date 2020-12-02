@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .setuproot import getsetupkwargs
 from .util import TemporaryDirectory
 try:
     from urllib.request import urlopen
@@ -46,7 +47,6 @@ class PypiCache:
             return releases
 
     def requires_dist(self, cname, release):
-        from .checks import getsetupkwargs
         def keystr(major = sys.version_info.major):
             return "%s %s %s" % (cname, release, major)
         def savemulti():
