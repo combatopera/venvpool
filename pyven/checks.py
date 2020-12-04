@@ -111,8 +111,9 @@ class EveryVersion:
             if not os.path.exists(nosetests):
                 self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
                 venv.install(['nose-cov'])
-            # XXX: Doesn't pyximport take care of this?
-            subprocess.check_call([os.path.abspath(venv.programpath('python')), 'setup.py', 'build_ext', '--inplace'], cwd = self.info.projectdir)
+            if os.path.exists(os.path.join(self.info.projectdir, 'setup.py')):
+                # XXX: Doesn't pyximport take care of this?
+                subprocess.check_call([os.path.abspath(venv.programpath('python')), 'setup.py', 'build_ext', '--inplace'], cwd = self.info.projectdir)
             reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
             status = subprocess.call([
                 nosetests, '--exe', '-v',
