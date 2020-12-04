@@ -23,6 +23,7 @@ from .setuproot import setuptoolsinfo
 from .util import Excludes, initlogging, Path, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
+from aridity.util import openresource
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
@@ -135,7 +136,12 @@ def main_tests():
     except ProjectInfoNotFoundException:
         setuppath = Path.seek('.', 'setup.py')
         if setuppath is None:
-            raise
-        log.info('Use setuptools mode.')
-        info = setuptoolsinfo(setuppath)
+            log.info('Use uninstallable mode.')
+            projectdir = os.path.dirname(Path.seek('.', '.git'))
+            with openresource(__name__, 'setuproot/setuptools.arid') as f:
+                info = ProjectInfo(projectdir, f)
+            info.config.name = os.path.basename(os.path.abspath(projectdir))
+        else:
+            log.info('Use setuptools mode.')
+            info = setuptoolsinfo(setuppath)
     EveryVersion(info, config.siblings, config.repo, noseargs).allchecks()
