@@ -119,12 +119,12 @@ class Universe:
 
         editable = False
 
-        def __init__(self, name, releases):
+        def __init__(self, cname, releases):
             releaseobjtostr = sorted((o, s) for o, s in zip(map(parse_version, releases), releases))
             self.cudfversiontoreleasestr = {1 + i: s for i, (_, s) in enumerate(releaseobjtostr)}
             self.releaseobjtocudfversion = {o: 1 + i for i, (o, _) in enumerate(releaseobjtostr)}
             self.cudfversiontodepends = {}
-            self.name = name
+            self.name = cname
 
         def fetch(self, filter):
             releaseobjs = [r for r in filter(self.releaseobjtocudfversion) if self.releaseobjtocudfversion[r] not in self.cudfversiontodepends]
@@ -172,12 +172,12 @@ class Universe:
         self.projects = {p.name: p for p in map(self.EditableProject, editableinfos)}
         self.pypicache = pypicache
 
-    def _project(self, name, fetchfilter):
+    def _project(self, cname, fetchfilter):
         try:
-            p = self.projects[name]
+            p = self.projects[cname]
         except KeyError:
-            log.info("Fetch: %s", name)
-            self.projects[name] = p = self.PypiProject(name, self.pypicache.releases(name))
+            log.info("Fetch: %s", cname)
+            self.projects[cname] = p = self.PypiProject(cname, self.pypicache.releases(cname))
         p.fetch(fetchfilter)
         return p
 
