@@ -39,32 +39,38 @@ class UnrenderableDepends:
     def __iter__(self):
         raise UnrenderableException(self.cause)
 
+class Names:
+
+    def __init__(self, sname):
+        self.cname = canonicalize_name(sname)
+        self.qname = quote(self.cname)
+        self.sname = sname
+
 class Universe:
 
     @innerclass
     class Depend:
 
         def __init__(self, req):
-            self.sname = req.namepart
-            self.qname = quote(canonicalize_name(self.sname))
+            self.names = Names(req.namepart)
             self.req = req
 
         def _cudfstrs(self):
             def ge():
                 if release in lookup:
-                    yield "%s >= %s" % (self.qname, lookup[release])
+                    yield "%s >= %s" % (self.names.qname, lookup[release])
                 else:
                     i = bisect(releases, release) - 1
                     if i >= 0:
-                        yield "%s > %s" % (self.qname, lookup[releases[i]])
+                        yield "%s > %s" % (self.names.qname, lookup[releases[i]])
             def lt():
                 if release in lookup:
-                    yield "%s < %s" % (self.qname, lookup[release])
+                    yield "%s < %s" % (self.names.qname, lookup[release])
                 else:
                     i = bisect(releases, release)
                     if i < len(releases):
-                        yield "%s < %s" % (self.qname, lookup[releases[i]])
-            lookup = self._project(self.sname, self.req.specifier.filter).releaseobjtocudfversion
+                        yield "%s < %s" % (self.names.qname, lookup[releases[i]])
+            lookup = self._project(self.names, self.req.specifier.filter).releaseobjtocudfversion
             releases = list(lookup)
             for s in sorted(self.req.specifier, key = str):
                 release = parse_version(s.version)
@@ -72,23 +78,23 @@ class Universe:
                     for x in ge(): yield x
                 elif '<=' == s.operator:
                     if release in lookup:
-                        yield "%s <= %s" % (self.qname, lookup[release])
+                        yield "%s <= %s" % (self.names.qname, lookup[release])
                     else:
                         i = bisect(releases, release)
                         if i < len(releases):
-                            yield "%s < %s" % (self.qname, lookup[releases[i]])
+                            yield "%s < %s" % (self.names.qname, lookup[releases[i]])
                 elif '>' == s.operator:
                     if release in lookup:
-                        yield "%s > %s" % (self.qname, lookup[release])
+                        yield "%s > %s" % (self.names.qname, lookup[release])
                     else:
                         i = bisect(releases, release) - 1
                         if i >= 0:
-                            yield "%s > %s" % (self.qname, lookup[releases[i]])
+                            yield "%s > %s" % (self.names.qname, lookup[releases[i]])
                 elif '<' == s.operator:
                     for x in lt(): yield x
                 elif '!=' == s.operator:
                     if release in lookup:
-                        yield "%s != %s" % (self.qname, lookup[release])
+                        yield "%s != %s" % (self.names.qname, lookup[release])
                 elif '==' == s.operator:
                     if s.version.endswith('.*'):
                         release = parse_version(s.version[:-2])
@@ -100,7 +106,7 @@ class Universe:
                     else:
                         if release not in lookup:
                             raise UnrenderableException("No such %s release: %s" % (self.req.namepart, s.version))
-                        yield "%s = %s" % (self.qname, lookup[release])
+                        yield "%s = %s" % (self.names.qname, lookup[release])
                 elif '~=' == s.operator:
                     for x in ge(): yield x
                     v = list(release._version.release[:-1])
@@ -112,24 +118,24 @@ class Universe:
 
         def cudfstr(self):
             s = ', '.join(self._cudfstrs())
-            return s if s else self.qname
+            return s if s else self.names.qname
 
     @innerclass
     class PypiProject:
 
         editable = False
 
-        def __init__(self, sname, releases):
+        def __init__(self, names, releases):
             releaseobjtostr = sorted((o, s) for o, s in zip(map(parse_version, releases), releases))
             self.cudfversiontoreleasestr = {1 + i: s for i, (_, s) in enumerate(releaseobjtostr)}
             self.releaseobjtocudfversion = {o: 1 + i for i, (o, _) in enumerate(releaseobjtostr)}
             self.cudfversiontodepends = {}
-            self.sname = sname
+            self.names = names
 
         def fetch(self, filter):
             releaseobjs = [r for r in filter(self.releaseobjtocudfversion) if self.releaseobjtocudfversion[r] not in self.cudfversiontodepends]
             if releaseobjs:
-                log.info("Fetch %s releases of: %s", len(releaseobjs), self.sname)
+                log.info("Fetch %s releases of: %s", len(releaseobjs), self.names.sname)
                 for releaseobj in releaseobjs:
                     self.dependsof(self.releaseobjtocudfversion[releaseobj])
 
@@ -138,7 +144,7 @@ class Universe:
                 return self.cudfversiontodepends[cudfversion]
             except KeyError:
                 try:
-                    reqs = self.pypicache.requires_dist(canonicalize_name(self.sname), self.cudfversiontoreleasestr[cudfversion])
+                    reqs = self.pypicache.requires_dist(self.names.cname, self.cudfversiontoreleasestr[cudfversion])
                 except Exception as e:
                     depends = UnrenderableDepends(e)
                 else:
@@ -150,7 +156,7 @@ class Universe:
                 return depends
 
         def reqornone(self, cudfversion):
-            return "%s==%s" % (self.sname, self.cudfversiontoreleasestr[cudfversion])
+            return "%s==%s" % (self.names.sname, self.cudfversiontoreleasestr[cudfversion])
 
     @innerclass
     class EditableProject:
@@ -159,7 +165,7 @@ class Universe:
         cudfversiontoreleasestr = {1: '-e'}
 
         def __init__(self, info):
-            self.sname = safe_name(info.config.name)
+            self.names = Names(safe_name(info.config.name))
             self.cudfversiontodepends = {1: [self.Depend(r) for r in info.parsedremoterequires()]}
 
         def dependsof(self, cudfversion):
@@ -169,16 +175,15 @@ class Universe:
             assert 1 == cudfversion
 
     def __init__(self, pypicache, editableinfos):
-        self.projects = {canonicalize_name(p.sname): p for p in map(self.EditableProject, editableinfos)}
+        self.projects = {p.names.cname: p for p in map(self.EditableProject, editableinfos)}
         self.pypicache = pypicache
 
-    def _project(self, sname, fetchfilter):
-        cname = canonicalize_name(sname)
+    def _project(self, names, fetchfilter):
         try:
-            p = self.projects[cname]
+            p = self.projects[names.cname]
         except KeyError:
-            log.info("Fetch: %s", sname)
-            self.projects[cname] = p = self.PypiProject(sname, self.pypicache.releases(cname))
+            log.info("Fetch: %s", names.sname)
+            self.projects[names.cname] = p = self.PypiProject(names, self.pypicache.releases(names.cname))
         p.fetch(fetchfilter)
         return p
 
@@ -196,15 +201,15 @@ class Universe:
                     releasestr = p.cudfversiontoreleasestr[cudfversion]
                     try:
                         dependsstr = ', '.join(d.cudfstr() for d in p.dependsof(cudfversion))
-                        f.write('# %s %s\n' % (p.sname, releasestr))
-                        f.write('package: %s\n' % quote(canonicalize_name(p.sname)))
+                        f.write('# %s %s\n' % (p.names.sname, releasestr))
+                        f.write('package: %s\n' % p.names.qname)
                         f.write('version: %s\n' % cudfversion)
                         if dependsstr:
                             f.write('depends: %s\n' % dependsstr)
-                        f.write('conflicts: %s\n' % quote(canonicalize_name(p.sname))) # At most one version of package.
+                        f.write('conflicts: %s\n' % p.names.qname) # At most one version of package.
                         f.write('\n')
                     except UnrenderableException as e:
-                        log.warning("Exclude %s==%s because: %s", p.sname, releasestr, e)
+                        log.warning("Exclude %s==%s because: %s", p.names.sname, releasestr, e)
                     donereleases.add((cname, cudfversion))
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(quote(cname) for cname, p in self.projects.items() if p.editable))
