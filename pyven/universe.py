@@ -19,7 +19,7 @@ from .projectinfo import Req
 from bisect import bisect
 from diapyr.util import innerclass
 from packaging.utils import canonicalize_name
-from pkg_resources import parse_version
+from pkg_resources import parse_version, safe_name
 from pkg_resources.extern.packaging.requirements import InvalidRequirement
 try:
     from urllib.parse import quote, unquote
@@ -45,8 +45,8 @@ class Universe:
     class Depend:
 
         def __init__(self, req):
-            self.cname = canonicalize_name(req.namepart)
-            self.qname = quote(self.cname)
+            self.sname = req.namepart
+            self.qname = quote(canonicalize_name(self.sname))
             self.req = req
 
         def _cudfstrs(self):
@@ -64,7 +64,7 @@ class Universe:
                     i = bisect(releases, release)
                     if i < len(releases):
                         yield "%s < %s" % (self.qname, lookup[releases[i]])
-            lookup = self._project(self.cname, self.req.specifier.filter).releaseobjtocudfversion
+            lookup = self._project(self.sname, self.req.specifier.filter).releaseobjtocudfversion
             releases = list(lookup)
             for s in sorted(self.req.specifier, key = str):
                 release = parse_version(s.version)
@@ -119,17 +119,17 @@ class Universe:
 
         editable = False
 
-        def __init__(self, cname, releases):
+        def __init__(self, sname, releases):
             releaseobjtostr = sorted((o, s) for o, s in zip(map(parse_version, releases), releases))
             self.cudfversiontoreleasestr = {1 + i: s for i, (_, s) in enumerate(releaseobjtostr)}
             self.releaseobjtocudfversion = {o: 1 + i for i, (o, _) in enumerate(releaseobjtostr)}
             self.cudfversiontodepends = {}
-            self.name = cname
+            self.sname = sname
 
         def fetch(self, filter):
             releaseobjs = [r for r in filter(self.releaseobjtocudfversion) if self.releaseobjtocudfversion[r] not in self.cudfversiontodepends]
             if releaseobjs:
-                log.info("Fetch %s releases of: %s", len(releaseobjs), self.name)
+                log.info("Fetch %s releases of: %s", len(releaseobjs), self.sname)
                 for releaseobj in releaseobjs:
                     self.dependsof(self.releaseobjtocudfversion[releaseobj])
 
@@ -138,7 +138,7 @@ class Universe:
                 return self.cudfversiontodepends[cudfversion]
             except KeyError:
                 try:
-                    reqs = self.pypicache.requires_dist(self.name, self.cudfversiontoreleasestr[cudfversion])
+                    reqs = self.pypicache.requires_dist(canonicalize_name(self.sname), self.cudfversiontoreleasestr[cudfversion])
                 except Exception as e:
                     depends = UnrenderableDepends(e)
                 else:
@@ -150,7 +150,7 @@ class Universe:
                 return depends
 
         def reqornone(self, cudfversion):
-            return "%s==%s" % (self.name, self.cudfversiontoreleasestr[cudfversion])
+            return "%s==%s" % (self.sname, self.cudfversiontoreleasestr[cudfversion])
 
     @innerclass
     class EditableProject:
@@ -159,7 +159,7 @@ class Universe:
         cudfversiontoreleasestr = {1: '-e'}
 
         def __init__(self, info):
-            self.name = info.config.name
+            self.sname = safe_name(info.config.name)
             self.cudfversiontodepends = {1: [self.Depend(r) for r in info.parsedremoterequires()]}
 
         def dependsof(self, cudfversion):
@@ -169,15 +169,16 @@ class Universe:
             assert 1 == cudfversion
 
     def __init__(self, pypicache, editableinfos):
-        self.projects = {p.name: p for p in map(self.EditableProject, editableinfos)}
+        self.projects = {canonicalize_name(p.sname): p for p in map(self.EditableProject, editableinfos)}
         self.pypicache = pypicache
 
-    def _project(self, cname, fetchfilter):
+    def _project(self, sname, fetchfilter):
+        cname = canonicalize_name(sname)
         try:
             p = self.projects[cname]
         except KeyError:
-            log.info("Fetch: %s", cname)
-            self.projects[cname] = p = self.PypiProject(cname, self.pypicache.releases(cname))
+            log.info("Fetch: %s", sname)
+            self.projects[cname] = p = self.PypiProject(sname, self.pypicache.releases(cname))
         p.fetch(fetchfilter)
         return p
 
@@ -195,15 +196,15 @@ class Universe:
                     releasestr = p.cudfversiontoreleasestr[cudfversion]
                     try:
                         dependsstr = ', '.join(d.cudfstr() for d in p.dependsof(cudfversion))
-                        f.write('# %s %s\n' % (p.name, releasestr))
-                        f.write('package: %s\n' % quote(p.name))
+                        f.write('# %s %s\n' % (p.sname, releasestr))
+                        f.write('package: %s\n' % quote(canonicalize_name(p.sname)))
                         f.write('version: %s\n' % cudfversion)
                         if dependsstr:
                             f.write('depends: %s\n' % dependsstr)
-                        f.write('conflicts: %s\n' % quote(p.name)) # At most one version of package.
+                        f.write('conflicts: %s\n' % quote(canonicalize_name(p.sname))) # At most one version of package.
                         f.write('\n')
                     except UnrenderableException as e:
-                        log.warning("Exclude %s==%s because: %s", p.name, releasestr, e)
+                        log.warning("Exclude %s==%s because: %s", p.sname, releasestr, e)
                     donereleases.add((cname, cudfversion))
         f.write('request: \n') # Space is needed apparently!
         f.write('install: %s\n' % ', '.join(quote(cname) for cname, p in self.projects.items() if p.editable))
