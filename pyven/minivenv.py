@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from pkg_resources import safe_name
 import logging, os, subprocess
 
 log = logging.getLogger(__name__)
@@ -41,8 +42,11 @@ class Pip:
                     log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifier)
                     s &= req.specifier
                 specifiers[req.namepart] = s
-        self.pipinstall(["%s%s" % entry for entry in specifiers.items()])
-        self.pipinstall(sum((['-e', i.projectdir] for i in infos), []))
+        solution = ["%s%s" % entry for entry in specifiers.items()]
+        log.debug("Install solution: %s", ' '.join(solution))
+        self.pipinstall(solution)
+        log.debug("Install editable: %s", ' '.join(safe_name(i.config.name) for i in infos))
+        self.pipinstall(['--no-deps'] + sum((['-e', i.projectdir] for i in infos), []))
 
 class Venv:
 

@@ -18,7 +18,8 @@
 from .minivenv import Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from .util import initlogging
+from .setuproot import setuptoolsinfo
+from .util import initlogging, ThreadPoolExecutor
 from aridity.config import ConfigCtrl
 import logging, os, re, subprocess, sys
 
@@ -26,29 +27,45 @@ log = logging.getLogger(__name__)
 pkg_resources = re.compile(br'\bpkg_resources\b')
 eolbytes = set(b'\r\n')
 
-def _hasname(info): # XXX: Deduce a default name and install if executable is true?
+def _ispyvenproject(projectdir):
+    return os.path.exists(os.path.join(projectdir, 'project.arid'))
+
+def _hasname(info):
     try:
         info.config.name
         return True
     except AttributeError:
         log.debug("Skip: %s", info.projectdir)
 
+def _projectinfos():
+    config = ConfigCtrl()
+    config.loadsettings()
+    projectsdir = config.node.projectsdir
+    for p in sorted(os.listdir(projectsdir)):
+        projectdir = os.path.join(projectsdir, p)
+        if _ispyvenproject(projectdir):
+            yield ProjectInfo.seek(projectdir)
+        else:
+            setuppath = os.path.join(projectdir, 'setup.py')
+            if os.path.exists(setuppath):
+                yield setuptoolsinfo(setuppath)
+
+def _prepare(info):
+    if _ispyvenproject(info.projectdir):
+        log.debug("Prepare: %s", info.projectdir)
+        pipify(info)
+
 def main_initopt():
     initlogging()
-    versiontoinfos = {version: set() for version in [sys.version_info.major]}
-    home = os.path.expanduser('~')
-    def configpaths():
-        config = ConfigCtrl()
-        config.loadsettings()
-        projectsdir = config.node.projectsdir
-        for p in sorted(os.listdir(projectsdir)):
-            configpath = os.path.join(projectsdir, p, 'project.arid')
-            if os.path.exists(configpath):
-                yield configpath
-    allinfos = {i.config.name: i for i in (ProjectInfo.seek(os.path.dirname(p)) for p in configpaths()) if _hasname(i)}
+    try:
+        optpath, = sys.argv[1:]
+    except ValueError:
+        optpath = os.path.join(os.path.expanduser('~'), 'opt')
+    versiontoinfos = {version: {} for version in [sys.version_info.major]}
+    allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
     def add(infos, i):
         if i not in infos:
-            infos.add(i)
+            infos[i] = None
             for p in i.localrequires():
                 add(infos, allinfos[p])
     for info in allinfos.values():
@@ -56,11 +73,11 @@ def main_initopt():
             for pyversion in info.config.pyversions:
                 if pyversion in versiontoinfos:
                     add(versiontoinfos[pyversion], info)
-    for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir):
-        log.debug("Prepare: %s", info.projectdir)
-        pipify(info)
+    with ThreadPoolExecutor() as e:
+        for future in [e.submit(_prepare, info) for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir)]:
+            future.result()
     for pyversion, infos in versiontoinfos.items():
-        venvpath = os.path.join(home, 'opt', "venv%s" % pyversion)
+        venvpath = os.path.join(optpath, "venv%s" % pyversion)
         pythonname = "python%s" % pyversion
         if not os.path.exists(venvpath):
             subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])

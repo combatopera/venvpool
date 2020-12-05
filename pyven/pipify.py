@@ -23,16 +23,12 @@ from itertools import chain
 from pkg_resources import resource_filename
 import os, subprocess, sys
 
-def _devversion(info):
-    releases = [int(t[1:]) for t in subprocess.check_output(['git', 'tag'], cwd = info.projectdir, universal_newlines = True).splitlines() if 'v' == t[0]]
-    return "%s.dev0" % ((max(releases) if releases else 0) + 1)
-
 def pipify(info, version = None):
     release = version is not None
     # Allow release of project without origin:
     description, url = info.descriptionandurl() if release and info.config.github.participant else [None, None]
     config = (-info.config).createchild()
-    config.put('version', scalar = version if release else _devversion(info))
+    config.put('version', scalar = version if release else info.devversion())
     config.put('description', scalar = description)
     config.put('long_description', text = 'long_description()' if release else repr(None))
     config.put('url', scalar = url)
@@ -76,6 +72,9 @@ def main_pipify():
     config = parser.parse_args()
     info = ProjectInfo.seek('.') if config.f is None else ProjectInfo('.', config.f)
     pipify(info)
+    setupcommand(info, 'egg_info')
+
+def setupcommand(info, *command):
     buildreqs = list(chain(pyvenbuildrequires(info), info.config.build.requires))
     if {'setuptools', 'wheel'} == set(buildreqs):
         executable = sys.executable
@@ -83,4 +82,4 @@ def main_pipify():
         venv = Venv(info, sys.version_info.major, 'build')
         venv.install(buildreqs)
         executable = venv.programpath('python')
-    subprocess.check_call([executable, 'setup.py', 'egg_info'], cwd = info.projectdir)
+    subprocess.check_call([executable, 'setup.py'] + list(command), cwd = info.projectdir)

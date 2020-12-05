@@ -18,8 +18,9 @@
 from __future__ import with_statement
 from .files import Files
 from .minivenv import Venv
+from .pipify import setupcommand
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
-from .setuproot import setuptools as fakesetuptools
+from .setuproot import setuptoolsinfo
 from .util import Excludes, initlogging, Path, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
@@ -111,8 +112,9 @@ class EveryVersion:
             if not os.path.exists(nosetests):
                 self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
                 venv.install(['nose-cov'])
-            # XXX: Doesn't pyximport take care of this?
-            subprocess.check_call([os.path.abspath(venv.programpath('python')), 'setup.py', 'build_ext', '--inplace'], cwd = self.info.projectdir)
+            if os.path.exists(os.path.join(self.info.projectdir, 'setup.py')):
+                # XXX: Doesn't pyximport take care of this?
+                setupcommand(self.info, 'build_ext', '--inplace')
             reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
             status = subprocess.call([
                 nosetests, '--exe', '-v',
@@ -136,12 +138,12 @@ def main_tests():
     except ProjectInfoNotFoundException:
         setuppath = Path.seek('.', 'setup.py')
         if setuppath is None:
-            raise
-        log.info('Use setuptools mode.')
-        with openresource(__name__, 'setuptools.arid') as f:
-            info = ProjectInfo(setuppath.parent, f)
-        setupkwargs = eval(subprocess.check_output([sys.executable, fakesetuptools.__file__, setuppath]))
-        (-info.config).printf("name = %s", setupkwargs['name'])
-        for r in setupkwargs['install_requires']:
-            (-info.config).printf("requires += %s", r)
+            log.info('Use uninstallable mode.')
+            projectdir = os.path.dirname(Path.seek('.', '.git'))
+            with openresource(__name__, 'setuproot/setuptools.arid') as f:
+                info = ProjectInfo(projectdir, f)
+            info.config.name = os.path.basename(os.path.abspath(projectdir))
+        else:
+            log.info('Use setuptools mode.')
+            info = setuptoolsinfo(setuppath)
     EveryVersion(info, config.siblings, config.repo, noseargs).allchecks()

@@ -15,23 +15,5 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import os, setuptools, sys
-
-def find_packages():
-    pass
-
-def setup(**kwargs):
-    stack.append(kwargs)
-
-def main():
-    path, = sys.argv[1:]
-    sys.path.insert(0, os.path.dirname(path))
-    with open(path) as f:
-        exec(f.read())
-    setupkwargs, = setuptools.stack
-    sys.stdout.write(repr(setupkwargs))
-
-if '__main__' == __name__:
-    main()
-else:
-    stack = []
+def cythonize(*args, **kwargs):
+    pass # Do nothing.

@@ -220,3 +220,7 @@ class ProjectInfo:
             venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)
         finally:
             shutil.rmtree(workspace)
+
+    def devversion(self):
+        releases = [int(t[1:]) for t in subprocess.check_output(['git', 'tag'], cwd = self.projectdir, universal_newlines = True).splitlines() if 'v' == t[0]]
+        return "%s.dev0" % ((max(releases) if releases else 0) + 1)

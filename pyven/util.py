@@ -63,3 +63,23 @@ class Path(str):
             if os.path.abspath(parent) == os.path.abspath(dirpath):
                 break
             dirpath = parent
+
+class ThreadPoolExecutor:
+
+    def __enter__(self):
+        return self
+
+    def submit(self, f, *args, **kwargs):
+        class Task:
+            def result(self):
+                return f(*args, **kwargs)
+        return Task()
+
+    def __exit__(self, *exc_info):
+        pass
+
+assert ThreadPoolExecutor
+try:
+    from concurrent.futures import ThreadPoolExecutor
+except ImportError:
+    pass

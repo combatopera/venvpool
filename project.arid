@@ -25,7 +25,7 @@ years +=
     2017
     2020
 requires +=
-    aridity>=39
+    aridity>=48
     diapyr>=18
     lagoon>=17
     setuptools>=44.1.1
