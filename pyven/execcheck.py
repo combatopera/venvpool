@@ -35,4 +35,5 @@ def execcheck(paths):
             if hasmagic:
                 raise Exception("Using %s is obsolete: %s" % (magic, path))
         else:
-            assert executable == hasmagic
+            if executable != hasmagic:
+                raise Exception(path)
