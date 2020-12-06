@@ -166,7 +166,7 @@ class Universe:
 
         def __init__(self, info):
             self.names = Names(safe_name(info.config.name))
-            self.cudfversiontodepends = {1: [self.Depend(r) for r in info.parsedremoterequires()]}
+            self.cudfversiontodepends = {1: [self.Depend(r) for r in info.parsedremoterequires() if r.accept()]}
 
         def dependsof(self, cudfversion):
             return self.cudfversiontodepends[cudfversion]
