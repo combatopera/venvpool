@@ -97,7 +97,7 @@ class EveryVersion:
                 for path in self.files.pypaths if os.path.relpath(path, self.files.root) not in excludes]
         def pyflakes():
             if paths:
-                venv = Venv(self.info, pyversion)
+                venv = Venv(self.info, pyversion) # TODO: Use any suitable venv from a pool.
                 pyflakesexe = venv.programpath('pyflakes')
                 if not os.path.exists(pyflakesexe):
                     venv.install(['pyflakes'])
