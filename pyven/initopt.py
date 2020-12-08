@@ -58,7 +58,7 @@ def _prepare(info):
 def main_initopt():
     initlogging()
     try:
-        optpath, = sys.argv[1:]
+        optpath, = sys.argv[1:] # TODO: Use arg as venv dir.
     except ValueError:
         optpath = os.path.join(os.path.expanduser('~'), 'opt')
     versiontoinfos = {version: {} for version in [sys.version_info.major]}
