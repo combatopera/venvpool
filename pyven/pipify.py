@@ -82,5 +82,5 @@ def setupcommand(info, *command):
     else:
         venv = Venv(info, sys.version_info.major, 'build')
         venv.install(buildreqs)
-        executable = venv.programpath('python')
+        executable = os.path.abspath(venv.programpath('python'))
     subprocess.check_call([executable, 'setup.py'] + list(command), cwd = info.projectdir)
