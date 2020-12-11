@@ -19,6 +19,7 @@ from .projectinfo import ProjectInfo
 import os
 
 def main_drmake():
+    'Build a Docker image with automatic tag.'
     info = ProjectInfo.seek('.')
     command = 'docker', 'build', '-t', info.config.docker.tag, info.projectdir
     os.execvp(command[0], command)
