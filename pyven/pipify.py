@@ -69,9 +69,10 @@ def pyvenbuildrequires(info):
 def main_pipify():
     parser = ArgumentParser()
     parser.add_argument('-f')
-    config = parser.parse_args()
-    info = ProjectInfo.seek('.') if config.f is None else ProjectInfo('.', config.f)
-    pipify(info)
+    parser.add_argument('version', nargs = '?')
+    args = parser.parse_args()
+    info = ProjectInfo.seek('.') if args.f is None else ProjectInfo('.', args.f)
+    pipify(info, args.version)
     setupcommand(info, 'egg_info')
 
 def setupcommand(info, *command):
