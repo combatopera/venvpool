@@ -73,14 +73,14 @@ def main_pipify():
     args = parser.parse_args()
     info = ProjectInfo.seek('.') if args.f is None else ProjectInfo('.', args.f)
     pipify(info, args.version)
-    setupcommand(info, 'egg_info')
+    setupcommand(info, sys.version_info.major, 'egg_info')
 
-def setupcommand(info, *command):
+def setupcommand(info, pyversion, *command):
     buildreqs = list(chain(pyvenbuildrequires(info), info.config.build.requires))
-    if {'setuptools', 'wheel'} == set(buildreqs):
+    if {'setuptools', 'wheel'} == set(buildreqs) and sys.version_info.major == pyversion:
         executable = sys.executable
     else:
-        venv = Venv(info, sys.version_info.major, 'build')
+        venv = Venv(info, pyversion, 'build')
         venv.install(buildreqs)
         executable = os.path.abspath(venv.programpath('python'))
     subprocess.check_call([executable, 'setup.py'] + list(command), cwd = info.projectdir)

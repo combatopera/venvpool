@@ -114,7 +114,7 @@ class EveryVersion:
                 venv.install(['nose-cov'])
             if os.path.exists(os.path.join(self.info.projectdir, 'setup.py')):
                 # XXX: Doesn't pyximport take care of this?
-                setupcommand(self.info, 'build_ext', '--inplace')
+                setupcommand(self.info, pyversion, 'build_ext', '--inplace')
             reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
             status = subprocess.call([
                 nosetests, '--exe', '-v',
