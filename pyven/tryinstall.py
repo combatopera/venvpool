@@ -48,10 +48,15 @@ def main_tryinstall():
     with urlopen("https://pypi.org/rss/project/%s/releases.xml" % project) as f:
         version = ET.parse(f).find('./channel/item/title').text
     req = "%s==%s" % (project, version)
+    upstream_devel_packages = list(headinfo.config.upstream.devel.packages)
     for pyversion in pyversions:
         log.info("Python version: %s", pyversion)
         with bgcontainer("python:%s" % pyversion) as container:
-            docker('exec', container, 'pip', 'install', req, stdout = None)
+            containerexec = docker.partial('exec', container, stdout = None)
+            if upstream_devel_packages:
+                containerexec('apt-get', 'update')
+                containerexec('apt-get', 'install', '-y', *upstream_devel_packages)
+            containerexec('pip', 'install', req)
     git.checkout("v%s" % version, stdout = None)
     info = ProjectInfo.seek('.')
     pipify(info)

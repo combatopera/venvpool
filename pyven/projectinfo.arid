@@ -37,3 +37,4 @@ devel
     packages := $list()
     scripts := $list()
 warmups := $list()
+upstream devel packages := $list()
