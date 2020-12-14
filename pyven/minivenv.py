@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .pypicache import PypiCache
-from .universe import Universe
-from datetime import datetime
 from pkg_resources import safe_name
 import logging, os, subprocess
 
@@ -34,25 +31,7 @@ class Pip:
     def pipinstall(self, command):
         subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage)
 
-    def installeditable(self, infos):
-        solution = []
-        with PypiCache(os.path.join(os.path.expanduser('~'), '.pyven', 'pypi.shelf')) as pypicache:
-            u = Universe(pypicache, infos)
-            path = os.path.join(os.path.dirname(self.pippath), '..', "%s.cudf" % datetime.now().isoformat())
-            with open(path, 'w') as f:
-                u.writecudf(f)
-            log.info("Run mccs solver, this can take a minute.")
-            lines = [l for l in subprocess.check_output(['mccs', '-i', path, '-lexsemiagregate[-removed,-notuptodate,-new]'], universal_newlines = True).splitlines()
-                    if l and not l.startswith(('#', 'depends:', 'conflicts:'))]
-            while lines:
-                k, package = lines.pop(0).split(' ')
-                assert 'package:' == k
-                k, versionstr = lines.pop(0).split(' ')
-                assert 'version:' == k
-                assert 'installed: true' == lines.pop(0)
-                req = u.reqornone(package, int(versionstr))
-                if req is not None:
-                    solution.append(req)
+    def installeditable(self, solution, infos):
         log.debug("Install solution: %s", ' '.join(solution))
         self.pipinstall(solution)
         log.debug("Install editable: %s", ' '.join(safe_name(i.config.name) for i in infos))

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from . import solver
 from .minivenv import Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
@@ -59,6 +60,7 @@ def _prepare(info):
 def main_initopt():
     initlogging()
     parser = ArgumentParser()
+    parser.add_argument('--solver', type = lambda name: getattr(solver, name), default = solver.mccs)
     parser.add_argument('optpath', nargs = '?', default = os.path.join(os.path.expanduser('~'), 'opt'))
     args = parser.parse_args()
     versiontoinfos = {version: {} for version in [sys.version_info.major]}
@@ -82,7 +84,7 @@ def main_initopt():
         if not os.path.exists(venvpath):
             subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
         binpath = os.path.join(venvpath, 'bin')
-        Pip(os.path.join(binpath, 'pip')).installeditable(infos)
+        Pip(os.path.join(binpath, 'pip')).installeditable(args.solver(venvpath, infos), infos)
         magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
         for name in os.listdir(binpath):
             path = os.path.join(binpath, name)
