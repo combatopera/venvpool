@@ -62,7 +62,7 @@ def main_initopt():
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--solver', type = lambda name: getattr(solver, name), default = solver.mccs)
-    parser.add_argument('optpath', nargs = '?', default = os.path.join(os.path.expanduser('~'), 'opt'))
+    parser.add_argument('venvpath', nargs = '?', default = os.path.join(os.path.expanduser('~'), 'opt', "venv%s" % pyversion))
     args = parser.parse_args()
     versioninfos = {}
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
@@ -77,12 +77,11 @@ def main_initopt():
     with ThreadPoolExecutor() as e:
         for future in [e.submit(_prepare, info) for info in versioninfos]:
             future.result()
-    venvpath = os.path.join(args.optpath, "venv%s" % pyversion)
     pythonname = "python%s" % pyversion
-    if not os.path.exists(venvpath):
-        subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
-    binpath = os.path.join(venvpath, 'bin')
-    Pip(os.path.join(binpath, 'pip')).installeditable(args.solver(venvpath, versioninfos), versioninfos)
+    if not os.path.exists(args.venvpath):
+        subprocess.check_call(['virtualenv', '-p', pythonname, args.venvpath])
+    binpath = os.path.join(args.venvpath, 'bin')
+    Pip(os.path.join(binpath, 'pip')).installeditable(args.solver(args.venvpath, versioninfos), versioninfos)
     magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
     for name in os.listdir(binpath):
         path = os.path.join(binpath, name)
