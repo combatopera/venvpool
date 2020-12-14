@@ -20,6 +20,7 @@ from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .setuproot import setuptoolsinfo
 from .util import initlogging, ThreadPoolExecutor
+from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 import logging, os, re, subprocess, sys
 
@@ -57,10 +58,9 @@ def _prepare(info):
 
 def main_initopt():
     initlogging()
-    try:
-        optpath, = sys.argv[1:] # TODO: Use arg as venv dir.
-    except ValueError:
-        optpath = os.path.join(os.path.expanduser('~'), 'opt')
+    parser = ArgumentParser()
+    parser.add_argument('optpath', nargs = '?', default = os.path.join(os.path.expanduser('~'), 'opt'))
+    args = parser.parse_args()
     versiontoinfos = {version: {} for version in [sys.version_info.major]}
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
     def add(infos, i):
@@ -77,7 +77,7 @@ def main_initopt():
         for future in [e.submit(_prepare, info) for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir)]:
             future.result()
     for pyversion, infos in versiontoinfos.items():
-        venvpath = os.path.join(optpath, "venv%s" % pyversion)
+        venvpath = os.path.join(args.optpath, "venv%s" % pyversion)
         pythonname = "python%s" % pyversion
         if not os.path.exists(venvpath):
             subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
