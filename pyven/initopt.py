@@ -28,6 +28,7 @@ import logging, os, re, subprocess, sys
 log = logging.getLogger(__name__)
 pkg_resources = re.compile(br'\bpkg_resources\b')
 eolbytes = set(b'\r\n')
+pyversion = sys.version_info.major
 
 def _ispyvenproject(projectdir):
     return os.path.exists(os.path.join(projectdir, 'project.arid'))
@@ -63,36 +64,33 @@ def main_initopt():
     parser.add_argument('--solver', type = lambda name: getattr(solver, name), default = solver.mccs)
     parser.add_argument('optpath', nargs = '?', default = os.path.join(os.path.expanduser('~'), 'opt'))
     args = parser.parse_args()
-    versiontoinfos = {version: {} for version in [sys.version_info.major]}
+    versioninfos = {}
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
-    def add(infos, i):
-        if i not in infos:
-            infos[i] = None
+    def add(i):
+        if i not in versioninfos:
+            versioninfos[i] = None
             for p in i.localrequires():
-                add(infos, allinfos[p])
+                add(allinfos[p])
     for info in allinfos.values():
-        if info.config.executable:
-            for pyversion in info.config.pyversions:
-                if pyversion in versiontoinfos:
-                    add(versiontoinfos[pyversion], info)
+        if info.config.executable and pyversion in info.config.pyversions:
+            add(info)
     with ThreadPoolExecutor() as e:
-        for future in [e.submit(_prepare, info) for info in sorted(set().union(*versiontoinfos.values()), key = lambda i: i.projectdir)]:
+        for future in [e.submit(_prepare, info) for info in versioninfos]:
             future.result()
-    for pyversion, infos in versiontoinfos.items():
-        venvpath = os.path.join(args.optpath, "venv%s" % pyversion)
-        pythonname = "python%s" % pyversion
-        if not os.path.exists(venvpath):
-            subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
-        binpath = os.path.join(venvpath, 'bin')
-        Pip(os.path.join(binpath, 'pip')).installeditable(args.solver(venvpath, infos), infos)
-        magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
-        for name in os.listdir(binpath):
-            path = os.path.join(binpath, name)
-            if not os.path.isdir(path):
+    venvpath = os.path.join(args.optpath, "venv%s" % pyversion)
+    pythonname = "python%s" % pyversion
+    if not os.path.exists(venvpath):
+        subprocess.check_call(['virtualenv', '-p', pythonname, venvpath])
+    binpath = os.path.join(venvpath, 'bin')
+    Pip(os.path.join(binpath, 'pip')).installeditable(args.solver(venvpath, versioninfos), versioninfos)
+    magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
+    for name in os.listdir(binpath):
+        path = os.path.join(binpath, name)
+        if not os.path.isdir(path):
+            with open(path, 'rb') as f:
+                data = f.read(len(magic) + 1)
+            if data[:-1] == magic and data[-1] in eolbytes:
                 with open(path, 'rb') as f:
-                    data = f.read(len(magic) + 1)
-                if data[:-1] == magic and data[-1] in eolbytes:
-                    with open(path, 'rb') as f:
-                        data = f.read()
-                    with open(path, 'wb') as f:
-                        f.write(pkg_resources.sub(b'pkg_resources_lite', data))
+                    data = f.read()
+                with open(path, 'wb') as f:
+                    f.write(pkg_resources.sub(b'pkg_resources_lite', data))
