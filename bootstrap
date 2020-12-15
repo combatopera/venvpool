@@ -10,9 +10,9 @@ for version in 3 2; do
 
     bootvenv=$tempdir/$version
 
-    virtualenv -p python$version $bootvenv # XXX: Upgrade setuptools?
+    virtualenv -p python$version $bootvenv
 
-    $bootvenv/bin/pip install twine==1.15.0 pyven
+    $bootvenv/bin/pip install setuptools==44.1.1 twine==1.15.0 pyven
 
     $bootvenv/bin/initopt ~/opt/venv$version
 
