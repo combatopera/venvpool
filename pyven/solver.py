@@ -43,6 +43,7 @@ def mccs(venvpath, infos):
         with open(path, 'w') as f:
             u.writecudf(f)
         log.info("Run mccs solver, this can take a minute.")
+        # TODO: Investigate why this may get stuck in an infinite loop.
         lines = [l for l in subprocess.check_output(['mccs', '-i', path, '-lexsemiagregate[-removed,-notuptodate,-new]'], universal_newlines = True).splitlines()
                 if l and not l.startswith(('#', 'depends:', 'conflicts:'))]
         while lines:

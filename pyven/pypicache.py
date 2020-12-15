@@ -73,7 +73,7 @@ class PypiCache:
                         with subprocess.Popen(['curl', url], stdout = subprocess.PIPE) as curl:
                             subprocess.check_call(unzip if url.endswith('.zip') else untar, stdin = curl.stdout, cwd = tempdir)
                         if curl.returncode:
-                            log.warning("Bad curl status: %s", curl.returncode)
+                            log.debug("Bad curl status: %s", curl.returncode) # Often trailing garbage ignored by unzip/untar.
                         d, = os.listdir(tempdir)
                         try:
                             requires = getsetupkwargs(os.path.join(tempdir, d, 'setup.py'), ['install_requires']).get('install_requires', [])

@@ -46,7 +46,7 @@ class Names:
         self.qname = quote(self.cname)
         self.sname = sname
 
-class Universe:
+class Universe: # TODO: Less spammy logging.
 
     @innerclass
     class Depend:
@@ -187,7 +187,7 @@ class Universe:
         p.fetch(fetchfilter)
         return p
 
-    def writecudf(self, f):
+    def writecudf(self, f): # FIXME: Uses far too much CPU.
         donereleases = set()
         while True:
             releasecount = sum(1 for cname in self.projects for cudfversion in self.projects[cname].cudfversiontodepends)
