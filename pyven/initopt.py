@@ -51,7 +51,10 @@ def _projectinfos():
         else:
             setuppath = os.path.join(projectdir, 'setup.py')
             if os.path.exists(setuppath):
-                yield setuptoolsinfo(setuppath)
+                if pyversion < 3:
+                    log.debug("Ignore: %s", projectdir)
+                else:
+                    yield setuptoolsinfo(setuppath)
 
 def _prepare(info):
     if _ispyvenproject(info.projectdir):
