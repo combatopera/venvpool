@@ -14,6 +14,6 @@ for version in 3 2; do
 
     $bootvenv/bin/pip install twine==1.15.0 pyven
 
-    $bootvenv/bin/initopt
+    $bootvenv/bin/initopt ~/opt/venv$version
 
 done

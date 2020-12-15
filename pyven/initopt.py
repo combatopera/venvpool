@@ -62,7 +62,7 @@ def main_initopt():
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--solver', type = lambda name: getattr(solver, name), default = solver.mccs)
-    parser.add_argument('venvpath', nargs = '?', default = os.path.join(os.path.expanduser('~'), 'opt', "venv%s" % pyversion))
+    parser.add_argument('venvpath', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..'))
     args = parser.parse_args()
     versioninfos = {}
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
