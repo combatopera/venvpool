@@ -112,7 +112,7 @@ class EveryVersion:
             if not os.path.exists(nosetests):
                 self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
                 venv.install(['nose-cov'])
-            if os.path.exists(os.path.join(self.info.projectdir, 'setup.py')):
+            if os.path.exists(os.path.join(self.info.projectdir, 'setup.py')): # TODO: Caller should know this already.
                 # XXX: Doesn't pyximport take care of this?
                 setupcommand(self.info, pyversion, 'build_ext', '--inplace')
             reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
