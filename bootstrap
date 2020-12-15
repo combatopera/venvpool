@@ -6,14 +6,30 @@ tempdir=$(mktemp -d)
 
 trap 'rm -r $tempdir' EXIT
 
-for version in 3 2; do
+function initbootvenv {
 
     bootvenv=$tempdir/$version
 
     virtualenv -p python$version $bootvenv
 
-    $bootvenv/bin/pip install setuptools==44.1.1 twine==1.15.0 pyven
+    $bootvenv/bin/pip install "$@" pyven
 
-    $bootvenv/bin/initopt ~/opt/venv$version
+}
 
-done
+function initoptvenv {
+
+    $bootvenv/bin/initopt "$@" ~/opt/venv$version
+
+}
+
+version=3
+
+initbootvenv
+
+initoptvenv "$@"
+
+version=2
+
+initbootvenv setuptools==44.1.1 twine==1.15.0
+
+initoptvenv --solver legacy
