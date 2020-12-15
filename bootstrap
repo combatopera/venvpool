@@ -8,12 +8,12 @@ trap 'rm -r $tempdir' EXIT
 
 for version in 3 2; do
 
-    venv=$tempdir/$version
+    bootvenv=$tempdir/$version
 
-    virtualenv -p python$version $venv # XXX: Upgrade setuptools?
+    virtualenv -p python$version $bootvenv # XXX: Upgrade setuptools?
 
-    $venv/bin/pip install twine==1.15.0 pyven
+    $bootvenv/bin/pip install twine==1.15.0 pyven
 
-    $venv/bin/initopt
+    $bootvenv/bin/initopt
 
 done
