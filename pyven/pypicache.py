@@ -29,7 +29,8 @@ untar = 'tar', '-xz'
 
 class PypiCache:
 
-    def __init__(self, path):
+    def __init__(self, config, path):
+        self.fetch = config.f
         parent = os.path.dirname(path)
         if not os.path.exists(parent):
             os.makedirs(parent)
@@ -39,12 +40,11 @@ class PypiCache:
         return self
 
     def releases(self, cname):
-        try:
+        if not self.fetch and cname in self.d:
             return self.d[cname]
-        except KeyError:
-            with urlopen("https://pypi.org/pypi/%s/json" % cname) as f:
-                self.d[cname] = releases = list(json.load(f)['releases'])
-            return releases
+        with urlopen("https://pypi.org/pypi/%s/json" % cname) as f:
+            self.d[cname] = releases = list(json.load(f)['releases'])
+        return releases
 
     def requires_dist(self, cname, release):
         def keystr(major = sys.version_info.major):

@@ -22,7 +22,7 @@ import logging, os, subprocess
 
 log = logging.getLogger(__name__)
 
-def legacy(venvpath, infos):
+def legacy(args, infos):
     specifiers = {}
     for i in infos:
         for req in i.parsedremoterequires():
@@ -35,11 +35,11 @@ def legacy(venvpath, infos):
             specifiers[req.namepart] = s
     return ["%s%s" % entry for entry in specifiers.items()]
 
-def mccs(venvpath, infos):
+def mccs(args, infos):
     solution = []
-    with PypiCache(os.path.join(os.path.expanduser('~'), '.pyven', 'pypi.shelf')) as pypicache:
+    with PypiCache(args, os.path.join(os.path.expanduser('~'), '.pyven', 'pypi.shelf')) as pypicache:
         u = Universe(pypicache, infos)
-        path = os.path.join(venvpath, "%s.cudf" % datetime.now().isoformat())
+        path = os.path.join(args.venvpath, "%s.cudf" % datetime.now().isoformat())
         with open(path, 'w') as f:
             u.writecudf(f)
         log.info("Run mccs solver, this can take a minute.")

@@ -64,6 +64,7 @@ def _prepare(info):
 def main_initopt():
     initlogging()
     parser = ArgumentParser()
+    parser.add_argument('-f')
     parser.add_argument('--solver', type = lambda name: getattr(solver, name), default = solver.mccs)
     parser.add_argument('venvpath', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..'))
     args = parser.parse_args()
@@ -84,7 +85,7 @@ def main_initopt():
     if not os.path.exists(args.venvpath):
         subprocess.check_call(['virtualenv', '-p', pythonname, args.venvpath])
     binpath = os.path.join(args.venvpath, 'bin')
-    Pip(os.path.join(binpath, 'pip')).installeditable(args.solver(args.venvpath, versioninfos), versioninfos)
+    Pip(os.path.join(binpath, 'pip')).installeditable(args.solver(args, versioninfos), versioninfos)
     magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
     for name in os.listdir(binpath):
         path = os.path.join(binpath, name)
