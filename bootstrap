@@ -14,6 +14,16 @@ function initbootvenv {
 
     $bootvenv/bin/pip install "$@" pyven
 
+    (
+
+        cd "$(dirname "$0")"
+
+        $bootvenv/bin/pipify
+
+        $bootvenv/bin/pip install -e .
+
+    )
+
 }
 
 function initoptvenv {
