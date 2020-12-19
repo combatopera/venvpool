@@ -32,7 +32,7 @@ pypi participant = true
 github participant = $¬$(proprietary)
 wheel compatibilities
     2 := $list(cp27-cp27m cp27-cp27mu)
-    3 := $list(cp36-cp36m cp37-cp37m cp38-cp38)
+    3 := $list(cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39)
 devel
     packages := $list()
     scripts := $list()
