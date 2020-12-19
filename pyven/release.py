@@ -28,6 +28,7 @@ from diapyr.util import enum, singleton
 from itertools import chain
 from lagoon.program import Program
 from pkg_resources import resource_filename
+from subprocess import CalledProcessError
 from tempfile import TemporaryDirectory
 import lagoon, logging, os, re, shutil, sys, sysconfig
 
@@ -70,7 +71,11 @@ class Image:
             def run(execargs, command):
                 docker_print(*chain(['exec'], execargs, [container], self.entrypoint, command))
             if packages:
-                run([], chain(['yum', 'install', '-y'], packages))
+                try:
+                    run([], chain(['yum', 'install', '-y'], packages))
+                except CalledProcessError:
+                    log.warning("Failed to install dependencies, skip %s wheels:", self.plat, exc_info = True)
+                    return
             for script in scripts:
                 # TODO LATER: Run as ordinary sudo-capable user.
                 dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
