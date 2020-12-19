@@ -25,7 +25,7 @@ from urllib.request import urlopen
 import logging, xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)
-pyversions = '3.8', '3.7', '3.6'
+pyversions = '3.9', '3.8', '3.7', '3.6'
 
 @contextmanager
 def bgcontainer(*dockerrunargs):
