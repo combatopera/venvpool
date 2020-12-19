@@ -18,23 +18,13 @@
 from .checks import EveryVersion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from .util import initlogging
-from contextlib import contextmanager
+from .util import bgcontainer, initlogging
 from lagoon import git
 from urllib.request import urlopen
 import logging, xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)
 pyversions = '3.9', '3.8', '3.7', '3.6'
-
-@contextmanager
-def bgcontainer(*dockerrunargs):
-    from lagoon import docker
-    container = docker.run._d(*dockerrunargs + ('sleep', 'inf')).rstrip()
-    try:
-        yield container
-    finally:
-        docker.rm._f(container, stdout = None)
 
 def main_tryinstall():
     from lagoon import docker

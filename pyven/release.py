@@ -21,8 +21,7 @@ from .minivenv import Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
-from .tryinstall import bgcontainer
-from .util import initlogging
+from .util import bgcontainer, initlogging
 from argparse import ArgumentParser
 from diapyr.util import enum, singleton
 from itertools import chain

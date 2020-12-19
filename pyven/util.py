@@ -93,3 +93,12 @@ def TemporaryDirectory():
         yield tempdir
     finally:
         shutil.rmtree(tempdir)
+
+@contextmanager
+def bgcontainer(*dockerrunargs):
+    from lagoon import docker
+    container = docker.run._d(*dockerrunargs + ('sleep', 'inf')).rstrip()
+    try:
+        yield container
+    finally:
+        docker.rm._f(container, stdout = None)
