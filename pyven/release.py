@@ -38,8 +38,8 @@ distrelpath = 'dist'
 @enum(
     ['2020-08-29-f97fd86', 'manylinux2014_x86_64', False],
     ['2020-08-29-f97fd86', 'manylinux2014_i686', True],
-    ['2020-08-20-df89e22', 'manylinux2010_x86_64', False],
-    ['2020-08-20-df89e22', 'manylinux2010_i686', True],
+    ['2020-12-18-bcf804e', 'manylinux2010_x86_64', False],
+    ['2020-12-18-bcf804e', 'manylinux2010_i686', True],
     ['2020-12-18-c48c073', 'manylinux1_x86_64', False, True],
     ['2020-12-18-c48c073', 'manylinux1_i686', True, True],
 )
