@@ -32,8 +32,12 @@ def main():
     args = parser.parse_args()
     with TemporaryDirectory() as holder:
         for compatibility in args.compatibilities:
+            pip = os.path.join(pythonroot, compatibility, 'bin', 'pip')
+            if not os.path.exists(pip):
+                log.warning("Image does not support implementation-ABI: %s", compatibility)
+                continue
             log.info("Make wheel(s) for implementation-ABI: %s", compatibility)
-            subprocess.check_call([os.path.join(pythonroot, compatibility, 'bin', 'pip'), '--no-cache-dir', 'wheel', '--no-deps', '-w', holder, '.'])
+            subprocess.check_call([pip, '--no-cache-dir', 'wheel', '--no-deps', '-w', holder, '.'])
             wheelpath, = (os.path.join(holder, n) for n in os.listdir(holder))
             subprocess.check_call(['auditwheel', 'repair', '--plat', args.plat, '-w', distdir, wheelpath])
             if not args.prune:
