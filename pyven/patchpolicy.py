@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
+import glob, json
 
-policypath = '/opt/_internal/cpython-3.7.9/lib/python3.7/site-packages/auditwheel/policy/policy.json'
+policyglob = '/opt/_internal/*/lib/python3.7/site-packages/auditwheel/policy/policy.json'
 syslibs = 'libasound.so.2', 'libjack.so.0', 'libportaudio.so.2'
 
 def main():
+    policypath, = glob.iglob(policyglob)
     with open(policypath) as f:
         policy = json.load(f)
     for edition in policy:
