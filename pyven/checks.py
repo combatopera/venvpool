@@ -107,12 +107,16 @@ class EveryVersion:
             _runcheck(pyversion, pyflakes)
 
     def nose(self):
+        upstream_devel_packages = list(self.info.config.upstream.devel.packages)
         for pyversion in self.info.config.pyversions:
             venv = Venv(self.info, pyversion)
             reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
             if self.docker:
                 with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
                     container = Container(container)
+                    if upstream_devel_packages:
+                        container.check_call(['apt-get', 'update'])
+                        container.check_call(['apt-get', 'install', '-y'] + upstream_devel_packages)
                     self.info.installdeps(container, self.siblings, _localrepo() if self.userepo else None)
                     container.install(['nose-cov'])
                     cpath = lambda p: os.path.relpath(p, self.info.projectdir).replace(os.sep, '/')
@@ -151,9 +155,15 @@ class Container:
         from lagoon import docker
         docker('exec', '-w', self.workdir, self.container, 'pip', 'install', *args, stdout = None)
 
-    def call(self, args):
+    def _call(self, args, check):
         from lagoon import docker, id
-        return docker('exec', '-w', self.workdir, '-u', "%s:%s" % (id._u().rstrip(), id._g().rstrip()), self.container, *args, stdout = None, check = False)
+        return docker('exec', '-w', self.workdir, '-u', "%s:%s" % (id._u().rstrip(), id._g().rstrip()), self.container, *args, stdout = None, check = check)
+
+    def call(self, args):
+        return self._call(args, False)
+
+    def check_call(self, args):
+        self._call(args, True)
 
 def main_tests():
     initlogging()
