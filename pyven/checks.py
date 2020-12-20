@@ -131,6 +131,7 @@ class EveryVersion:
 def main_tests():
     initlogging()
     parser = ArgumentParser()
+    parser.add_argument('--docker', action = 'store_true')
     parser.add_argument('--siblings', type = yesno, default = True)
     parser.add_argument('--repo', type = yesno, default = True)
     config, noseargs = parser.parse_known_args()
@@ -147,4 +148,4 @@ def main_tests():
         else:
             log.info('Use setuptools mode.')
             info = setuptoolsinfo(setuppath)
-    EveryVersion(info, config.siblings, config.repo, noseargs, False).allchecks()
+    EveryVersion(info, config.siblings, config.repo, noseargs, config.docker).allchecks()
