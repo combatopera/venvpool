@@ -115,8 +115,8 @@ class EveryVersion:
                 with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
                     container = Container(container)
                     if upstream_devel_packages:
-                        container.check_call(['apt-get', 'update'])
-                        container.check_call(['apt-get', 'install', '-y'] + upstream_devel_packages)
+                        for command in ['apt-get', 'update'], ['apt-get', 'install', '-y'] + upstream_devel_packages:
+                            container.call(command, check = True, root = True)
                     self.info.installdeps(container, self.siblings, _localrepo() if self.userepo else None)
                     container.install(['nose-cov'])
                     cpath = lambda p: os.path.relpath(p, self.info.projectdir).replace(os.sep, '/')
@@ -155,15 +155,9 @@ class Container:
         from lagoon import docker
         docker('exec', '-w', self.workdir, self.container, 'pip', 'install', *args, stdout = None)
 
-    def _call(self, args, check):
+    def call(self, args, check = False, root = False):
         from lagoon import docker, id
-        return docker('exec', '-w', self.workdir, '-u', "%s:%s" % (id._u().rstrip(), id._g().rstrip()), self.container, *args, stdout = None, check = check)
-
-    def call(self, args):
-        return self._call(args, False)
-
-    def check_call(self, args):
-        self._call(args, True)
+        return docker('exec', '-w', self.workdir, *([] if root else ['-u', "%s:%s" % (id._u().rstrip(), id._g().rstrip())]) + [self.container] + args, stdout = None, check = check)
 
 def main_tests():
     initlogging()
