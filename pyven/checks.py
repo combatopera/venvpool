@@ -113,6 +113,12 @@ class EveryVersion:
                     venv = Container(container)
                     self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
                     venv.install(['nose-cov'])
+                    reportpath = os.path.join(Venv.relpath(pyversion), 'nosetests.xml')
+                    status = venv.call([
+                        'nosetests', '--exe', '-v',
+                        '--with-xunit', '--xunit-file', reportpath,
+                        '--with-cov', '--cov-report', 'term-missing',
+                    ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
             else:
                 venv = Venv(self.info, pyversion)
                 nosetests = venv.programpath('nosetests')
@@ -144,6 +150,10 @@ class Container:
     def install(self, args):
         from lagoon import docker
         docker('exec', '-w', self.workdir, self.container, 'pip', 'install', *args, stdout = None)
+
+    def call(self, args):
+        from lagoon import docker, id
+        return docker('exec', '-w', self.workdir, '-u', "%s:%s" % (id._u().rstrip(), id._g().rstrip()), self.container, *args, stdout = None, check = False)
 
 def main_tests():
     initlogging()

@@ -39,8 +39,14 @@ class Pip:
 
 class Venv:
 
-    def __init__(self, info, pyversion, prefix = ''):
-        self.venvpath = os.path.join(info.projectdir, '.pyven', "%s%s" % (prefix, pyversion))
+    defaultprefix = ''
+
+    @staticmethod
+    def relpath(pyversion, prefix = defaultprefix):
+        return os.path.join('.pyven', "%s%s" % (prefix, pyversion))
+
+    def __init__(self, info, pyversion, prefix = defaultprefix):
+        self.venvpath = os.path.join(info.projectdir, self.relpath(pyversion, prefix))
         if not os.path.exists(self.venvpath):
             subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, self.venvpath])
 
