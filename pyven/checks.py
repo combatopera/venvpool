@@ -138,7 +138,7 @@ class EveryVersion:
                 if os.path.exists(reportname):
                     shutil.copy2(reportname, venv.venvpath) # XXX: Even when status is non-zero?
                     os.remove(reportname)
-                assert not status
+            assert not status
 
 class Container:
 
