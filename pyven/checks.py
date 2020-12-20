@@ -21,7 +21,7 @@ from .minivenv import Venv
 from .pipify import setupcommand
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .setuproot import setuptoolsinfo
-from .util import Excludes, initlogging, Path, stderr
+from .util import bgcontainer, Excludes, initlogging, Path, pyversiontags, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
@@ -109,7 +109,8 @@ class EveryVersion:
     def nose(self):
         for pyversion in self.info.config.pyversions:
             if self.docker:
-                raise Exception('Implement me!')
+                with bgcontainer('-v', "%s:/io" % os.path.abspath(self.info.projectdir), "python:%s" % pyversiontags[pyversion][0]) as container:
+                    assert container
             else:
                 venv = Venv(self.info, pyversion)
                 nosetests = venv.programpath('nosetests')
