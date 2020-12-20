@@ -108,25 +108,28 @@ class EveryVersion:
 
     def nose(self):
         for pyversion in self.info.config.pyversions:
-            venv = Venv(self.info, pyversion)
-            nosetests = venv.programpath('nosetests')
-            if not os.path.exists(nosetests):
-                self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
-                venv.install(['nose-cov'])
-            if os.path.exists(os.path.join(self.info.projectdir, 'setup.py')): # TODO: Caller should know this already.
-                # XXX: Doesn't pyximport take care of this?
-                setupcommand(self.info, pyversion, 'build_ext', '--inplace')
-            reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
-            status = subprocess.call([
-                nosetests, '--exe', '-v',
-                '--with-xunit', '--xunit-file', reportpath,
-                '--with-cov', '--cov-report', 'term-missing',
-            ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
-            reportname = '.coverage'
-            if os.path.exists(reportname):
-                shutil.copy2(reportname, venv.venvpath) # XXX: Even when status is non-zero?
-                os.remove(reportname)
-            assert not status
+            if self.docker:
+                raise Exception('Implement me!')
+            else:
+                venv = Venv(self.info, pyversion)
+                nosetests = venv.programpath('nosetests')
+                if not os.path.exists(nosetests):
+                    self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
+                    venv.install(['nose-cov'])
+                if os.path.exists(os.path.join(self.info.projectdir, 'setup.py')): # TODO: Caller should know this already.
+                    # XXX: Doesn't pyximport take care of this?
+                    setupcommand(self.info, pyversion, 'build_ext', '--inplace')
+                reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
+                status = subprocess.call([
+                    nosetests, '--exe', '-v',
+                    '--with-xunit', '--xunit-file', reportpath,
+                    '--with-cov', '--cov-report', 'term-missing',
+                ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
+                reportname = '.coverage'
+                if os.path.exists(reportname):
+                    shutil.copy2(reportname, venv.venvpath) # XXX: Even when status is non-zero?
+                    os.remove(reportname)
+                assert not status
 
 def main_tests():
     initlogging()
