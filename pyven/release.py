@@ -129,7 +129,7 @@ def release(config, srcgit, info):
     scrub()
     version = info.nextversion()
     pipify(info, version)
-    EveryVersion(info, False, False, []).allchecks()
+    EveryVersion(info, False, False, [], False).allchecks()
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
         for name in chain(filenames, dirnames):

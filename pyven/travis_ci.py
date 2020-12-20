@@ -46,4 +46,4 @@ def main_travis_ci():
     with open('.gitignore', 'a') as f:
         f.write('/.pyven/\n')
     pipify(info)
-    EveryVersion(info, True, False, []).allchecks()
+    EveryVersion(info, True, False, [], False).allchecks()

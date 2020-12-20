@@ -53,12 +53,13 @@ def _runcheck(variant, check, *args):
 
 class EveryVersion:
 
-    def __init__(self, info, siblings, userepo, noseargs):
+    def __init__(self, info, siblings, userepo, noseargs, docker):
         self.files = Files(info.projectdir)
         self.info = info
         self.siblings = siblings
         self.userepo = userepo
         self.noseargs = noseargs
+        self.docker = docker
 
     def allchecks(self):
         for check in self.licheck, self.nlcheck, self.execcheck, self.divcheck, self.pyflakes, self.nose:
@@ -146,4 +147,4 @@ def main_tests():
         else:
             log.info('Use setuptools mode.')
             info = setuptoolsinfo(setuppath)
-    EveryVersion(info, config.siblings, config.repo, noseargs).allchecks()
+    EveryVersion(info, config.siblings, config.repo, noseargs, False).allchecks()
