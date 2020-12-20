@@ -19,6 +19,8 @@ from contextlib import contextmanager
 from tempfile import mkdtemp
 import logging, os, re, shutil, sys
 
+pyversiontags = {2: ['2'], 3: ['3.6', '3.7', '3.8', '3.9']}
+
 def initlogging():
     logging.basicConfig(format = "%(asctime)s [%(levelname)s] %(message)s", level = logging.DEBUG)
 

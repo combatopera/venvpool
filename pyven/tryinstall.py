@@ -18,13 +18,12 @@
 from .checks import EveryVersion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from .util import bgcontainer, initlogging
+from .util import bgcontainer, initlogging, pyversiontags
 from lagoon import git
 from urllib.request import urlopen
 import logging, xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)
-pyversions = '3.9', '3.8', '3.7', '3.6'
 
 def main_tryinstall():
     from lagoon import docker
@@ -39,7 +38,7 @@ def main_tryinstall():
         version = ET.parse(f).find('./channel/item/title').text
     req = "%s==%s" % (project, version)
     upstream_devel_packages = list(headinfo.config.upstream.devel.packages)
-    for pyversion in pyversions:
+    for pyversion in reversed(pyversiontags[3]): # XXX: Why only 3?
         log.info("Python version: %s", pyversion)
         with bgcontainer("python:%s" % pyversion) as container:
             containerexec = docker.partial('exec', container, stdout = None)
