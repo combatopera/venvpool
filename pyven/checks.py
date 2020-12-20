@@ -109,8 +109,10 @@ class EveryVersion:
     def nose(self):
         for pyversion in self.info.config.pyversions:
             if self.docker:
-                with bgcontainer('-v', "%s:/io" % os.path.abspath(self.info.projectdir), "python:%s" % pyversiontags[pyversion][0]) as container:
-                    assert container
+                with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
+                    venv = Container(container)
+                    self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
+                    venv.install(['nose-cov'])
             else:
                 venv = Venv(self.info, pyversion)
                 nosetests = venv.programpath('nosetests')
@@ -131,6 +133,17 @@ class EveryVersion:
                     shutil.copy2(reportname, venv.venvpath) # XXX: Even when status is non-zero?
                     os.remove(reportname)
                 assert not status
+
+class Container:
+
+    workdir = '/io'
+
+    def __init__(self, container):
+        self.container = container
+
+    def install(self, args):
+        from lagoon import docker
+        docker('exec', '-w', self.workdir, self.container, 'pip', 'install', *args, stdout = None)
 
 def main_tests():
     initlogging()
