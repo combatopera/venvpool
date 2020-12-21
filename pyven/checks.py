@@ -153,7 +153,8 @@ class Container:
 
     def install(self, args):
         from lagoon import docker
-        docker('exec', '-w', self.workdir, self.container, 'pip', 'install', *args, stdout = None)
+        if args:
+            docker('exec', '-w', self.workdir, self.container, 'pip', 'install', *args, stdout = None)
 
     def call(self, args, check = False, root = False):
         from lagoon import docker, id
