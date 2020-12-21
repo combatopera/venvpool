@@ -114,6 +114,7 @@ class EveryVersion:
             if self.docker:
                 with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
                     container = Container(container)
+                    container.inituser()
                     if upstream_devel_packages:
                         for command in ['apt-get', 'update'], ['apt-get', 'install', '-y'] + upstream_devel_packages:
                             container.call(command, check = True, root = True)
@@ -149,7 +150,15 @@ class Container:
     workdir = '/io'
 
     def __init__(self, container):
+        from lagoon import id
+        self.uid = int(id._u())
+        self.gid = int(id._g())
         self.container = container
+
+    def inituser(self):
+        from lagoon import docker
+        docker('exec', self.container, 'groupadd', '-g', self.gid, 'pyvengroup', stdout = None)
+        docker('exec', self.container, 'useradd', '-g', self.gid, '-u', self.uid, 'pyvenuser', stdout = None)
 
     def install(self, args):
         from lagoon import docker
@@ -157,8 +166,8 @@ class Container:
             docker('exec', '-w', self.workdir, self.container, 'pip', 'install', *args, stdout = None)
 
     def call(self, args, check = False, root = False):
-        from lagoon import docker, id
-        return docker('exec', '-w', self.workdir, *([] if root else ['-u', "%s:%s" % (id._u().rstrip(), id._g().rstrip())]) + [self.container] + args, stdout = None, check = check)
+        from lagoon import docker
+        return docker('exec', '-w', self.workdir, *([] if root else ['-u', "%s:%s" % (self.uid, self.gid)]) + [self.container] + args, stdout = None, check = check)
 
 def main_tests():
     initlogging()
