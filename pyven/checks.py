@@ -158,7 +158,7 @@ class Container:
     def inituser(self):
         from lagoon import docker
         docker('exec', self.container, 'groupadd', '-g', self.gid, 'pyvengroup', stdout = None)
-        docker('exec', self.container, 'useradd', '-g', self.gid, '-u', self.uid, 'pyvenuser', stdout = None)
+        docker('exec', self.container, 'useradd', '-g', self.gid, '-u', self.uid, '-m', 'pyvenuser', stdout = None)
 
     def install(self, args):
         from lagoon import docker
