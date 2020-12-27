@@ -18,7 +18,6 @@
 from __future__ import with_statement
 from .files import Files
 from .minivenv import Venv
-from .pipify import setupcommand
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .setuproot import setuptoolsinfo
 from .util import bgcontainer, Excludes, initlogging, Path, pyversiontags, stderr
@@ -131,9 +130,6 @@ class EveryVersion:
                 if not os.path.exists(nosetests):
                     self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
                     venv.install(['nose-cov'])
-                if os.path.exists(os.path.join(self.info.projectdir, 'setup.py')): # TODO: Caller should know this already.
-                    # XXX: Doesn't pyximport take care of this?
-                    setupcommand(self.info, pyversion, 'build_ext', '--inplace')
                 status = subprocess.call([
                     nosetests, '--exe', '-v',
                     '--with-xunit', '--xunit-file', reportpath,
