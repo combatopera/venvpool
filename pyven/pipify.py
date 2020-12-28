@@ -27,7 +27,7 @@ def pipify(info, version = None):
     release = version is not None
     # Allow release of project without origin:
     description, url = info.descriptionandurl() if release and info.config.github.participant else [None, None]
-    config = (-info.config).createchild()
+    config = (-info.config).childctrl()
     config.put('version', scalar = version if release else info.devversion())
     config.put('description', scalar = description)
     config.put('long_description', text = 'long_description()' if release else repr(None))
