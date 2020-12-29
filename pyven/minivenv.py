@@ -40,11 +40,16 @@ class Pip:
 
 class Venv:
 
-    def __init__(self, info, pyversion, prefix = ''):
-        self.venvpath = os.path.join(info.projectdir, '.pyven', "%s%s" % (prefix, pyversion))
-        if not os.path.exists(self.venvpath):
+    @classmethod
+    def projectvenv(cls, info, pyversion, prefix = ''):
+        venvpath = os.path.join(info.projectdir, '.pyven', "%s%s" % (prefix, pyversion))
+        if not os.path.exists(venvpath):
             with TemporaryDirectory() as tempdir:
-                subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, os.path.abspath(self.venvpath)], cwd = tempdir)
+                subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, os.path.abspath(venvpath)], cwd = tempdir)
+        return cls(venvpath)
+
+    def __init__(self, venvpath):
+        self.venvpath = venvpath
 
     def programpath(self, name):
         return os.path.join(self.venvpath, 'bin', name)

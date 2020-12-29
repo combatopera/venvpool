@@ -86,7 +86,7 @@ class EveryVersion:
         scriptpath = divcheck.__file__
         def divcheck():
             if pyversion < 3:
-                subprocess.check_call([Venv(self.info, pyversion).programpath('python'), scriptpath] + self.files.pypaths)
+                subprocess.check_call([Venv.projectvenv(self.info, pyversion).programpath('python'), scriptpath] + self.files.pypaths)
             else:
                 sys.stderr.write('SKIP ')
         for pyversion in self.info.config.pyversions:
@@ -97,7 +97,7 @@ class EveryVersion:
                 for path in self.files.pypaths if os.path.relpath(path, self.files.root) not in excludes]
         def pyflakes():
             if paths:
-                venv = Venv(self.info, pyversion) # TODO: Use any suitable venv from a pool.
+                venv = Venv.projectvenv(self.info, pyversion) # TODO: Use any suitable venv from a pool.
                 pyflakesexe = venv.programpath('pyflakes')
                 if not os.path.exists(pyflakesexe):
                     venv.install(['pyflakes'])
@@ -108,7 +108,7 @@ class EveryVersion:
     def nose(self):
         upstream_devel_packages = list(self.info.config.upstream.devel.packages)
         for pyversion in self.info.config.pyversions:
-            venv = Venv(self.info, pyversion)
+            venv = Venv.projectvenv(self.info, pyversion)
             reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
             if self.docker:
                 with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:

@@ -80,7 +80,7 @@ def setupcommand(info, pyversion, *command):
     if {'setuptools', 'wheel'} == set(buildreqs) and sys.version_info.major == pyversion:
         executable = sys.executable
     else:
-        venv = Venv(info, pyversion, 'build')
+        venv = Venv.projectvenv(info, pyversion, 'build')
         venv.install(buildreqs)
         executable = os.path.abspath(venv.programpath('python'))
     subprocess.check_call([executable, 'setup.py'] + list(command), cwd = info.projectdir)
