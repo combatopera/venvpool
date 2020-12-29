@@ -20,7 +20,8 @@ function initbootvenv {
 
         $bootvenv/bin/pipify
 
-        $bootvenv/bin/pip install -e .
+        # TODO: Inspect project.arid to get these names.
+        $bootvenv/bin/pip install -e ../aridity -e ../diapyr -e ../lagoon -e .
 
     )
 
