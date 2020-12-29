@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .util import TemporaryDirectory
 from pkg_resources import safe_name
 import logging, os, subprocess
 
@@ -42,7 +43,8 @@ class Venv:
     def __init__(self, info, pyversion, prefix = ''):
         self.venvpath = os.path.join(info.projectdir, '.pyven', "%s%s" % (prefix, pyversion))
         if not os.path.exists(self.venvpath):
-            subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, self.venvpath])
+            with TemporaryDirectory() as tempdir:
+                subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, os.path.abspath(self.venvpath)], cwd = tempdir)
 
     def programpath(self, name):
         return os.path.join(self.venvpath, 'bin', name)
