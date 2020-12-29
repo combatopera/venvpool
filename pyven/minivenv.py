@@ -43,12 +43,12 @@ class Venv:
     @classmethod
     def projectvenv(cls, info, pyversion, prefix = ''):
         venvpath = os.path.join(info.projectdir, '.pyven', "%s%s" % (prefix, pyversion))
-        if not os.path.exists(venvpath):
-            with TemporaryDirectory() as tempdir:
-                subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, os.path.abspath(venvpath)], cwd = tempdir)
-        return cls(venvpath)
+        return cls(venvpath, None if os.path.exists(venvpath) else pyversion)
 
-    def __init__(self, venvpath):
+    def __init__(self, venvpath, pyversionornone):
+        if pyversionornone is not None:
+            with TemporaryDirectory() as tempdir:
+                subprocess.check_call(['virtualenv', '-p', "python%s" % pyversionornone, os.path.abspath(venvpath)], cwd = tempdir)
         self.venvpath = venvpath
 
     def programpath(self, name):
