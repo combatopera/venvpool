@@ -17,7 +17,7 @@
 
 from __future__ import with_statement
 from .files import Files
-from .minivenv import openvenv, Venv
+from .minivenv import openvenv
 from .pipify import InstallDeps, SimpleInstallDeps
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .setuproot import setuptoolsinfo
@@ -127,17 +127,14 @@ class EveryVersion:
                         '--with-cov', '--cov-report', 'term-missing',
                     ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(reportpath)] + self.noseargs)
             else:
-                venv = Venv.projectvenv(self.info, pyversion)
-                nosetests = venv.programpath('nosetests')
-                if not os.path.exists(nosetests):
-                    with InstallDeps(self.info, self.siblings, _localrepo() if self.userepo else None) as installdeps:
-                        installdeps(venv)
-                    venv.install(['nose-cov'])
-                status = subprocess.call([
-                    nosetests, '--exe', '-v',
-                    '--with-xunit', '--xunit-file', reportpath,
-                    '--with-cov', '--cov-report', 'term-missing',
-                ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
+                with InstallDeps(self.info, self.siblings, _localrepo() if self.userepo else None) as installdeps:
+                    installdeps.add('nose-cov')
+                    with openvenv(pyversion, installdeps, self.transient) as venv:
+                        status = subprocess.call([
+                            venv.programpath('nosetests'), '--exe', '-v',
+                            '--with-xunit', '--xunit-file', reportpath,
+                            '--with-cov', '--cov-report', 'term-missing',
+                        ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
             reportname = '.coverage'
             if os.path.exists(reportname):
                 os.rename(reportname, os.path.join(reportsdir, 'coverage')) # XXX: Replace even when status is non-zero?

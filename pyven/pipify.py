@@ -152,6 +152,9 @@ class InstallDeps:
         self.pypireqs = list(Req.published(pypireqs))
         return self
 
+    def add(self, *requires):
+        self.pypireqs.extend(Req.parsemany(requires))
+
     def __call__(self, venv):
         venv.install(sum((['-e', i.projectdir] for i in self.editableprojects), []) + [i.projectdir for i in self.volatileprojects] + [r.reqstr for r in self.pypireqs])
 

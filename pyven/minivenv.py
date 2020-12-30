@@ -80,10 +80,17 @@ class Venv:
 
     def compatible(self, installdeps):
         from .projectinfo import Req
-        if installdeps.editableprojects or installdeps.volatileprojects:
+        if installdeps.volatileprojects: # TODO: Support this.
             return
-        freeze = dict(r.keyversion() for r in Req.parsemany(l for l in subprocess.check_output([self.programpath('pip'), 'freeze', '--all'], universal_newlines = True).splitlines() if not l.startswith('-e ')))
-        if all(r.parsed.key in freeze and freeze[r.parsed.key] in r.parsed for r in installdeps.pypireqs):
+        editableprojects = set()
+        pypireqs = []
+        for line in subprocess.check_output([self.programpath('pip'), 'freeze', '--all'], universal_newlines = True).splitlines():
+            if line.startswith('-e '):
+                editableprojects.add(line[line.rindex('=') + 1:])
+            else:
+                pypireqs.append(line)
+        pypireqs = dict(r.keyversion() for r in Req.parsemany(pypireqs))
+        if all(i.config.name in editableprojects for i in installdeps.editableprojects) and all(r.parsed.key in pypireqs and pypireqs[r.parsed.key] in r.parsed for r in installdeps.pypireqs):
             log.debug("Found compatible venv: %s", self.venvpath)
             return True
 
