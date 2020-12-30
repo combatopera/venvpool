@@ -43,11 +43,6 @@ class Pip:
 
 class Venv:
 
-    @classmethod
-    def projectvenv(cls, info, pyversion, prefix = ''):
-        venvpath = os.path.join(info.projectdir, '.pyven', "%s%s" % (prefix, pyversion))
-        return cls(venvpath, None if os.path.exists(venvpath) else pyversion)
-
     def __init__(self, venvpath, pyversionornone):
         if pyversionornone is not None:
             with TemporaryDirectory() as tempdir:
