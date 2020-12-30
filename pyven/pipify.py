@@ -18,6 +18,7 @@
 from .minivenv import Venv
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
+from .util import initlogging
 from argparse import ArgumentParser
 from itertools import chain
 from pkg_resources import resource_filename
@@ -67,6 +68,7 @@ def pyvenbuildrequires(info):
         yield r
 
 def main_pipify():
+    initlogging()
     parser = ArgumentParser()
     parser.add_argument('-f')
     parser.add_argument('version', nargs = '?')

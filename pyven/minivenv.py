@@ -67,6 +67,7 @@ class Venv:
                 raise
 
     def delete(self):
+        log.debug("Delete transient venv: %s", self.venvpath)
         shutil.rmtree(self.venvpath)
 
     def programpath(self, name):
@@ -79,7 +80,9 @@ class Venv:
 
     def compatible(self, parsedrequires):
         freeze = dict(_keyversion(r) for r in parse_requirements(l for l in subprocess.check_output([self.programpath('pip'), 'freeze', '--all'], universal_newlines = True).splitlines() if not l.startswith('-e ')))
-        return all(r.key in freeze and freeze[r.key] in r for r in parsedrequires)
+        if all(r.key in freeze and freeze[r.key] in r for r in parsedrequires):
+            log.debug("Found compatible venv: %s", self.venvpath)
+            return True
 
 def _keyversion(r):
     s, = r.specifier
