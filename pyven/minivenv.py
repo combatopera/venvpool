@@ -16,10 +16,13 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .util import TemporaryDirectory
+from contextlib import contextmanager
 from pkg_resources import parse_requirements, safe_name
+from tempfile import mkdtemp
 import errno, logging, os, shutil, subprocess
 
 log = logging.getLogger(__name__)
+pooldir = os.path.join(os.path.expanduser('~'), '.pyven', 'pool')
 
 class Pip:
 
@@ -81,3 +84,32 @@ class Venv:
 def _keyversion(r):
     s, = r.specifier
     return r.key, s.version
+
+@contextmanager
+def _unlockonerror(venv):
+    try:
+        yield venv
+    except:
+        venv.unlock()
+        raise
+
+@contextmanager
+def openvenv(pyversion, requires, transient = False):
+    parsedrequires = list(parse_requirements(requires))
+    versiondir = os.path.join(pooldir, str(pyversion))
+    os.makedirs(versiondir, exist_ok = True)
+    for name in [] if transient else sorted(os.listdir(versiondir)):
+        venv = Venv(os.path.join(versiondir, name), None)
+        if venv.trylock():
+            with _unlockonerror(venv):
+                if venv.compatible(parsedrequires):
+                    break
+            venv.unlock()
+    else:
+        venv = Venv(mkdtemp(dir = versiondir), pyversion)
+        with _unlockonerror(venv):
+            venv.install(requires)
+    try:
+        yield venv
+    finally:
+        venv.delete() if transient else venv.unlock()

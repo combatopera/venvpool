@@ -15,44 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import Venv
+from .minivenv import openvenv
 from .setuproot import getsetupkwargs
 from .util import Path
-from contextlib import contextmanager
-from pkg_resources import parse_requirements
-from tempfile import mkdtemp
 import os, subprocess, sys
-
-pooldir = os.path.join(os.path.expanduser('~'), '.pyven', 'pool')
-
-@contextmanager
-def _unlockonerror(venv):
-    try:
-        yield venv
-    except:
-        venv.unlock()
-        raise
-
-@contextmanager
-def openvenv(pyversion, requires, transient = False):
-    parsedrequires = list(parse_requirements(requires))
-    versiondir = os.path.join(pooldir, str(pyversion))
-    os.makedirs(versiondir, exist_ok = True)
-    for name in [] if transient else sorted(os.listdir(versiondir)):
-        venv = Venv(os.path.join(versiondir, name), None)
-        if venv.trylock():
-            with _unlockonerror(venv):
-                if venv.compatible(parsedrequires):
-                    break
-            venv.unlock()
-    else:
-        venv = Venv(mkdtemp(dir = versiondir), pyversion)
-        with _unlockonerror(venv):
-            venv.install(requires)
-    try:
-        yield venv
-    finally:
-        venv.delete() if transient else venv.unlock()
 
 def main_launch():
     setuppath = Path.seek('.', 'setup.py')
