@@ -135,7 +135,7 @@ class EveryVersion:
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
                 reportname = '.coverage'
                 if os.path.exists(reportname):
-                    os.rename(reportname, os.path.join(reportsdir, 'coverage')) # XXX: Replace even when status is non-zero?
+                    os.rename(reportname, os.path.join(reportsdir, 'coverage')) # Replace whatever the status, as if we configured the location.
                 assert not status
 
 class Container:
