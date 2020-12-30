@@ -62,7 +62,7 @@ class Req:
         return os.path.exists(self.siblingpath(info.contextworkspace()))
 
     @classmethod
-    def published(cls, venv, reqstrs):
+    def published(cls, reqstrs):
         from http import HTTPStatus
         from urllib.error import HTTPError
         from urllib.parse import quote
@@ -225,7 +225,7 @@ class ProjectInfo:
                 isroot = False
             for i in volatileprojects.values(): # Assume editables already pipified.
                 pipify(i)
-            pypireqs = list(Req.published(venv, pypireqs))
+            pypireqs = list(Req.published(pypireqs))
             venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)
 
     def devversion(self):
