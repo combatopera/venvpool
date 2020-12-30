@@ -28,10 +28,10 @@ def legacy(args, infos):
         for req in i.parsedremoterequires():
             s = specifiers.get(req.namepart)
             if s is None:
-                s = req.specifier
+                s = req.specifierset
             else:
-                log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifier)
-                s &= req.specifier
+                log.debug("Intersect %s%s with: %s%s", req.namepart, s, req.namepart, req.specifierset)
+                s &= req.specifierset
             specifiers[req.namepart] = s
     return ["%s%s" % entry for entry in specifiers.items()]
 

@@ -52,9 +52,12 @@ class Req:
     def namepart(self):
         return self.parsed.name
 
+    @property
+    def specifierset(self):
+        return self.parsed.specifier
+
     def __init__(self, reqstr, req):
         self.reqstr = reqstr
-        self.specifier = req.specifier
         self.parsed = req
 
     def siblingpath(self, workspace):
@@ -80,7 +83,7 @@ class Req:
                 log.warning("Never published: %s", r.namepart)
 
     def minstr(self):
-        version, = (s.version for s in self.specifier if s.operator in {'>=', '=='})
+        version, = (s.version for s in self.specifierset if s.operator in {'>=', '=='})
         return "%s==%s" % (self.namepart, version)
 
     def accept(self):
@@ -93,7 +96,7 @@ class Req:
             pass
 
     def keyversion(self):
-        s, = self.specifier
+        s, = self.specifierset
         return self.parsed.key, s.version
 
 def main_minreqs():

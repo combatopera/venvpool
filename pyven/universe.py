@@ -70,9 +70,9 @@ class Universe: # TODO: Less spammy logging.
                     i = bisect(releases, release)
                     if i < len(releases):
                         yield "%s < %s" % (self.names.qname, lookup[releases[i]])
-            lookup = self._project(self.names, self.req.specifier.filter).releaseobjtocudfversion
+            lookup = self._project(self.names, self.req.specifierset.filter).releaseobjtocudfversion
             releases = list(lookup)
-            for s in sorted(self.req.specifier, key = str):
+            for s in sorted(self.req.specifierset, key = str):
                 release = parse_version(s.version)
                 if '>=' == s.operator:
                     for x in ge(): yield x
