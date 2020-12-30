@@ -17,7 +17,7 @@
 
 from .util import TemporaryDirectory
 from contextlib import contextmanager
-from pkg_resources import parse_requirements, safe_name
+from pkg_resources import safe_name
 from tempfile import mkdtemp
 import errno, logging, os, shutil, subprocess
 
@@ -78,10 +78,12 @@ class Venv:
         if args:
             Pip(self.programpath('pip')).pipinstall(args)
 
-    def compatible(self, parsedrequires):
+    def compatible(self, installdeps):
         from .projectinfo import Req
+        if installdeps.editableprojects or installdeps.volatileprojects:
+            return
         freeze = dict(r.keyversion() for r in Req.parsemany(l for l in subprocess.check_output([self.programpath('pip'), 'freeze', '--all'], universal_newlines = True).splitlines() if not l.startswith('-e ')))
-        if all(r.key in freeze and freeze[r.key] in r for r in parsedrequires):
+        if all(r.parsed.key in freeze and freeze[r.parsed.key] in r.parsed for r in installdeps.pypireqs):
             log.debug("Found compatible venv: %s", self.venvpath)
             return True
 
@@ -94,21 +96,20 @@ def _unlockonerror(venv):
         raise
 
 @contextmanager
-def openvenv(pyversion, requires, transient = False):
-    parsedrequires = list(parse_requirements(requires))
+def openvenv(pyversion, installdeps, transient = False):
     versiondir = os.path.join(pooldir, str(pyversion))
     os.makedirs(versiondir, exist_ok = True)
     for name in [] if transient else sorted(os.listdir(versiondir)):
         venv = Venv(os.path.join(versiondir, name), None)
         if venv.trylock():
             with _unlockonerror(venv):
-                if venv.compatible(parsedrequires):
+                if venv.compatible(installdeps):
                     break
             venv.unlock()
     else:
         venv = Venv(mkdtemp(dir = versiondir), pyversion)
         with _unlockonerror(venv):
-            venv.install(requires)
+            installdeps(venv)
     try:
         yield venv
     finally:

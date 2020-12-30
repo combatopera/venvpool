@@ -18,7 +18,7 @@
 from __future__ import with_statement
 from .files import Files
 from .minivenv import openvenv, Venv
-from .pipify import InstallDeps
+from .pipify import InstallDeps, SimpleInstallDeps
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .setuproot import setuptoolsinfo
 from .util import bgcontainer, Excludes, initlogging, Path, pyversiontags, stderr
@@ -99,7 +99,7 @@ class EveryVersion:
                 for path in self.files.pypaths if os.path.relpath(path, self.files.root) not in excludes]
         def pyflakes():
             if paths:
-                with openvenv(pyversion, ['pyflakes'], self.transient) as venv:
+                with openvenv(pyversion, SimpleInstallDeps(['pyflakes']), self.transient) as venv:
                     subprocess.check_call([venv.programpath('pyflakes')] + paths)
         for pyversion in self.info.config.pyversions:
             _runcheck(pyversion, pyflakes)

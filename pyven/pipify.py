@@ -88,8 +88,18 @@ def setupcommand(info, pyversion, transient, *command):
     if {'setuptools', 'wheel'} == set(buildreqs) and sys.version_info.major == pyversion:
         setup(sys.executable)
     else:
-        with openvenv(pyversion, buildreqs, transient) as venv:
+        with openvenv(pyversion, SimpleInstallDeps(buildreqs), transient) as venv:
             setup(venv.programpath('python'))
+
+class SimpleInstallDeps:
+
+    editableprojects = volatileprojects = ()
+
+    def __init__(self, requires):
+        self.pypireqs = Req.parsemany(requires)
+
+    def __call__(self, venv):
+        venv.install([r.reqstr for r in self.pypireqs])
 
 class InstallDeps:
 
