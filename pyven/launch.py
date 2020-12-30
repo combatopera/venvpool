@@ -34,11 +34,11 @@ def _unlockonerror(venv):
         raise
 
 @contextmanager
-def openvenv(pyversion, requires):
+def openvenv(pyversion, requires, transient = False):
     parsedrequires = list(parse_requirements(requires))
     versiondir = os.path.join(pooldir, str(pyversion))
     os.makedirs(versiondir, exist_ok = True)
-    for name in sorted(os.listdir(versiondir)):
+    for name in [] if transient else sorted(os.listdir(versiondir)):
         venv = Venv(os.path.join(versiondir, name), None)
         if venv.trylock():
             with _unlockonerror(venv):
@@ -52,7 +52,7 @@ def openvenv(pyversion, requires):
     try:
         yield venv
     finally:
-        venv.unlock()
+        venv.delete() if transient else venv.unlock()
 
 def main_launch():
     setuppath = Path.seek('.', 'setup.py')

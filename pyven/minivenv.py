@@ -17,7 +17,7 @@
 
 from .util import TemporaryDirectory
 from pkg_resources import parse_requirements, safe_name
-import errno, logging, os, subprocess
+import errno, logging, os, shutil, subprocess
 
 log = logging.getLogger(__name__)
 
@@ -62,6 +62,9 @@ class Venv:
         except OSError as e:
             if errno.ENOENT != e.errno:
                 raise
+
+    def delete(self):
+        shutil.rmtree(self.venvpath)
 
     def programpath(self, name):
         return os.path.join(self.venvpath, 'bin', name)
