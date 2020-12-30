@@ -18,6 +18,7 @@
 from __future__ import with_statement
 from .files import Files
 from .minivenv import openvenv, Venv
+from .pipify import installdeps
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .setuproot import setuptoolsinfo
 from .util import bgcontainer, Excludes, initlogging, Path, pyversiontags, stderr
@@ -116,7 +117,7 @@ class EveryVersion:
                     if upstream_devel_packages:
                         for command in ['apt-get', 'update'], ['apt-get', 'install', '-y'] + upstream_devel_packages:
                             container.call(command, check = True, root = True)
-                    self.info.installdeps(container, self.siblings, _localrepo() if self.userepo else None)
+                    installdeps(self.info, container, self.siblings, _localrepo() if self.userepo else None)
                     container.install(['nose-cov'])
                     cpath = lambda p: os.path.relpath(p, self.info.projectdir).replace(os.sep, '/')
                     status = container.call([
@@ -128,7 +129,7 @@ class EveryVersion:
                 venv = Venv.projectvenv(self.info, pyversion)
                 nosetests = venv.programpath('nosetests')
                 if not os.path.exists(nosetests):
-                    self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
+                    installdeps(self.info, venv, self.siblings, _localrepo() if self.userepo else None)
                     venv.install(['nose-cov'])
                 status = subprocess.call([
                     nosetests, '--exe', '-v',

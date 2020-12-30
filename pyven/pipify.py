@@ -16,13 +16,15 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .minivenv import openvenv
-from .projectinfo import ProjectInfo
+from .projectinfo import ProjectInfo, Req
 from .sourceinfo import SourceInfo
-from .util import initlogging
+from .util import initlogging, TemporaryDirectory
 from argparse import ArgumentParser
 from itertools import chain
 from pkg_resources import resource_filename
-import os, subprocess, sys
+import logging, os, subprocess, sys
+
+log = logging.getLogger(__name__)
 
 def pipify(info, version = None):
     release = version is not None
@@ -87,3 +89,45 @@ def setupcommand(info, pyversion, transient, *command):
     else:
         with openvenv(pyversion, buildreqs, transient) as venv:
             setup(venv.programpath('python'))
+
+def installdeps(info, venv, siblings, localrepo):
+    with TemporaryDirectory() as workspace:
+        editableprojects = {}
+        volatileprojects = {}
+        pypireqs = []
+        def adddeps(i, root):
+            for r in i.parsedrequires():
+                name = r.namepart
+                if name in editableprojects or name in volatileprojects:
+                    continue
+                if siblings:
+                    siblingpath = r.siblingpath(i.contextworkspace())
+                    if os.path.exists(siblingpath):
+                        editableprojects[name] = j = ProjectInfo.seek(siblingpath)
+                        yield j
+                        continue
+                if localrepo is not None:
+                    repopath = os.path.join(localrepo, "%s.git" % name)
+                    if os.path.exists(repopath):
+                        if siblings:
+                            log.warning("Not a sibling, install from repo: %s", name)
+                        clonepath = os.path.join(workspace, name)
+                        subprocess.check_call(['git', 'clone', '--depth', '1', "file://%s" % repopath, clonepath])
+                        volatileprojects[name] = j = ProjectInfo.seek(clonepath)
+                        yield j
+                        continue
+                if root: # Otherwise pip will handle it.
+                    pypireqs.append(r.reqstr)
+        infos = [info]
+        isroot = True
+        while infos:
+            log.debug("Examine deps of: %s", ', '.join(i.config.name for i in infos))
+            nextinfos = []
+            for i in infos:
+                nextinfos.extend(adddeps(i, isroot))
+            infos = nextinfos
+            isroot = False
+        for i in volatileprojects.values(): # Assume editables already pipified.
+            pipify(i)
+        pypireqs = list(Req.published(pypireqs))
+        venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)
