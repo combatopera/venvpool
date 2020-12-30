@@ -113,6 +113,7 @@ class EveryVersion:
                 os.makedirs(reportsdir, exist_ok = True)
                 xmlpath = os.path.join(reportsdir, 'nosetests.xml')
                 if self.docker:
+                    coveragepath = os.path.join(self.info.projectdir, '.coverage')
                     with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
                         container = Container(container)
                         container.inituser()
@@ -127,20 +128,20 @@ class EveryVersion:
                             '--with-cov', '--cov-report', 'term-missing',
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(xmlpath)] + self.noseargs)
                 else:
+                    coveragepath = '.coverage'
                     with openvenv(pyversion, installdeps, self.transient) as venv:
                         status = subprocess.call([
                             venv.programpath('nosetests'), '--exe', '-v',
                             '--with-xunit', '--xunit-file', xmlpath,
                             '--with-cov', '--cov-report', 'term-missing',
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(xmlpath) + self.noseargs)
-                reportname = '.coverage'
-                if os.path.exists(reportname):
-                    os.rename(reportname, os.path.join(reportsdir, 'coverage')) # Replace whatever the status, as if we configured the location.
+                if os.path.exists(coveragepath):
+                    os.rename(coveragepath, os.path.join(reportsdir, 'coverage')) # Replace whatever the status, as if we configured the location.
                 assert not status
 
 class Container:
 
-    workdir = '/io' # XXX: Add host working directory relative to project?
+    workdir = '/io'
 
     def __init__(self, container):
         from lagoon import id
