@@ -34,9 +34,9 @@ def _unlockonerror(venv):
         raise
 
 @contextmanager
-def openvenv(requires):
+def openvenv(pyversion, requires):
     parsedrequires = list(parse_requirements(requires))
-    versiondir = os.path.join(pooldir, str(sys.version_info.major))
+    versiondir = os.path.join(pooldir, str(pyversion))
     os.makedirs(versiondir, exist_ok = True)
     for name in sorted(os.listdir(versiondir)):
         venv = Venv(os.path.join(versiondir, name), None)
@@ -46,7 +46,7 @@ def openvenv(requires):
                     break
             venv.unlock()
     else:
-        venv = Venv(mkdtemp(dir = versiondir), sys.version_info.major)
+        venv = Venv(mkdtemp(dir = versiondir), pyversion)
         with _unlockonerror(venv):
             venv.install(requires)
     try:
@@ -59,6 +59,6 @@ def main_launch():
     setupkwargs = getsetupkwargs(setuppath, ['entry_points', 'install_requires'])
     _, objref = setupkwargs['entry_points']['console_scripts'][0].split('=') # XXX: Support more than just the first?
     modulename, qname = objref.split(':')
-    with openvenv(setupkwargs.get('install_requires', [])) as venv:
+    with openvenv(sys.version_info.major, setupkwargs.get('install_requires', [])) as venv:
         venv.install(['--no-deps', '-e', os.path.dirname(setuppath)]) # XXX: Could this be faster?
         sys.exit(subprocess.call([venv.programpath('python'), '-c', "from %s import %s; %s()" % (modulename, qname.split('.')[0], qname)]))
