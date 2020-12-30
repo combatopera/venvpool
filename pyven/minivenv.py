@@ -72,8 +72,8 @@ class Venv:
             Pip(self.programpath('pip')).pipinstall(args)
 
     def compatible(self, parsedrequires):
-        freeze = dict(_keyversion(r) for r in parse_requirements(l for l in subprocess.check_output([self.programpath('pip'), 'freeze'], universal_newlines = True).splitlines() if not l.startswith('-e ')))
-        return all(freeze.get(r.key) in r for r in parsedrequires)
+        freeze = dict(_keyversion(r) for r in parse_requirements(l for l in subprocess.check_output([self.programpath('pip'), 'freeze', '--all'], universal_newlines = True).splitlines() if not l.startswith('-e ')))
+        return all(r.key in freeze and freeze[r.key] in r for r in parsedrequires)
 
 def _keyversion(r):
     s, = r.specifier
