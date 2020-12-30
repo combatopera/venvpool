@@ -92,6 +92,10 @@ class Req:
         except UndefinedEnvironmentName:
             pass
 
+    def keyversion(self):
+        s, = self.specifier
+        return self.parsed.key, s.version
+
 def main_minreqs():
     initlogging()
     print("requires = $list(%s)" % ' '.join(r.minstr() for r in ProjectInfo.seek('.').parsedrequires()))

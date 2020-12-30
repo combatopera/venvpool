@@ -79,14 +79,11 @@ class Venv:
             Pip(self.programpath('pip')).pipinstall(args)
 
     def compatible(self, parsedrequires):
-        freeze = dict(_keyversion(r) for r in parse_requirements(l for l in subprocess.check_output([self.programpath('pip'), 'freeze', '--all'], universal_newlines = True).splitlines() if not l.startswith('-e ')))
+        from .projectinfo import Req
+        freeze = dict(r.keyversion() for r in Req.parsemany(l for l in subprocess.check_output([self.programpath('pip'), 'freeze', '--all'], universal_newlines = True).splitlines() if not l.startswith('-e ')))
         if all(r.key in freeze and freeze[r.key] in r for r in parsedrequires):
             log.debug("Found compatible venv: %s", self.venvpath)
             return True
-
-def _keyversion(r):
-    s, = r.specifier
-    return r.key, s.version
 
 @contextmanager
 def _unlockonerror(venv):
