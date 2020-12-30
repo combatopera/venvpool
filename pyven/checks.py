@@ -111,7 +111,7 @@ class EveryVersion:
             for pyversion in self.info.config.pyversions:
                 reportsdir = os.path.join(self.info.projectdir, 'var', str(pyversion))
                 os.makedirs(reportsdir, exist_ok = True)
-                reportpath = os.path.join(reportsdir, 'nosetests.xml')
+                xmlpath = os.path.join(reportsdir, 'nosetests.xml')
                 if self.docker:
                     with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
                         container = Container(container)
@@ -123,16 +123,16 @@ class EveryVersion:
                         cpath = lambda p: os.path.relpath(p, self.info.projectdir).replace(os.sep, '/')
                         status = container.call([
                             'nosetests', '--exe', '-v',
-                            '--with-xunit', '--xunit-file', cpath(reportpath),
+                            '--with-xunit', '--xunit-file', cpath(xmlpath),
                             '--with-cov', '--cov-report', 'term-missing',
-                        ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(reportpath)] + self.noseargs)
+                        ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(xmlpath)] + self.noseargs)
                 else:
                     with openvenv(pyversion, installdeps, self.transient) as venv:
                         status = subprocess.call([
                             venv.programpath('nosetests'), '--exe', '-v',
-                            '--with-xunit', '--xunit-file', reportpath,
+                            '--with-xunit', '--xunit-file', xmlpath,
                             '--with-cov', '--cov-report', 'term-missing',
-                        ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
+                        ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(xmlpath) + self.noseargs)
                 reportname = '.coverage'
                 if os.path.exists(reportname):
                     os.rename(reportname, os.path.join(reportsdir, 'coverage')) # Replace whatever the status, as if we configured the location.
