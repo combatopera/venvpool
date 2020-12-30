@@ -106,39 +106,37 @@ class EveryVersion:
 
     def nose(self):
         upstream_devel_packages = list(self.info.config.upstream.devel.packages)
-        for pyversion in self.info.config.pyversions:
-            reportsdir = os.path.join(self.info.projectdir, 'var', str(pyversion))
-            os.makedirs(reportsdir, exist_ok = True)
-            reportpath = os.path.join(reportsdir, 'nosetests.xml')
-            if self.docker:
-                with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
-                    container = Container(container)
-                    container.inituser()
-                    if upstream_devel_packages:
-                        for command in ['apt-get', 'update'], ['apt-get', 'install', '-y'] + upstream_devel_packages:
-                            container.call(command, check = True, root = True)
-                    with InstallDeps(self.info, self.siblings, _localrepo() if self.userepo else None) as installdeps:
-                        installdeps.add('nose-cov')
+        with InstallDeps(self.info, self.siblings, _localrepo() if self.userepo else None) as installdeps:
+            installdeps.add('nose-cov')
+            for pyversion in self.info.config.pyversions:
+                reportsdir = os.path.join(self.info.projectdir, 'var', str(pyversion))
+                os.makedirs(reportsdir, exist_ok = True)
+                reportpath = os.path.join(reportsdir, 'nosetests.xml')
+                if self.docker:
+                    with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
+                        container = Container(container)
+                        container.inituser()
+                        if upstream_devel_packages:
+                            for command in ['apt-get', 'update'], ['apt-get', 'install', '-y'] + upstream_devel_packages:
+                                container.call(command, check = True, root = True)
                         installdeps(container)
-                    cpath = lambda p: os.path.relpath(p, self.info.projectdir).replace(os.sep, '/')
-                    status = container.call([
-                        'nosetests', '--exe', '-v',
-                        '--with-xunit', '--xunit-file', cpath(reportpath),
-                        '--with-cov', '--cov-report', 'term-missing',
-                    ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(reportpath)] + self.noseargs)
-            else:
-                with InstallDeps(self.info, self.siblings, _localrepo() if self.userepo else None) as installdeps:
-                    installdeps.add('nose-cov')
+                        cpath = lambda p: os.path.relpath(p, self.info.projectdir).replace(os.sep, '/')
+                        status = container.call([
+                            'nosetests', '--exe', '-v',
+                            '--with-xunit', '--xunit-file', cpath(reportpath),
+                            '--with-cov', '--cov-report', 'term-missing',
+                        ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(reportpath)] + self.noseargs)
+                else:
                     with openvenv(pyversion, installdeps, self.transient) as venv:
                         status = subprocess.call([
                             venv.programpath('nosetests'), '--exe', '-v',
                             '--with-xunit', '--xunit-file', reportpath,
                             '--with-cov', '--cov-report', 'term-missing',
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
-            reportname = '.coverage'
-            if os.path.exists(reportname):
-                os.rename(reportname, os.path.join(reportsdir, 'coverage')) # XXX: Replace even when status is non-zero?
-            assert not status
+                reportname = '.coverage'
+                if os.path.exists(reportname):
+                    os.rename(reportname, os.path.join(reportsdir, 'coverage')) # XXX: Replace even when status is non-zero?
+                assert not status
 
 class Container:
 
