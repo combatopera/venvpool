@@ -18,11 +18,12 @@
 from .minivenv import openvenv
 from .projectinfo import ProjectInfo, Req
 from .sourceinfo import SourceInfo
-from .util import initlogging, TemporaryDirectory
+from .util import initlogging
 from argparse import ArgumentParser
 from itertools import chain
 from pkg_resources import resource_filename
-import logging, os, subprocess, sys
+from tempfile import mkdtemp
+import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 
@@ -90,8 +91,15 @@ def setupcommand(info, pyversion, transient, *command):
         with openvenv(pyversion, buildreqs, transient) as venv:
             setup(venv.programpath('python'))
 
-def installdeps(info, venv, siblings, localrepo):
-    with TemporaryDirectory() as workspace:
+class InstallDeps:
+
+    def __init__(self, info, siblings, localrepo):
+        self.info = info
+        self.siblings = siblings
+        self.localrepo = localrepo
+
+    def __enter__(self):
+        self.workspace = mkdtemp()
         editableprojects = {}
         volatileprojects = {}
         pypireqs = []
@@ -100,25 +108,25 @@ def installdeps(info, venv, siblings, localrepo):
                 name = r.namepart
                 if name in editableprojects or name in volatileprojects:
                     continue
-                if siblings:
+                if self.siblings:
                     siblingpath = r.siblingpath(i.contextworkspace())
                     if os.path.exists(siblingpath):
                         editableprojects[name] = j = ProjectInfo.seek(siblingpath)
                         yield j
                         continue
-                if localrepo is not None:
-                    repopath = os.path.join(localrepo, "%s.git" % name)
+                if self.localrepo is not None:
+                    repopath = os.path.join(self.localrepo, "%s.git" % name)
                     if os.path.exists(repopath):
-                        if siblings:
+                        if self.siblings:
                             log.warning("Not a sibling, install from repo: %s", name)
-                        clonepath = os.path.join(workspace, name)
+                        clonepath = os.path.join(self.workspace, name)
                         subprocess.check_call(['git', 'clone', '--depth', '1', "file://%s" % repopath, clonepath])
                         volatileprojects[name] = j = ProjectInfo.seek(clonepath)
                         yield j
                         continue
                 if root: # Otherwise pip will handle it.
                     pypireqs.append(r.reqstr)
-        infos = [info]
+        infos = [self.info]
         isroot = True
         while infos:
             log.debug("Examine deps of: %s", ', '.join(i.config.name for i in infos))
@@ -129,5 +137,13 @@ def installdeps(info, venv, siblings, localrepo):
             isroot = False
         for i in volatileprojects.values(): # Assume editables already pipified.
             pipify(i)
-        pypireqs = list(Req.published(pypireqs))
-        venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)
+        self.editableprojects = editableprojects.values()
+        self.volatileprojects = volatileprojects.values()
+        self.pypireqs = list(Req.published(pypireqs))
+        return self
+
+    def __call__(self, venv):
+        venv.install(sum((['-e', i.projectdir] for i in self.editableprojects), []) + [i.projectdir for i in self.volatileprojects] + self.pypireqs)
+
+    def __exit__(self, *exc_info):
+        shutil.rmtree(self.workspace)
