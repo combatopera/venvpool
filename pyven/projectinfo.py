@@ -18,13 +18,12 @@
 from __future__ import with_statement
 from . import targetremote
 from .files import Files
-from .util import initlogging, Path
+from .util import initlogging, Path, TemporaryDirectory
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
 from pkg_resources import parse_requirements
 from pkg_resources.extern.packaging.markers import UndefinedEnvironmentName
-from tempfile import mkdtemp
-import logging, os, re, shutil, stat, subprocess
+import logging, os, re, stat, subprocess
 
 log = logging.getLogger(__name__)
 
@@ -188,8 +187,7 @@ class ProjectInfo:
 
     def installdeps(self, venv, siblings, localrepo):
         from .pipify import pipify
-        workspace = mkdtemp()
-        try:
+        with TemporaryDirectory() as workspace:
             editableprojects = {}
             volatileprojects = {}
             pypireqs = []
@@ -229,8 +227,6 @@ class ProjectInfo:
                 pipify(i)
             pypireqs = list(Req.published(venv, pypireqs))
             venv.install(sum((['-e', i.projectdir] for i in editableprojects.values()), []) + [i.projectdir for i in volatileprojects.values()] + pypireqs)
-        finally:
-            shutil.rmtree(workspace)
 
     def devversion(self):
         releases = [int(t[1:]) for t in subprocess.check_output(['git', 'tag'], cwd = self.projectdir, universal_newlines = True).splitlines() if 'v' == t[0]]
