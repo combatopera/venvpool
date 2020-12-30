@@ -27,7 +27,7 @@ from aridity.util import openresource
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
-import logging, os, shutil, subprocess, sys
+import logging, os, subprocess, sys
 
 log = logging.getLogger(__name__)
 
@@ -110,7 +110,9 @@ class EveryVersion:
         upstream_devel_packages = list(self.info.config.upstream.devel.packages)
         for pyversion in self.info.config.pyversions:
             venv = Venv.projectvenv(self.info, pyversion)
-            reportpath = os.path.join(venv.venvpath, 'nosetests.xml')
+            reportsdir = os.path.join(self.info.projectdir, 'var', str(pyversion))
+            os.makedirs(reportsdir, exist_ok = True)
+            reportpath = os.path.join(reportsdir, 'nosetests.xml')
             if self.docker:
                 with bgcontainer('-v', "%s:%s" % (os.path.abspath(self.info.projectdir), Container.workdir), "python:%s" % pyversiontags[pyversion][0]) as container:
                     container = Container(container)
@@ -138,13 +140,12 @@ class EveryVersion:
                 ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(reportpath) + self.noseargs)
             reportname = '.coverage'
             if os.path.exists(reportname):
-                shutil.copy2(reportname, venv.venvpath) # XXX: Even when status is non-zero?
-                os.remove(reportname)
+                os.rename(reportname, os.path.join(reportsdir, 'coverage')) # XXX: Replace even when status is non-zero?
             assert not status
 
 class Container:
 
-    workdir = '/io'
+    workdir = '/io' # XXX: Add host working directory relative to project?
 
     def __init__(self, container):
         from lagoon import id
