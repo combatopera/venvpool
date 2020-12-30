@@ -49,4 +49,4 @@ def main_tryinstall():
     git.checkout("v%s" % version, stdout = None)
     info = ProjectInfo.seek('.')
     pipify(info)
-    EveryVersion(info, False, False, [], False).allchecks()
+    EveryVersion(info, False, False, [], False, True).allchecks()

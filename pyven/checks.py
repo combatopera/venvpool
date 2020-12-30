@@ -52,13 +52,14 @@ def _runcheck(variant, check, *args):
 
 class EveryVersion:
 
-    def __init__(self, info, siblings, userepo, noseargs, docker):
+    def __init__(self, info, siblings, userepo, noseargs, docker, transient):
         self.files = Files(info.projectdir)
         self.info = info
         self.siblings = siblings
         self.userepo = userepo
         self.noseargs = noseargs
         self.docker = docker
+        self.transient = transient
 
     def allchecks(self):
         for check in self.licheck, self.nlcheck, self.execcheck, self.divcheck, self.pyflakes, self.nose:
@@ -169,9 +170,10 @@ def main_tests():
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--docker', action = 'store_true')
-    parser.add_argument('--siblings', type = yesno, default = True)
     parser.add_argument('--repo', type = yesno, default = True)
-    config, noseargs = parser.parse_known_args()
+    parser.add_argument('--siblings', type = yesno, default = True)
+    parser.add_argument('--transient', action = 'store_true')
+    args, noseargs = parser.parse_known_args()
     try:
         info = ProjectInfo.seek('.')
     except ProjectInfoNotFoundException:
@@ -185,4 +187,4 @@ def main_tests():
         else:
             log.info('Use setuptools mode.')
             info = setuptoolsinfo(setuppath)
-    EveryVersion(info, config.siblings, config.repo, noseargs, config.docker).allchecks()
+    EveryVersion(info, args.siblings, args.repo, noseargs, args.docker, args.transient).allchecks()
