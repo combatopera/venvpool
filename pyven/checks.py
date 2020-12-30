@@ -87,7 +87,7 @@ class EveryVersion:
         scriptpath = divcheck.__file__
         def divcheck():
             if pyversion < 3:
-                subprocess.check_call([Venv.projectvenv(self.info, pyversion).programpath('python'), scriptpath] + self.files.pypaths)
+                subprocess.check_call(["python%s" % pyversion, scriptpath] + self.files.pypaths)
             else:
                 sys.stderr.write('SKIP ')
         for pyversion in self.info.config.pyversions:
