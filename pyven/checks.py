@@ -17,7 +17,7 @@
 
 from __future__ import with_statement
 from .files import Files
-from .minivenv import Venv
+from .minivenv import openvenv, Venv
 from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
 from .setuproot import setuptoolsinfo
 from .util import bgcontainer, Excludes, initlogging, Path, pyversiontags, stderr
@@ -98,11 +98,8 @@ class EveryVersion:
                 for path in self.files.pypaths if os.path.relpath(path, self.files.root) not in excludes]
         def pyflakes():
             if paths:
-                venv = Venv.projectvenv(self.info, pyversion) # TODO: Use any suitable venv from a pool.
-                pyflakesexe = venv.programpath('pyflakes')
-                if not os.path.exists(pyflakesexe):
-                    venv.install(['pyflakes'])
-                subprocess.check_call([pyflakesexe] + paths)
+                with openvenv(pyversion, ['pyflakes'], self.transient) as venv:
+                    subprocess.check_call([venv.programpath('pyflakes')] + paths)
         for pyversion in self.info.config.pyversions:
             _runcheck(pyversion, pyflakes)
 
