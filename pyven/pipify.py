@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import Venv
+from .minivenv import openvenv
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from .util import initlogging
@@ -71,18 +71,19 @@ def main_pipify():
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('-f')
+    parser.add_argument('--transient', action = 'store_true')
     parser.add_argument('version', nargs = '?')
     args = parser.parse_args()
     info = ProjectInfo.seek('.') if args.f is None else ProjectInfo('.', args.f)
     pipify(info, args.version)
-    setupcommand(info, sys.version_info.major, 'egg_info')
+    setupcommand(info, sys.version_info.major, args.transient, 'egg_info')
 
-def setupcommand(info, pyversion, *command):
+def setupcommand(info, pyversion, transient, *command):
+    def setup(absexecutable):
+        subprocess.check_call([absexecutable, 'setup.py'] + list(command), cwd = info.projectdir)
     buildreqs = list(chain(pyvenbuildrequires(info), info.config.build.requires))
     if {'setuptools', 'wheel'} == set(buildreqs) and sys.version_info.major == pyversion:
-        executable = sys.executable
+        setup(sys.executable)
     else:
-        venv = Venv.projectvenv(info, pyversion, 'build')
-        venv.install(buildreqs)
-        executable = os.path.abspath(venv.programpath('python'))
-    subprocess.check_call([executable, 'setup.py'] + list(command), cwd = info.projectdir)
+        with openvenv(pyversion, buildreqs, transient) as venv:
+            setup(venv.programpath('python'))
