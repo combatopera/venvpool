@@ -118,8 +118,8 @@ class EveryVersion:
                         for command in ['apt-get', 'update'], ['apt-get', 'install', '-y'] + upstream_devel_packages:
                             container.call(command, check = True, root = True)
                     with InstallDeps(self.info, self.siblings, _localrepo() if self.userepo else None) as installdeps:
+                        installdeps.add('nose-cov')
                         installdeps(container)
-                    container.install(['nose-cov'])
                     cpath = lambda p: os.path.relpath(p, self.info.projectdir).replace(os.sep, '/')
                     status = container.call([
                         'nosetests', '--exe', '-v',
