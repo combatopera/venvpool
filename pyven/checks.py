@@ -109,7 +109,6 @@ class EveryVersion:
     def nose(self):
         upstream_devel_packages = list(self.info.config.upstream.devel.packages)
         for pyversion in self.info.config.pyversions:
-            venv = Venv.projectvenv(self.info, pyversion)
             reportsdir = os.path.join(self.info.projectdir, 'var', str(pyversion))
             os.makedirs(reportsdir, exist_ok = True)
             reportpath = os.path.join(reportsdir, 'nosetests.xml')
@@ -129,6 +128,7 @@ class EveryVersion:
                         '--with-cov', '--cov-report', 'term-missing',
                     ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(reportpath)] + self.noseargs)
             else:
+                venv = Venv.projectvenv(self.info, pyversion)
                 nosetests = venv.programpath('nosetests')
                 if not os.path.exists(nosetests):
                     self.info.installdeps(venv, self.siblings, _localrepo() if self.userepo else None)
