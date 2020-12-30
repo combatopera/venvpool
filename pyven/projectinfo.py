@@ -48,12 +48,16 @@ class Req:
     def parsemany(cls, reqstrs):
         return [cls(reqstr, req) for reqstr, req in zip(reqstrs, parse_requirements(reqstrs))]
 
+    @property
+    def namepart(self):
+        return self.parsed.name
+
     def __init__(self, reqstr, req):
         self.reqstr = reqstr
-        self.namepart = req.unsafe_name # XXX: Is unsafe_name the correct attribute?
         self.specifier = req.specifier
         self.marker = req.marker
         self.extras = req.extras
+        self.parsed = req
 
     def siblingpath(self, workspace):
         return os.path.join(workspace, self.namepart)
