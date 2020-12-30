@@ -106,13 +106,32 @@ def openvenv(pyversion, installdeps, transient = False):
         if venv.trylock():
             with _unlockonerror(venv):
                 if venv.compatible(installdeps):
+                    poolmodified = False
                     break
             venv.unlock()
     else:
         venv = Venv(mkdtemp(dir = versiondir), pyversion)
         with _unlockonerror(venv):
             installdeps(venv)
+        poolmodified = not transient
     try:
         yield venv
     finally:
         venv.delete() if transient else venv.unlock()
+    if poolmodified:
+        compactpool()
+
+def compactpool():
+    locked = []
+    try:
+        for version in sorted(os.listdir(pooldir)):
+            versiondir = os.path.join(pooldir, version)
+            for name in sorted(os.listdir(versiondir)):
+                venv = Venv(os.path.join(versiondir, name), None)
+                if venv.trylock():
+                    locked.append(venv)
+        log.debug("Compact %s venvs.", len(locked))
+        subprocess.check_call(['jdupes', '-Lrq'] + [l.venvpath for l in locked])
+    finally:
+        for l in reversed(locked):
+            l.unlock()
