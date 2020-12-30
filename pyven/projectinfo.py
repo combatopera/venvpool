@@ -56,7 +56,6 @@ class Req:
         self.reqstr = reqstr
         self.specifier = req.specifier
         self.marker = req.marker
-        self.extras = req.extras
         self.parsed = req
 
     def siblingpath(self, workspace):
@@ -88,7 +87,7 @@ class Req:
     def accept(self):
         try:
             if self.marker is None or self.marker.evaluate():
-                assert not self.extras # Not supported.
+                assert not self.parsed.extras # Not supported.
                 return True
         except UndefinedEnvironmentName:
             pass
