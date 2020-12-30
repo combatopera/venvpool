@@ -16,8 +16,8 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .util import TemporaryDirectory
-from pkg_resources import safe_name
-import logging, os, subprocess
+from pkg_resources import parse_requirements, safe_name
+import errno, logging, os, subprocess
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +49,19 @@ class Venv:
         if pyversionornone is not None:
             with TemporaryDirectory() as tempdir:
                 subprocess.check_call(['virtualenv', '-p', "python%s" % pyversionornone, os.path.abspath(venvpath)], cwd = tempdir)
+        self.tokenpath = os.path.join(venvpath, 'token')
         self.venvpath = venvpath
+
+    def unlock(self):
+        os.mkdir(self.tokenpath)
+
+    def trylock(self):
+        try:
+            os.rmdir(self.tokenpath)
+            return True
+        except OSError as e:
+            if errno.ENOENT != e.errno:
+                raise
 
     def programpath(self, name):
         return os.path.join(self.venvpath, 'bin', name)
@@ -58,3 +70,11 @@ class Venv:
         log.debug("Install: %s", ' '.join(args))
         if args:
             Pip(self.programpath('pip')).pipinstall(args)
+
+    def compatible(self, parsedrequires):
+        freeze = dict(_keyversion(r) for r in parse_requirements(l for l in subprocess.check_output([self.programpath('pip'), 'freeze'], universal_newlines = True).splitlines() if not l.startswith('-e ')))
+        return all(freeze.get(r.key) in r for r in parsedrequires)
+
+def _keyversion(r):
+    s, = r.specifier
+    return r.key, s.version
