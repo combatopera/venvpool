@@ -143,7 +143,7 @@ class InstallDeps:
         return self
 
     def __call__(self, venv):
-        venv.install(sum((['-e', i.projectdir] for i in self.editableprojects), []) + [i.projectdir for i in self.volatileprojects] + self.pypireqs)
+        venv.install(sum((['-e', i.projectdir] for i in self.editableprojects), []) + [i.projectdir for i in self.volatileprojects] + [r.reqstr for r in self.pypireqs])
 
     def __exit__(self, *exc_info):
         shutil.rmtree(self.workspace)

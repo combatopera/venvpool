@@ -71,7 +71,7 @@ class Req:
             try:
                 with urlopen(Request("https://pypi.org/simple/%s/" % quote(r.namepart, safe = ''), method = 'HEAD')):
                     pass
-                yield r.reqstr
+                yield r
             except HTTPError as e:
                 if e.code != HTTPStatus.NOT_FOUND:
                     raise
