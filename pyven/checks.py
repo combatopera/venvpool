@@ -28,7 +28,7 @@ from aridity.util import openresource
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
-import logging, os, subprocess, sys
+import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 
@@ -136,7 +136,8 @@ class EveryVersion:
                             '--with-cov', '--cov-report', 'term-missing',
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(xmlpath) + self.noseargs)
                 if os.path.exists(coveragepath):
-                    os.rename(coveragepath, os.path.join(reportsdir, 'coverage')) # Replace whatever the status, as if we configured the location.
+                    shutil.copy2(coveragepath, os.path.join(reportsdir, 'coverage')) # Replace whatever the status, as if we configured the location.
+                    os.remove(coveragepath) # Can't simply use rename cross-device in release case.
                 assert not status
 
 class Container:
