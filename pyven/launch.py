@@ -28,4 +28,5 @@ def main_launch():
     modulename, qname = objref.split(':')
     with openvenv(sys.version_info.major, SimpleInstallDeps(setupkwargs.get('install_requires', []))) as venv:
         venv.install(['--no-deps', '-e', os.path.dirname(setuppath)]) # XXX: Could this be faster?
-        sys.exit(subprocess.call([venv.programpath('python'), '-c', "from %s import %s; %s()" % (modulename, qname.split('.')[0], qname)]))
+        status = subprocess.call([venv.programpath('python'), '-c', "from %s import %s; %s()" % (modulename, qname.split('.')[0], qname)])
+    sys.exit(status)
