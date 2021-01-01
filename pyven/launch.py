@@ -16,17 +16,16 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .minivenv import openvenv
-from .pipify import SimpleInstallDeps
-from .setuproot import getsetupkwargs
-from .util import Path
-import os, subprocess, sys
+from .pipify import InstallDeps
+from .projectinfo import ProjectInfo
+from .util import initlogging
+import subprocess, sys
 
 def main_launch():
-    setuppath = Path.seek('.', 'setup.py')
-    setupkwargs = getsetupkwargs(setuppath, ['entry_points', 'install_requires'])
-    _, objref = setupkwargs['entry_points']['console_scripts'][0].split('=') # XXX: Support more than just the first?
+    initlogging()
+    info = ProjectInfo.seekany('.')
+    _, objref = info.console_scripts[0].split('=') # XXX: Support more than just the first?
     modulename, qname = objref.split(':')
-    with openvenv(sys.version_info.major, SimpleInstallDeps(setupkwargs.get('install_requires', []))) as venv:
-        venv.install(['--no-deps', '-e', os.path.dirname(setuppath)]) # XXX: Could this be faster?
+    with InstallDeps(info, False, None) as installdeps, openvenv(sys.version_info.major, installdeps) as venv:
         status = subprocess.call([venv.programpath('python'), '-c', "from %s import %s; %s()" % (modulename, qname.split('.')[0], qname)])
     sys.exit(status)
