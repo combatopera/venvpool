@@ -16,7 +16,6 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import fakesetup
-from ..projectinfo import ProjectInfo
 from aridity.util import openresource
 from traceback import format_exception_only
 import os, subprocess, sys
@@ -31,6 +30,7 @@ def getsetupkwargs(setuppath, fields):
     return setupkwargs
 
 def setuptoolsinfo(setuppath):
+    from ..projectinfo import ProjectInfo
     with openresource(__name__, 'setuptools.arid') as f:
         info = ProjectInfo(os.path.dirname(setuppath), f)
     setupkwargs = getsetupkwargs(setuppath, ['name', 'install_requires', 'entry_points'])

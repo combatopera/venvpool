@@ -19,12 +19,10 @@ from __future__ import with_statement
 from .files import Files
 from .minivenv import openvenv
 from .pipify import InstallDeps, SimpleInstallDeps
-from .projectinfo import ProjectInfo, ProjectInfoNotFoundException
-from .setuproot import setuptoolsinfo
-from .util import bgcontainer, Excludes, initlogging, Path, pyversiontags, stderr
+from .projectinfo import ProjectInfo
+from .util import bgcontainer, Excludes, initlogging, pyversiontags, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
-from aridity.util import openresource
 from diapyr.util import singleton
 from itertools import chain
 from setuptools import find_packages
@@ -172,17 +170,4 @@ def main_tests():
     parser.add_argument('--siblings', type = yesno, default = True)
     parser.add_argument('--transient', action = 'store_true')
     args, noseargs = parser.parse_known_args()
-    try:
-        info = ProjectInfo.seek('.')
-    except ProjectInfoNotFoundException:
-        setuppath = Path.seek('.', 'setup.py')
-        if setuppath is None:
-            log.info('Use uninstallable mode.')
-            projectdir = os.path.dirname(Path.seek('.', '.git'))
-            with openresource(__name__, 'setuproot/setuptools.arid') as f:
-                info = ProjectInfo(projectdir, f)
-            info.config.name = os.path.basename(os.path.abspath(projectdir))
-        else:
-            log.info('Use setuptools mode.')
-            info = setuptoolsinfo(setuppath)
-    EveryVersion(info, args.siblings, args.repo, noseargs, args.docker, args.transient).allchecks()
+    EveryVersion(ProjectInfo.seekany('.'), args.siblings, args.repo, noseargs, args.docker, args.transient).allchecks()

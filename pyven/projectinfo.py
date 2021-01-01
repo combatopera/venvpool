@@ -18,6 +18,7 @@
 from __future__ import with_statement
 from . import targetremote
 from .files import Files
+from .setuproot import setuptoolsinfo
 from .util import initlogging, Path
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
@@ -111,6 +112,23 @@ class ProjectInfo:
         if path is None:
             raise ProjectInfoNotFoundException(realdir)
         return cls(path.parent, path)
+
+    @classmethod
+    def seekany(cls, realdir):
+        try:
+            return cls.seek(realdir)
+        except ProjectInfoNotFoundException:
+            pass
+        setuppath = Path.seek(realdir, 'setup.py')
+        if setuppath is not None:
+            log.info('Use setuptools mode.')
+            return setuptoolsinfo(setuppath)
+        log.info('Use uninstallable mode.')
+        projectdir = os.path.dirname(Path.seek(realdir, '.git'))
+        with openresource(__name__, 'setuproot/setuptools.arid') as f:
+            info = cls(projectdir, f)
+        info.config.name = os.path.basename(os.path.abspath(projectdir))
+        return info
 
     def __init__(self, projectdir, infopathorstream):
         config = ConfigCtrl()
