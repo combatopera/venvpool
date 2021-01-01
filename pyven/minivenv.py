@@ -85,6 +85,7 @@ class Venv:
             else:
                 pypireqs.append(line)
         pypireqs = dict(r.keyversion() for r in Req.parsemany(pypireqs))
+        # TODO: For editable projects check it's the same directory.
         if all(i.config.name in editableprojects for i in installdeps.editableprojects) and all(r.parsed.key in pypireqs and pypireqs[r.parsed.key] in r.parsed for r in installdeps.pypireqs):
             log.debug("Found compatible venv: %s", self.venvpath)
             return True
