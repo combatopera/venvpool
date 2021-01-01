@@ -38,6 +38,7 @@ def setuptoolsinfo(setuppath):
         info.config.name = setupkwargs['name']
     for r in setupkwargs.get('install_requires', []):
         (-info.config).printf("requires += %s", r)
-    info.console_scripts = setupkwargs.get('entry_points', {}).get('console_scripts')
-    info.config.executable = bool(info.console_scripts)
+    console_scripts = setupkwargs.get('entry_points', {}).get('console_scripts')
+    info.console_scripts = lambda: console_scripts
+    info.config.executable = bool(console_scripts)
     return info

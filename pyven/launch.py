@@ -24,7 +24,7 @@ import subprocess, sys
 def main_launch():
     initlogging()
     info = ProjectInfo.seekany('.')
-    _, objref = info.console_scripts[0].split('=') # XXX: Support more than just the first?
+    _, objref = next(iter(info.console_scripts())).split('=') # XXX: Support more than just the first?
     modulename, qname = objref.split(':')
     with InstallDeps(info, False, None) as installdeps, openvenv(sys.version_info.major, installdeps) as venv:
         status = subprocess.call([venv.programpath('python'), '-c', "from %s import %s; %s()" % (modulename, qname.split('.')[0], qname)])
