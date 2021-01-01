@@ -131,8 +131,12 @@ def compactpool():
                 venv = Venv(os.path.join(versiondir, name), None)
                 if venv.trylock():
                     locked.append(venv)
-        log.debug("Compact %s venvs.", len(locked))
-        subprocess.check_call(['jdupes', '-Lrq'] + [l.venvpath for l in locked])
+        jdupes = shutil.which('jdupes')
+        if jdupes is not None:
+            log.debug("Compact %s venvs.", len(locked))
+            subprocess.check_call([jdupes, '-Lrq'] + [l.venvpath for l in locked])
+        else:
+            log.debug("Skip compact venvs as jdupes not available.")
     finally:
         for l in reversed(locked):
             l.unlock()
