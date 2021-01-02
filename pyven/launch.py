@@ -19,13 +19,19 @@ from .minivenv import openvenv
 from .pipify import InstallDeps
 from .projectinfo import ProjectInfo
 from .util import initlogging
+from argparse import ArgumentParser
 import subprocess, sys
 
 def main_launch():
     initlogging()
+    parser = ArgumentParser()
+    parser.add_argument('--build', action = 'store_true')
+    args = parser.parse_args()
     info = ProjectInfo.seekany('.')
     _, objref = next(iter(info.console_scripts())).split('=') # XXX: Support more than just the first?
     modulename, qname = objref.split(':')
     with InstallDeps(info, False, None) as installdeps, openvenv(sys.version_info.major, installdeps) as venv:
+        if args.build:
+            venv.install(['-e', info.projectdir])
         status = subprocess.call([venv.programpath('python'), '-c', "from %s import %s; %s()" % (modulename, qname.split('.')[0], qname)])
     sys.exit(status)
