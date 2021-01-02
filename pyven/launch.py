@@ -25,7 +25,7 @@ import subprocess, sys
 def main_launch():
     initlogging()
     parser = ArgumentParser()
-    parser.add_argument('--build', action = 'store_true')
+    parser.add_argument('--build', action = 'store_true', help = 'rebuild native components')
     args = parser.parse_args()
     info = ProjectInfo.seekany('.')
     _, objref = next(iter(info.console_scripts())).split('=') # XXX: Support more than just the first?
