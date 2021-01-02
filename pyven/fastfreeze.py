@@ -22,7 +22,7 @@ fieldlist = 'Name', 'Version'
 fieldset = set(fieldlist)
 egglinksuffix = '.egg-link'
 
-def fastfreeze(venvpath):
+def fastfreeze(venvpath): # TODO: What we really need is for Venv to be able to check whether certain things are installed.
     libpath = os.path.join(venvpath, 'lib')
     for name in os.listdir(libpath):
         site_packages = os.path.join(libpath, name, 'site-packages')
@@ -44,7 +44,7 @@ def fastfreeze(venvpath):
         elif name.endswith(egglinksuffix):
             yield name[:-len(egglinksuffix)], '-e' # XXX: Which mangling of the name is this?
 
-def main_fastfreeze():
+def main_fastfreeze(): # TODO: Retire.
     parser = ArgumentParser()
     parser.add_argument('venvpath')
     for name, version in fastfreeze(parser.parse_args().venvpath):
