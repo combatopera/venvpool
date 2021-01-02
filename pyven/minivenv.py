@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .fastfreeze import fastfreeze
 from .util import TemporaryDirectory
 from contextlib import contextmanager
 from pkg_resources import safe_name
@@ -79,11 +80,11 @@ class Venv:
             return
         editableprojects = set()
         pypireqs = []
-        for line in subprocess.check_output([self.programpath('pip'), 'freeze', '--all'], universal_newlines = True).splitlines():
-            if line.startswith('-e '):
-                editableprojects.add(line[line.rindex('=') + 1:])
+        for name, version in fastfreeze(self.venvpath):
+            if '-e' == version:
+                editableprojects.add(name)
             else:
-                pypireqs.append(line)
+                pypireqs.append("%s==%s" % (name, version))
         pypireqs = dict(r.keyversion() for r in Req.parsemany(pypireqs))
         # TODO: For editable projects check it's the same directory.
         if all(i.config.name in editableprojects for i in installdeps.editableprojects) and all(r.parsed.key in pypireqs and pypireqs[r.parsed.key] in r.parsed for r in installdeps.pypireqs):
