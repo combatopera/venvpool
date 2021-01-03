@@ -106,9 +106,11 @@ def main_minreqs():
 
 class ProjectInfo:
 
+    projectaridname = 'project.arid'
+
     @classmethod
     def seek(cls, realdir):
-        path = Path.seek(realdir, 'project.arid')
+        path = Path.seek(realdir, self.projectaridname)
         if path is None:
             raise ProjectInfoNotFoundException(realdir)
         return cls(path.parent, path)

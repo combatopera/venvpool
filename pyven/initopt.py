@@ -31,7 +31,7 @@ eolbytes = set(b'\r\n')
 pyversion = sys.version_info.major
 
 def _ispyvenproject(projectdir):
-    return os.path.exists(os.path.join(projectdir, 'project.arid'))
+    return os.path.exists(os.path.join(projectdir, ProjectInfo.projectaridname))
 
 def _hasname(info):
     try:
