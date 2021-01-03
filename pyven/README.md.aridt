@@ -28,7 +28,7 @@ Now use pyven's pipify to create a setup.py, which pip can then use to install t
 ```
 python$first$(pyversions) -m venv pyvenvenv
 pyvenvenv/bin/pip install pyven
-pyvenvenv/bin/pipify pyven
+pyvenvenv/bin/pipify $(name)
 
 python$first$(pyversions) -m venv venvname
 venvname/bin/pip install -e $(name)
