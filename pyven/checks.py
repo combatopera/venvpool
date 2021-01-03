@@ -23,9 +23,12 @@ from .projectinfo import ProjectInfo
 from .util import bgcontainer, Excludes, initlogging, pyversiontags, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
+from aridity.util import openresource
 from diapyr.util import singleton
 from itertools import chain
+from lagoon import diff
 from setuptools import find_packages
+from tempfile import NamedTemporaryFile
 import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -61,7 +64,7 @@ class EveryVersion:
         self.transient = transient
 
     def allchecks(self):
-        for check in self.licheck, self.nlcheck, self.execcheck, self.divcheck, self.pyflakes, self.nose:
+        for check in self.licheck, self.nlcheck, self.execcheck, self.divcheck, self.pyflakes, self.nose, self.readme:
             check()
 
     def licheck(self):
@@ -137,6 +140,17 @@ class EveryVersion:
                     shutil.copy2(coveragepath, os.path.join(reportsdir, 'coverage')) # Replace whatever the status, as if we configured the location.
                     os.remove(coveragepath) # Can't simply use rename cross-device in release case.
                 assert not status
+
+    def readme(self):
+        def readme():
+            config = (-self.info.config).childctrl().node
+            config.tagline, _ = self.info.descriptionandurl()
+            with NamedTemporaryFile('w') as g:
+                with openresource(__name__, 'README.md.aridt') as f:
+                    (-config).processtemplate(f, g)
+                g.flush()
+                diff(g.name, os.path.join(self.info.projectdir, 'README.md'), stdout = None)
+        _runcheck('*', readme)
 
 class Container:
 
