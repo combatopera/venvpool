@@ -50,9 +50,7 @@ def _localrepo():
 def _runcheck(variant, check, *args):
     sys.stderr.write("%s[%s]: " % (check.__name__, variant))
     sys.stderr.flush()
-    if check(*args) is skip:
-        sys.stderr.write('SKIP ')
-    stderr('OK')
+    stderr('SKIP' if check(*args) is skip else 'OK')
 
 class EveryVersion:
 
