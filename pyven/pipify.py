@@ -73,11 +73,10 @@ def pyvenbuildrequires(info):
 def main_pipify():
     initlogging()
     parser = ArgumentParser()
-    parser.add_argument('-f')
     parser.add_argument('--transient', action = 'store_true')
     parser.add_argument('--version')
     args = parser.parse_args()
-    info = ProjectInfo.seek('.') if args.f is None else ProjectInfo('.', args.f)
+    info = ProjectInfo.seek('.')
     pipify(info, args.version)
     setupcommand(info, sys.version_info.major, args.transient, 'egg_info')
 
