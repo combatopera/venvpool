@@ -32,6 +32,7 @@ from tempfile import NamedTemporaryFile
 import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
+skip = object()
 
 @singleton
 class yesno:
@@ -49,7 +50,8 @@ def _localrepo():
 def _runcheck(variant, check, *args):
     sys.stderr.write("%s[%s]: " % (check.__name__, variant))
     sys.stderr.flush()
-    check(*args)
+    if check(*args) is skip:
+        sys.stderr.write('SKIP ')
     stderr('OK')
 
 class EveryVersion:
@@ -88,10 +90,9 @@ class EveryVersion:
         from . import divcheck
         scriptpath = divcheck.__file__
         def divcheck():
-            if pyversion < 3:
-                subprocess.check_call(["python%s" % pyversion, scriptpath] + self.files.pypaths)
-            else:
-                sys.stderr.write('SKIP ')
+            if pyversion >= 3:
+                return skip
+            subprocess.check_call(["python%s" % pyversion, scriptpath] + self.files.pypaths)
         for pyversion in self.info.config.pyversions:
             _runcheck(pyversion, divcheck)
 
@@ -146,6 +147,8 @@ class EveryVersion:
             for _, o in resolvable.resolve(context).itero():
                 return o
         def readme():
+            if not self.info.config.github.participant:
+                return skip
             config = (-self.info.config).childctrl().node
             config.first = first
             config.tagline, _ = self.info.descriptionandurl()
