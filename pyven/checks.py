@@ -149,7 +149,10 @@ class EveryVersion:
                 with openresource(__name__, 'README.md.aridt') as f:
                     (-config).processtemplate(f, g)
                 g.flush()
-                diff(g.name, os.path.join(self.info.projectdir, 'README.md'), stdout = None)
+                completed = diff(g.name, os.path.join(self.info.projectdir, 'README.md'), check = False)
+                sys.stdout.write(completed.stdout)
+                assert completed.returncode in {0, 1}
+                assert all('<' != l[0] for l in completed.stdout.splitlines())
         _runcheck('*', readme)
 
 class Container:
