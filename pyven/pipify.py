@@ -75,7 +75,7 @@ def main_pipify():
     parser = ArgumentParser()
     parser.add_argument('-f')
     parser.add_argument('--transient', action = 'store_true')
-    parser.add_argument('version', nargs = '?')
+    parser.add_argument('--version')
     args = parser.parse_args()
     info = ProjectInfo.seek('.') if args.f is None else ProjectInfo('.', args.f)
     pipify(info, args.version)
