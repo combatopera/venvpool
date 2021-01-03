@@ -110,7 +110,7 @@ class ProjectInfo:
 
     @classmethod
     def seek(cls, realdir):
-        path = Path.seek(realdir, self.projectaridname)
+        path = Path.seek(realdir, cls.projectaridname)
         if path is None:
             raise ProjectInfoNotFoundException(realdir)
         return cls(path.parent, path)
