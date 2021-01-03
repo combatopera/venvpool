@@ -75,8 +75,9 @@ def main_pipify():
     parser = ArgumentParser()
     parser.add_argument('--transient', action = 'store_true')
     parser.add_argument('--version')
+    parser.add_argument('projectdir', nargs = '?')
     args = parser.parse_args()
-    info = ProjectInfo.seek('.')
+    info = ProjectInfo.seek('.') if args.projectdir is None else ProjectInfo(args.projectdir, os.path.join(args.projectdir, ProjectInfo.projectaridname))
     pipify(info, args.version)
     setupcommand(info, sys.version_info.major, args.transient, 'egg_info')
 
