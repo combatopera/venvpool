@@ -142,8 +142,12 @@ class EveryVersion:
                 assert not status
 
     def readme(self):
+        def first(context, resolvable):
+            for _, o in resolvable.resolve(context).itero():
+                return o
         def readme():
             config = (-self.info.config).childctrl().node
+            config.first = first
             config.tagline, _ = self.info.descriptionandurl()
             with NamedTemporaryFile('w') as g:
                 with openresource(__name__, 'README.md.aridt') as f:

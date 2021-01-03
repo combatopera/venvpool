@@ -7,13 +7,13 @@ These are generic installation instructions.
 ### To use, permanently
 The quickest way to get started is to install the current release from PyPI:
 ```
-pip3 install --user $(name)
+pip$first$(pyversions) install --user $(name)
 ```
 
 ### To use, temporarily
 If you prefer to keep .local clean, install to a virtualenv:
 ```
-python3 -m venv venvname
+python$first$(pyversions) -m venv venvname
 venvname/bin/pip install $(name)
 . venvname/bin/activate
 ```
@@ -26,11 +26,11 @@ git clone git@github.com:combatopera/$(name).git
 ```
 Now use pyven's pipify to create a setup.py, which pip can then use to install the project editably:
 ```
-python3 -m venv pyvenvenv
+python$first$(pyversions) -m venv pyvenvenv
 pyvenvenv/bin/pip install pyven
 pyvenvenv/bin/pipify pyven
 
-python3 -m venv venvname
+python$first$(pyversions) -m venv venvname
 venvname/bin/pip install -e $(name)
 . venvname/bin/activate
 ```
