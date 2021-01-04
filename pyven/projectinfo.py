@@ -174,10 +174,17 @@ class ProjectInfo:
         return str(last + 1)
 
     def descriptionandurl(self):
-        import urllib.request, json
+        import urllib.error, urllib.request, json, time
         urlpath = "combatopera/%s" % self.config.name # TODO: Make configurable.
-        with urllib.request.urlopen("https://api.github.com/repos/%s" % urlpath) as f:
-            return json.loads(f.read().decode())['description'], "https://github.com/%s" % urlpath
+        while True:
+            try:
+                with urllib.request.urlopen("https://api.github.com/repos/%s" % urlpath) as f:
+                    return json.loads(f.read().decode())['description'], "https://github.com/%s" % urlpath
+            except urllib.error.HTTPError as e:
+                if 403 != e.code:
+                    raise
+                log.info("Sleep 1 minute due to: %s", e)
+                time.sleep(60)
 
     def py_modules(self):
         suffix = '.py'
