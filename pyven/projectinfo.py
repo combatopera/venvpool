@@ -174,13 +174,8 @@ class ProjectInfo:
         return str(last + 1)
 
     def descriptionandurl(self):
-        import urllib.request, json, re, subprocess
-        def reponames():
-            for line in subprocess.check_output(['git', 'remote', '-v'], cwd = self.projectdir).decode().splitlines():
-                yield re.search('([^/]+)[.]git$', re.findall(r'\S+', line)[1]).group(1)
-        org = 'combatopera' # TODO: Get from settings.
-        reponame, = set(reponames())
-        urlpath = "%s/%s" % (org, reponame)
+        import urllib.request, json
+        urlpath = "combatopera/%s" % self.config.name # TODO: Make configurable.
         with urllib.request.urlopen("https://api.github.com/repos/%s" % urlpath) as f:
             return json.loads(f.read().decode())['description'], "https://github.com/%s" % urlpath
 
