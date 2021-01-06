@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from argparse import ArgumentParser
 import os
 
 fieldlist = 'Name', 'Version'
@@ -43,12 +42,3 @@ def fastfreeze(venvpath): # TODO: What we really need is for Venv to be able to 
             info.clear()
         elif name.endswith(egglinksuffix):
             yield name[:-len(egglinksuffix)], '-e' # XXX: Which mangling of the name is this?
-
-def main_fastfreeze(): # TODO: Retire.
-    parser = ArgumentParser()
-    parser.add_argument('venvpath')
-    for name, version in fastfreeze(parser.parse_args().venvpath):
-        if '-e' == version:
-            print(version, name)
-        else:
-            print("%s==%s" % (name, version))
