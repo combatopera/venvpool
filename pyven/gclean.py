@@ -76,6 +76,7 @@ def styleornone():
             return style()
 
 def main_gclean():
+    'Remove files matching patterns below #glean in .gitignore file.'
     roots = sys.argv[1:]
     while True:
         style = styleornone()

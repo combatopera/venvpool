@@ -20,6 +20,7 @@ from argparse import ArgumentParser
 import subprocess
 
 def main_tasks():
+    'Show all XXX/TODO/FIXME comments in project.'
     parser = ArgumentParser()
     parser.add_argument('-q', action = 'count', default = 0)
     config = parser.parse_args()

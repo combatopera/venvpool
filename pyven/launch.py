@@ -23,6 +23,7 @@ from argparse import ArgumentParser
 import subprocess, sys
 
 def main_launch():
+    'Run project using a suitable venv from the pool.'
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--build', action = 'store_true', help = 'rebuild native components')

@@ -100,6 +100,7 @@ class Req:
         return self.parsed.key, s.version
 
 def main_minreqs():
+    'Print project.arid snippet pinning requires to their minimum allowed versions.'
     initlogging()
     print("requires = $list(%s)" % ' '.join(r.minstr() for r in ProjectInfo.seek('.').parsedrequires()))
 

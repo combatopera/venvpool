@@ -71,6 +71,7 @@ def pyvenbuildrequires(info):
         yield r
 
 def main_pipify():
+    'Generate setuptools files for a project.arid project.'
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--transient', action = 'store_true')

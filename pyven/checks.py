@@ -188,6 +188,7 @@ class Container:
         return docker('exec', '-w', self.workdir, *([] if root else ['-u', "%s:%s" % (self.uid, self.gid)]) + [self.container] + args, stdout = None, check = check)
 
 def main_tests():
+    'Run project unit tests and more, also suitable for CI.'
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--docker', action = 'store_true')
