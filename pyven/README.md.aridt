@@ -34,3 +34,8 @@ python$first$(pyversions) -m venv venvname
 venvname/bin/pip install -e $(name)
 . venvname/bin/activate
 ```
+
+## Commands$join$map($(commands) $.[
+
+### $(name)
+$(doc)])

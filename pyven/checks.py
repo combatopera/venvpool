@@ -150,6 +150,9 @@ class EveryVersion:
             config = (-self.info.config).childctrl().node
             config.first = first
             config.tagline, _ = self.info.descriptionandurl()
+            (-config).execute('commands * name = $label()')
+            for mf in sorted(self.info.mainfunctions(), key = lambda mf: mf.name):
+                (-config).printf("commands %s doc = %s", mf.name, mf.doc)
             with NamedTemporaryFile('w') as g:
                 with openresource(__name__, 'README.md.aridt') as f:
                     (-config).processtemplate(f, g)

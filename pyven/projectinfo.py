@@ -198,12 +198,9 @@ class ProjectInfo:
             return os.stat(path).st_mode & xmask and not os.path.isdir(path)
         return [name for name in os.listdir(self.projectdir) if isscript(os.path.join(self.projectdir, name))]
 
-    def console_scripts(self):
+    def mainfunctions(self):
         import ast
-        v = []
-        prefix = 'main_'
-        extension = '.py'
-        for path in Files.relpaths(self.projectdir, [extension], []):
+        for path in Files.relpaths(self.projectdir, [MainFunction.extension], []):
             with open(os.path.join(self.projectdir, path)) as f:
                 try:
                     m = ast.parse(f.read())
@@ -211,10 +208,23 @@ class ProjectInfo:
                     log.warning("Skip: %s" % path, exc_info = True)
                     continue
             for obj in m.body:
-                if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
-                    v.append("%s=%s:%s" % (obj.name[len(prefix):].replace('_', '-'), path[:-len(extension)].replace(os.sep, '.'), obj.name))
-        return v
+                if isinstance(obj, ast.FunctionDef) and obj.name.startswith(MainFunction.prefix):
+                    yield MainFunction(path, obj)
+
+    def console_scripts(self):
+        return [mf.console_script for mf in self.mainfunctions()]
 
     def devversion(self):
         releases = [int(t[1:]) for t in subprocess.check_output(['git', 'tag'], cwd = self.projectdir, universal_newlines = True).splitlines() if 'v' == t[0]]
         return "%s.dev0" % ((max(releases) if releases else 0) + 1)
+
+class MainFunction:
+
+    prefix = 'main_'
+    extension = '.py'
+
+    def __init__(self, path, obj):
+        import ast
+        self.name = obj.name[len(self.prefix):].replace('_', '-')
+        self.console_script = "%s=%s:%s" % (self.name, path[:-len(self.extension)].replace(os.sep, '.'), obj.name)
+        self.doc = ast.get_docstring(obj)
