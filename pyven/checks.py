@@ -152,6 +152,7 @@ class EveryVersion:
             config.tagline, _ = self.info.descriptionandurl()
             (-config).execute('commands * name = $label()')
             for mf in sorted(self.info.mainfunctions(), key = lambda mf: mf.name):
+                assert mf.doc is not None
                 (-config).printf("commands %s doc = %s", mf.name, mf.doc)
             with NamedTemporaryFile('w') as g:
                 with openresource(__name__, 'README.md.aridt') as f:
