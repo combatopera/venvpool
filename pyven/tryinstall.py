@@ -26,6 +26,7 @@ import logging, xml.etree.ElementTree as ET
 log = logging.getLogger(__name__)
 
 def main_tryinstall():
+    'Check last release can be installed from PyPI and its tests still pass, for use by CI.'
     from lagoon import docker
     initlogging()
     headinfo = ProjectInfo.seek('.')

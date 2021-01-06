@@ -86,6 +86,7 @@ class Image:
             run(['-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io'], chain([self.pythonexe, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
 
 def main_release():
+    'Release project to PyPI, with manylinux wheels as needed.'
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')

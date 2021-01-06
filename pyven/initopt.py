@@ -62,6 +62,7 @@ def _prepare(info):
         pipify(info)
 
 def main_initopt():
+    'Furnish the venv with editable projects and their dependencies, with mccs solver support.'
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('-f', action = 'store_true')
