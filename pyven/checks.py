@@ -23,7 +23,7 @@ from .projectinfo import ProjectInfo
 from .util import bgcontainer, Excludes, initlogging, pyversiontags, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
-from aridity.util import openresource
+from aridity.util import NoSuchPathException, openresource
 from diapyr.util import singleton
 from itertools import chain
 from lagoon import diff
@@ -144,6 +144,7 @@ class EveryVersion:
         def first(context, resolvable):
             for _, o in resolvable.resolve(context).itero():
                 return o
+            raise NoSuchPathException('Empty set.')
         def readme():
             if not self.info.config.github.participant:
                 return skip
