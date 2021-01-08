@@ -17,8 +17,10 @@
 
 from .pypicache import PypiCache
 from .universe import Universe
+from .util import bgcontainer
 from datetime import datetime
-import logging, os, subprocess
+from pkg_resources import resource_filename
+import logging, os
 
 log = logging.getLogger(__name__)
 
@@ -36,16 +38,20 @@ def legacy(args, infos):
     return ["%s%s" % entry for entry in specifiers.items()]
 
 def mccs(args, infos):
+    from lagoon import docker
     solution = []
     with PypiCache(args, os.path.join(os.path.expanduser('~'), '.pyven', 'pypi.shelf')) as pypicache:
         u = Universe(pypicache, infos)
-        path = os.path.join(args.venvpath, "%s.cudf" % datetime.now().isoformat())
+        path = os.path.join(args.venvpath, "%s.cudf" % datetime.now().isoformat().replace(':', '-'))
         with open(path, 'w') as f:
             u.writecudf(f)
-        log.info("Run mccs solver, this can take a minute.")
-        # TODO: Investigate why this may get stuck in an infinite loop.
-        lines = [l for l in subprocess.check_output(['mccs', '-i', path, '-lexsemiagregate[-removed,-notuptodate,-new]'], universal_newlines = True).splitlines()
-                if l and not l.startswith(('#', 'depends:', 'conflicts:'))]
+        build = docker.build.partial(resource_filename(__name__, 'mccs'))
+        build(stdout = None)
+        with bgcontainer('-v', "%s:/io/input.cudf" % path, build._q().rstrip()) as container:
+            log.info("Run mccs solver, this can take a minute.")
+            # TODO: Investigate why this may get stuck in an infinite loop.
+            lines = [l for l in docker('exec', container, 'mccs', '-i', '/io/input.cudf', '-lexsemiagregate[-removed,-notuptodate,-new]').splitlines()
+                    if l and not l.startswith(('#', 'depends:', 'conflicts:'))]
         while lines:
             k, package = lines.pop(0).split(' ')
             assert 'package:' == k
