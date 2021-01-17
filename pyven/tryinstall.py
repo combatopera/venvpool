@@ -20,6 +20,7 @@ from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .util import bgcontainer, initlogging, pyversiontags
 from lagoon import git
+from lagoon.program import partial
 from urllib.request import urlopen
 import logging, xml.etree.ElementTree as ET
 
@@ -42,7 +43,7 @@ def main_tryinstall():
     for pyversion in reversed(pyversiontags[3]): # XXX: Why only 3?
         log.info("Python version: %s", pyversion)
         with bgcontainer("python:%s" % pyversion) as container:
-            containerexec = docker.partial('exec', container, stdout = None)
+            containerexec = docker[partial]('exec', container, stdout = None)
             if upstream_devel_packages:
                 containerexec('apt-get', 'update')
                 containerexec('apt-get', 'install', '-y', *upstream_devel_packages)

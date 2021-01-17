@@ -19,6 +19,7 @@ from .pypicache import PypiCache
 from .universe import Universe
 from .util import bgcontainer
 from datetime import datetime
+from lagoon.program import partial
 from pkg_resources import resource_filename
 import logging, os
 
@@ -45,7 +46,7 @@ def mccs(args, infos):
         path = os.path.join(args.venvpath, "%s.cudf" % datetime.now().isoformat().replace(':', '-'))
         with open(path, 'w') as f:
             u.writecudf(f)
-        build = docker.build.partial(resource_filename(__name__, 'mccs'))
+        build = docker.build[partial](resource_filename(__name__, 'mccs'))
         build(stdout = None)
         with bgcontainer('-v', "%s:/io/input.cudf" % path, build._q().rstrip()) as container:
             log.info("Run mccs solver, this can take a minute.")

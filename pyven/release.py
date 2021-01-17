@@ -25,7 +25,7 @@ from .util import bgcontainer, initlogging
 from argparse import ArgumentParser
 from diapyr.util import enum, singleton
 from itertools import chain
-from lagoon.program import Program
+from lagoon.program import partial, Program
 from pkg_resources import resource_filename
 from subprocess import CalledProcessError
 from tempfile import TemporaryDirectory
@@ -59,7 +59,7 @@ class Image:
 
     def makewheels(self, info): # TODO: This code would benefit from modern syntax.
         from lagoon import docker
-        docker_print = docker.partial(stdout = None)
+        docker_print = docker[partial](stdout = None)
         log.info("Make wheels for platform: %s", self.plat)
         scripts = list(info.config.devel.scripts)
         packages = list(chain(info.config.devel.packages, ['sudo'] if scripts else []))
@@ -93,7 +93,7 @@ def main_release():
     parser.add_argument('path', nargs = '?', default = '.')
     config = parser.parse_args()
     info = ProjectInfo.seek(config.path)
-    git = lagoon.git.partial(cwd = info.projectdir)
+    git = lagoon.git[partial](cwd = info.projectdir)
     if git.status.__porcelain():
         raise Exception('Uncommitted changes!')
     log.debug('No uncommitted changes.')
@@ -126,7 +126,7 @@ def uploadableartifacts(artifactrelpaths):
             log.debug("Not uploadable: %s", p)
 
 def release(config, srcgit, info):
-    scrub = lagoon.git.clean._xdi.partial(cwd = info.projectdir, input = 'c', stdout = None)
+    scrub = lagoon.git.clean._xdi[partial](cwd = info.projectdir, input = 'c', stdout = None)
     scrub()
     version = info.nextversion()
     pipify(info, version)
@@ -138,7 +138,7 @@ def release(config, srcgit, info):
                 path = os.path.join(dirpath, name)
                 log.debug("Delete: %s", path)
                 (os.remove if name.endswith('.py') else shutil.rmtree)(path)
-    python = Program.text(sys.executable).partial(cwd = info.projectdir, stdout = None)
+    python = Program.text(sys.executable)[partial](cwd = info.projectdir, stdout = None)
     for m, f in (w.split(':') for w in info.config.warmups):
         python._c("from %s import %s; %s()" % (m, f, f))
     pipify(info, version)
