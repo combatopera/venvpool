@@ -166,7 +166,7 @@ class ProjectInfo:
         pattern = re.compile('-([0-9]+)[-.]')
         try:
             with urllib.request.urlopen("https://pypi.org/simple/%s/" % self.config.name) as f:
-                doc = dom.parseString(f.read())
+                doc = dom.parseString(subprocess.check_output(['tidy', '-asxml'], input = f.read()))
             last = max(int(pattern.search(textcontent(a)).group(1)) for a in doc.getElementsByTagName('a'))
         except urllib.error.HTTPError as e:
             if 404 != e.code:
