@@ -16,14 +16,14 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .fastfreeze import fastfreeze
-from .util import TemporaryDirectory
+from .util import cachedir, TemporaryDirectory
 from contextlib import contextmanager
 from pkg_resources import safe_name
 from tempfile import mkdtemp
 import errno, logging, os, shutil, subprocess
 
 log = logging.getLogger(__name__)
-pooldir = os.path.join(os.path.expanduser('~'), '.pyven', 'pool')
+pooldir = os.path.join(cachedir, 'pool')
 
 class Pip:
 

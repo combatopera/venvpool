@@ -19,6 +19,7 @@ from contextlib import contextmanager
 from tempfile import mkdtemp
 import logging, os, re, shutil, sys
 
+cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven')
 pyversiontags = {2: ['2'], 3: ['3.6', '3.7', '3.8', '3.9']}
 
 def initlogging():

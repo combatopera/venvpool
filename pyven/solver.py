@@ -17,7 +17,7 @@
 
 from .pypicache import PypiCache
 from .universe import Universe
-from .util import bgcontainer
+from .util import bgcontainer, cachedir
 from datetime import datetime
 from lagoon.program import partial
 from pkg_resources import resource_filename
@@ -41,7 +41,7 @@ def legacy(args, infos):
 def mccs(args, infos):
     from lagoon import docker
     solution = []
-    with PypiCache(args, os.path.join(os.path.expanduser('~'), '.pyven', 'pypi.shelf')) as pypicache:
+    with PypiCache(args, os.path.join(cachedir, 'pypi.shelf')) as pypicache:
         u = Universe(pypicache, infos)
         path = os.path.join(args.venvpath, "%s.cudf" % datetime.now().isoformat().replace(':', '-'))
         with open(path, 'w') as f:
