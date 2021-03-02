@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import with_statement
-import hashlib, os, re, sys
+import hashlib, os, re, shlex, sys
 
 gpltemplate = """# Copyright %(years)s %(author)s
 
@@ -59,7 +59,7 @@ def licheck(info, paths):
         else:
             raise Exception(name)
     master = ''.join(s + '\n' for s in sections) # Check each section ends with 2 newlines.
-    for path in paths:
+    def checkone(path):
         with open(path) as f:
             text = f.read()
         if text.startswith('#!'):
@@ -71,9 +71,10 @@ def licheck(info, paths):
             text = re.sub('^//', '#', text, flags = re.MULTILINE)
         elif path.endswith('.arid'):
             text = re.sub('^:', '#', text, flags = re.MULTILINE)
-        text = text[:len(master)]
-        if master != text:
-            raise Exception(path)
+        return master == text[:len(master)]
+    badpaths = [p for p in paths if not checkone(p)]
+    if badpaths:
+        raise Exception(' '.join(map(shlex.quote, badpaths)))
     gplpath = os.path.join(info.projectdir, 'COPYING')
     md5 = hashlib.md5()
     with open(gplpath) as f:
