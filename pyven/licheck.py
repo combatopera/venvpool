@@ -39,6 +39,9 @@ intersection = '''# This file incorporates work covered by the following copyrig
 # permission notice:
 '''
 
+def _hassuffix(name, *suffixes):
+    return name.endswith(suffixes) or name.endswith(tuple("%s.aridt" % s for s in suffixes))
+
 def licheck(info, paths):
     if not info.config.licheck.enabled:
         sys.stderr.write('SKIP ')
@@ -65,11 +68,11 @@ def licheck(info, paths):
         if text.startswith('#!'):
             for _ in range(2):
                 text = text[text.index('\n') + 1:]
-        if path.endswith('.s'):
+        if _hassuffix(path, '.s'):
             text = re.sub('^;', '#', text, flags = re.MULTILINE)
-        elif path.endswith(('.h', '.cpp', '.cxx', '.gradle', '.java')):
+        elif _hassuffix(path, '.h', '.cpp', '.cxx', '.gradle', '.java'):
             text = re.sub('^//', '#', text, flags = re.MULTILINE)
-        elif path.endswith('.arid'):
+        elif _hassuffix(path, '.arid'):
             text = re.sub('^:', '#', text, flags = re.MULTILINE)
         return master == text[:len(master)]
     badpaths = [p for p in paths if not checkone(p)]
