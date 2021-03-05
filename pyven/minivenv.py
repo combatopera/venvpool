@@ -15,12 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .fastfreeze import fastfreeze
 from .util import cachedir, onerror, TemporaryDirectory
 from contextlib import contextmanager
-from pkg_resources import safe_name
+from pkg_resources import safe_name, to_filename
 from tempfile import mkdtemp
-import errno, logging, os, shutil, subprocess, sys
+import errno, logging, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 pooldir = os.path.join(cachedir, 'pool')
@@ -75,21 +74,31 @@ class Venv:
             Pip(self.programpath('pip')).pipinstall(args)
 
     def compatible(self, installdeps):
-        from .projectinfo import Req
         if installdeps.volatileprojects: # TODO: Support this.
             return
-        editableprojects = set()
-        pypireqs = []
-        for name, version in fastfreeze(self.venvpath):
-            if '-e' == version:
-                editableprojects.add(name)
-            else:
-                pypireqs.append("%s==%s" % (name, version))
-        pypireqs = dict(r.keyversion() for r in Req.parsemany(pypireqs))
-        # TODO: For editable projects check it's the same directory.
-        if all(i.config.name in editableprojects for i in installdeps.editableprojects) and all(r.parsed.key in pypireqs and pypireqs[r.parsed.key] in r.parsed for r in installdeps.pypireqs):
-            log.debug("Found compatible venv: %s", self.venvpath)
-            return True
+        for i in installdeps.editableprojects:
+            if not self._haseditableproject(i.config.name): # TODO: Check it's the same directory.
+                return
+        for r in installdeps.pypireqs:
+            version = self._reqversionornone(r.namepart)
+            if version is None or version not in r.parsed:
+                return
+        log.debug("Found compatible venv: %s", self.venvpath)
+        return True
+
+    def _haseditableproject(self, name):
+        libpath = os.path.join(self.venvpath, 'lib')
+        pyname, = os.listdir(libpath)
+        return os.path.exists(os.path.join(libpath, pyname, 'site-packages', "%s.egg-link" % name))
+
+    def _reqversionornone(self, name):
+        libpath = os.path.join(self.venvpath, 'lib')
+        pyname, = os.listdir(libpath)
+        pattern = re.compile("^%s-(.+)[.](?:dist|egg)-info$" % re.escape(to_filename(safe_name(name))))
+        for name in os.listdir(os.path.join(libpath, pyname, 'site-packages')):
+            m = pattern.search(name)
+            if m is not None:
+                return m.group(1)
 
 @contextmanager
 def openvenv(pyversion, installdeps, transient = False):
