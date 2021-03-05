@@ -83,7 +83,7 @@ class Venv:
         if installdeps.volatileprojects: # TODO: Support this.
             return
         for i in installdeps.editableprojects:
-            if not self._haseditableproject(i.config.name): # TODO: Check it's the same directory.
+            if not self._haseditableproject(i):
                 return
         for r in installdeps.pypireqs:
             version = self._reqversionornone(r.namepart)
@@ -92,8 +92,12 @@ class Venv:
         log.debug("Found compatible venv: %s", self.venvpath)
         return True
 
-    def _haseditableproject(self, name):
-        return os.path.exists(os.path.join(self.site_packages, "%s.egg-link" % safe_name(name)))
+    def _haseditableproject(self, info):
+        path = os.path.join(self.site_packages, "%s.egg-link" % safe_name(info.config.name))
+        if os.path.exists(path):
+            with open(path) as f:
+                # Assume it isn't a URI relative to site-packages:
+                return os.path.abspath(info.projectdir) == f.read().splitlines()[0]
 
     def _reqversionornone(self, name):
         pattern = re.compile("^%s-(.+)[.](?:dist|egg)-info$" % re.escape(to_filename(safe_name(name))))
