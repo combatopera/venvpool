@@ -43,6 +43,12 @@ class Pip:
 
 class Venv:
 
+    @property
+    def site_packages(self):
+        libpath = os.path.join(self.venvpath, 'lib')
+        pyname, = os.listdir(libpath)
+        return os.path.join(libpath, pyname, 'site-packages')
+
     def __init__(self, venvpath, pyversionornone):
         if pyversionornone is not None:
             with TemporaryDirectory() as tempdir:
@@ -87,15 +93,11 @@ class Venv:
         return True
 
     def _haseditableproject(self, name):
-        libpath = os.path.join(self.venvpath, 'lib')
-        pyname, = os.listdir(libpath)
-        return os.path.exists(os.path.join(libpath, pyname, 'site-packages', "%s.egg-link" % safe_name(name)))
+        return os.path.exists(os.path.join(self.site_packages, "%s.egg-link" % safe_name(name)))
 
     def _reqversionornone(self, name):
-        libpath = os.path.join(self.venvpath, 'lib')
-        pyname, = os.listdir(libpath)
         pattern = re.compile("^%s-(.+)[.](?:dist|egg)-info$" % re.escape(to_filename(safe_name(name))))
-        for name in os.listdir(os.path.join(libpath, pyname, 'site-packages')):
+        for name in os.listdir(self.site_packages):
             m = pattern.search(name)
             if m is not None:
                 return m.group(1)
