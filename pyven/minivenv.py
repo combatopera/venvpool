@@ -89,7 +89,7 @@ class Venv:
     def _haseditableproject(self, name):
         libpath = os.path.join(self.venvpath, 'lib')
         pyname, = os.listdir(libpath)
-        return os.path.exists(os.path.join(libpath, pyname, 'site-packages', "%s.egg-link" % name))
+        return os.path.exists(os.path.join(libpath, pyname, 'site-packages', "%s.egg-link" % safe_name(name)))
 
     def _reqversionornone(self, name):
         libpath = os.path.join(self.venvpath, 'lib')
