@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import with_statement
 from .util import stripeol
 from collections import defaultdict
 import os, subprocess, xml.dom.minidom as dom
