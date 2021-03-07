@@ -83,7 +83,7 @@ class Venv:
         if installdeps.volatileprojects: # TODO: Support this.
             return
         for i in installdeps.editableprojects:
-            if not self._haseditableproject(i):
+            if not self._haseditableproject(i): # FIXME LATER: It may have new requirements.
                 return
         for r in installdeps.pypireqs:
             version = self._reqversionornone(r.namepart)
