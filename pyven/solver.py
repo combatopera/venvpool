@@ -39,7 +39,7 @@ def legacy(args, infos):
     return ["%s%s" % entry for entry in specifiers.items()]
 
 def mccs(args, infos):
-    from lagoon import docker
+    from lagoon import docker # FIXME: Port to subprocess for Python 2.
     solution = []
     with PypiCache(args, os.path.join(cachedir, 'pypi.shelf')) as pypicache:
         u = Universe(pypicache, infos)
