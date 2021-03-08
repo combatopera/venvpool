@@ -18,10 +18,14 @@ function initbootvenv {
 
         cd "$(dirname "$0")"
 
-        $bootvenv/bin/pipify
-
         # TODO: Inspect project.arid to get these names.
-        $bootvenv/bin/pip install -e ../aridity -e ../diapyr -e ../lagoon -e .
+        for p in ../aridity ../diapyr ../lagoon .; do
+
+            (cd $p; $bootvenv/bin/pipify)
+
+            $bootvenv/bin/pip install -e $p
+
+        done
 
     )
 
