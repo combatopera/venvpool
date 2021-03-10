@@ -34,7 +34,7 @@ class Pip:
         self.pippath = pippath
 
     def pipinstall(self, command):
-        subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage)
+        subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage, stdout = sys.stderr)
 
     def installeditable(self, solution, infos):
         log.debug("Install solution: %s", ' '.join(solution))
@@ -47,7 +47,7 @@ class Venv:
     def __init__(self, venvpath, pyversionornone):
         if pyversionornone is not None:
             with TemporaryDirectory() as tempdir:
-                subprocess.check_call(['virtualenv', '-p', "python%s" % pyversionornone, os.path.abspath(venvpath)], cwd = tempdir)
+                subprocess.check_call(['virtualenv', '-p', "python%s" % pyversionornone, os.path.abspath(venvpath)], cwd = tempdir, stdout = sys.stderr)
         self.tokenpath = os.path.join(venvpath, 'token')
         self.venvpath = venvpath
 
