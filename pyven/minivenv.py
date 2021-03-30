@@ -20,7 +20,7 @@ from .util import cachedir, onerror, TemporaryDirectory
 from contextlib import contextmanager
 from pkg_resources import safe_name
 from tempfile import mkdtemp
-import errno, logging, os, shutil, subprocess
+import errno, logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 pooldir = os.path.join(cachedir, 'pool')
