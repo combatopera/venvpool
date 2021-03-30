@@ -140,8 +140,8 @@ class EveryVersion:
                 assert not status
 
     def readme(self):
-        def first(context, resolvable):
-            for _, o in resolvable.resolve(context).itero():
+        def first(scope, resolvable):
+            for _, o in resolvable.resolve(scope).itero():
                 return o
             raise NoSuchPathException('Empty set.')
         def readme():
