@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .fastfreeze import fastfreeze
-from .util import cachedir, TemporaryDirectory
+from .util import cachedir, onerror, TemporaryDirectory
 from contextlib import contextmanager
 from pkg_resources import safe_name
 from tempfile import mkdtemp
@@ -92,28 +92,20 @@ class Venv:
             return True
 
 @contextmanager
-def _unlockonerror(venv):
-    try:
-        yield venv
-    except:
-        venv.unlock()
-        raise
-
-@contextmanager
 def openvenv(pyversion, installdeps, transient = False):
     versiondir = os.path.join(pooldir, str(pyversion))
     os.makedirs(versiondir, exist_ok = True)
     for name in [] if transient else sorted(os.listdir(versiondir)):
         venv = Venv(os.path.join(versiondir, name), None)
         if venv.trylock():
-            with _unlockonerror(venv):
+            with onerror(venv.unlock):
                 if venv.compatible(installdeps):
                     poolmodified = False
                     break
             venv.unlock()
     else:
         venv = Venv(mkdtemp(dir = versiondir), pyversion)
-        with _unlockonerror(venv):
+        with onerror(venv.unlock):
             installdeps(venv)
         poolmodified = not transient
     try:
