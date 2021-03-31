@@ -17,7 +17,7 @@
 
 from . import targetremote
 from .checks import EveryVersion
-from .minivenv import Pip
+from .minivenv import Pip, poolsession
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
@@ -130,7 +130,8 @@ def release(config, srcgit, info):
     scrub()
     version = info.nextversion()
     pipify(info, version)
-    EveryVersion(info, False, False, [], False, True).allchecks()
+    with poolsession(True) as openvenv:
+        EveryVersion(info, False, False, [], False, openvenv).allchecks()
     scrub()
     for dirpath, dirnames, filenames in os.walk(info.projectdir):
         for name in chain(filenames, dirnames):

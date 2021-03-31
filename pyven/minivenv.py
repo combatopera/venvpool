@@ -108,31 +108,35 @@ class Venv:
                 return m.group(1)
 
 @contextmanager
-def openvenv(pyversion, installdeps, transient = False):
-    versiondir = os.path.join(pooldir, str(pyversion))
-    os.makedirs(versiondir, exist_ok = True)
-    for name in [] if transient else sorted(os.listdir(versiondir)):
-        venv = Venv(os.path.join(versiondir, name))
-        if venv.trylock():
-            with onerror(venv.unlock):
-                if venv.compatible(installdeps):
-                    poolmodified = False
-                    break
-            venv.unlock()
-    else:
-        venv = Venv(mkdtemp(dir = versiondir))
-        with onerror(venv.delete):
-            venv.create(pyversion)
-            installdeps(venv)
-        poolmodified = not transient
-    try:
-        yield venv
-    finally:
-        venv.delete() if transient else venv.unlock()
-    if poolmodified:
-        compactpool()
+def poolsession(transient):
+    @contextmanager
+    def openvenv(pyversion, installdeps):
+        versiondir = os.path.join(pooldir, str(pyversion))
+        os.makedirs(versiondir, exist_ok = True)
+        for name in [] if transient else sorted(os.listdir(versiondir)):
+            venv = Venv(os.path.join(versiondir, name))
+            if venv.trylock():
+                with onerror(venv.unlock):
+                    if venv.compatible(installdeps):
+                        break
+                venv.unlock()
+        else:
+            venv = Venv(mkdtemp(dir = versiondir))
+            with onerror(venv.delete):
+                venv.create(pyversion)
+                installdeps(venv)
+            if not transient:
+                newvenvs.append(venv)
+        try:
+            yield venv
+        finally:
+            venv.delete() if transient else venv.unlock()
+    newvenvs = []
+    yield openvenv
+    if newvenvs:
+        _compactpool()
 
-def compactpool():
+def _compactpool():
     jdupes = shutil.which('jdupes')
     if jdupes is None:
         log.debug("Skip compact venvs as jdupes not available.")
