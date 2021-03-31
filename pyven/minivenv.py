@@ -133,6 +133,10 @@ def openvenv(pyversion, installdeps, transient = False):
         compactpool()
 
 def compactpool():
+    jdupes = shutil.which('jdupes')
+    if jdupes is None:
+        log.debug("Skip compact venvs as jdupes not available.")
+        return
     locked = []
     try:
         for version in sorted(os.listdir(pooldir)):
@@ -141,12 +145,8 @@ def compactpool():
                 venv = Venv(os.path.join(versiondir, name))
                 if venv.trylock():
                     locked.append(venv)
-        jdupes = shutil.which('jdupes')
-        if jdupes is not None:
-            log.debug("Compact %s venvs.", len(locked))
-            subprocess.check_call([jdupes, '-Lrq'] + [l.venvpath for l in locked])
-        else:
-            log.debug("Skip compact venvs as jdupes not available.")
+        log.debug("Compact %s venvs.", len(locked))
+        subprocess.check_call([jdupes, '-Lrq'] + [l.venvpath for l in locked])
     finally:
         for l in reversed(locked):
             l.unlock()
