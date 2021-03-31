@@ -130,7 +130,7 @@ def poolsession(transient):
         try:
             yield venv
         finally:
-            venv.delete() if transient else venv.unlock()
+            (venv.delete if transient else venv.unlock)()
     newvenvs = []
     yield openvenv
     if newvenvs:
