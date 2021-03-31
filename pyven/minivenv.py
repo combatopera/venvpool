@@ -136,7 +136,7 @@ def poolsession(transient):
     if newvenvs:
         _compactpool()
 
-def _compactpool():
+def _compactpool(): # XXX: Combine venvs with orthogonal dependencies?
     jdupes = shutil.which('jdupes')
     if jdupes is None:
         log.debug("Skip compact venvs as jdupes not available.")
