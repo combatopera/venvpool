@@ -121,8 +121,8 @@ def openvenv(pyversion, installdeps, transient = False):
             venv.unlock()
     else:
         venv = Venv(mkdtemp(dir = versiondir))
-        venv.create(pyversion)
-        with onerror(venv.unlock):
+        with onerror(venv.delete):
+            venv.create(pyversion)
             installdeps(venv)
         poolmodified = not transient
     try:
