@@ -145,6 +145,8 @@ def compactpool():
                 venv = Venv(os.path.join(versiondir, name))
                 if venv.trylock():
                     locked.append(venv)
+                else:
+                    log.debug("Busy: %s", venv.venvpath)
         log.debug("Compact %s venvs.", len(locked))
         # FIXME: Exclude paths that may be overwritten e.g. scripts.
         subprocess.check_call([jdupes, '-Lrq'] + [l.venvpath for l in locked])
