@@ -49,12 +49,13 @@ class Venv:
         pyname, = os.listdir(libpath)
         return os.path.join(libpath, pyname, 'site-packages')
 
-    def __init__(self, venvpath, pyversionornone):
-        if pyversionornone is not None:
-            with TemporaryDirectory() as tempdir:
-                subprocess.check_call(['virtualenv', '-p', "python%s" % pyversionornone, os.path.abspath(venvpath)], cwd = tempdir, stdout = sys.stderr)
+    def __init__(self, venvpath):
         self.tokenpath = os.path.join(venvpath, 'token')
         self.venvpath = venvpath
+
+    def create(self, pyversion):
+        with TemporaryDirectory() as tempdir:
+            subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, os.path.abspath(self.venvpath)], cwd = tempdir, stdout = sys.stderr)
 
     def unlock(self):
         os.mkdir(self.tokenpath)
@@ -111,7 +112,7 @@ def openvenv(pyversion, installdeps, transient = False):
     versiondir = os.path.join(pooldir, str(pyversion))
     os.makedirs(versiondir, exist_ok = True)
     for name in [] if transient else sorted(os.listdir(versiondir)):
-        venv = Venv(os.path.join(versiondir, name), None)
+        venv = Venv(os.path.join(versiondir, name))
         if venv.trylock():
             with onerror(venv.unlock):
                 if venv.compatible(installdeps):
@@ -119,7 +120,8 @@ def openvenv(pyversion, installdeps, transient = False):
                     break
             venv.unlock()
     else:
-        venv = Venv(mkdtemp(dir = versiondir), pyversion)
+        venv = Venv(mkdtemp(dir = versiondir))
+        venv.create(pyversion)
         with onerror(venv.unlock):
             installdeps(venv)
         poolmodified = not transient
@@ -136,7 +138,7 @@ def compactpool():
         for version in sorted(os.listdir(pooldir)):
             versiondir = os.path.join(pooldir, version)
             for name in sorted(os.listdir(versiondir)):
-                venv = Venv(os.path.join(versiondir, name), None)
+                venv = Venv(os.path.join(versiondir, name))
                 if venv.trylock():
                     locked.append(venv)
         jdupes = shutil.which('jdupes')
