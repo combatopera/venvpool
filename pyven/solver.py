@@ -19,7 +19,6 @@ from .pypicache import PypiCache
 from .universe import Universe
 from .util import bgcontainer, cachedir
 from datetime import datetime
-from lagoon.program import partial
 from pkg_resources import resource_filename
 import logging, os
 
@@ -40,6 +39,7 @@ def legacy(args, infos):
 
 def mccs(args, infos):
     from lagoon import docker # FIXME: Port to subprocess for Python 2.
+    from lagoon.program import partial
     solution = []
     with PypiCache(args, os.path.join(cachedir, 'pypi.shelf')) as pypicache:
         u = Universe(pypicache, infos)
