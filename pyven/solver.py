@@ -54,7 +54,7 @@ def mccs(args, infos):
             lines = [l for l in docker('exec', container, 'mccs', '-i', '/io/input.cudf', '-lexsemiagregate[-removed,-notuptodate,-new]').splitlines()
                     if l and not l.startswith(('#', 'depends:', 'conflicts:'))]
         while lines:
-            k, package = lines.pop(0).split(' ')
+            k, package = lines.pop(0).split(' ') # TODO: Proper error on fail, and log on exit for timestamp.
             assert 'package:' == k
             k, versionstr = lines.pop(0).split(' ')
             assert 'version:' == k
