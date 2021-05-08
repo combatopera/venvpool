@@ -47,7 +47,7 @@ def mccs(args, infos):
         with open(path, 'w') as f:
             u.writecudf(f)
         build = docker.build[partial](resource_filename(__name__, 'mccs'))
-        build(stdout = None)
+        build._t.mccs(stdout = None)
         with bgcontainer('-v', "%s:/io/input.cudf" % path, build._q().rstrip()) as container:
             log.info("Run mccs solver, this can take a minute.")
             # TODO: Investigate why this may get stuck in an infinite loop.
