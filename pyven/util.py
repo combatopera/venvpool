@@ -100,7 +100,8 @@ def TemporaryDirectory():
 @contextmanager
 def bgcontainer(*dockerrunargs):
     from lagoon import docker
-    container = docker.run._d(*dockerrunargs + ('sleep', 'inf')).rstrip()
+    from lagoon.program import NOEOL
+    container = docker.run._d[NOEOL](*dockerrunargs + ('sleep', 'inf'))
     try:
         yield container
     finally:

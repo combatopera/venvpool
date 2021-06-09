@@ -59,6 +59,7 @@ class Image:
 
     def makewheels(self, info): # TODO: This code would benefit from modern syntax.
         from lagoon import docker
+        from lagoon.program import NOEOL
         docker_print = docker[partial](stdout = None)
         log.info("Make wheels for platform: %s", self.plat)
         scripts = list(info.config.devel.scripts)
@@ -77,7 +78,7 @@ class Image:
                     return
             for script in scripts:
                 # TODO LATER: Run as ordinary sudo-capable user.
-                dirpath = docker('exec', container, 'mktemp', '-d').rstrip() # No need to cleanup, will die with container.
+                dirpath = docker[NOEOL]('exec', container, 'mktemp', '-d') # No need to cleanup, will die with container.
                 log.debug("In container dir %s run script: %s", dirpath, script)
                 run(['-w', dirpath, '-t'], ['sh', '-c', script])
             docker_print.cp(resource_filename(__name__, 'patchpolicy.py'), "%s:/patchpolicy.py" % container)

@@ -39,7 +39,7 @@ def legacy(args, infos):
 
 def mccs(args, infos):
     from lagoon import docker # FIXME: Port to subprocess for Python 2.
-    from lagoon.program import partial
+    from lagoon.program import NOEOL, partial
     solution = []
     with PypiCache(args, os.path.join(cachedir, 'pypi.shelf')) as pypicache:
         u = Universe(pypicache, infos)
@@ -48,7 +48,7 @@ def mccs(args, infos):
             u.writecudf(f)
         build = docker.build[partial](resource_filename(__name__, 'mccs'))
         build._t.mccs(stdout = None)
-        with bgcontainer('-v', "%s:/io/input.cudf" % path, build._q().rstrip()) as container:
+        with bgcontainer('-v', "%s:/io/input.cudf" % path, build._q[NOEOL]()) as container:
             log.info("Run mccs solver, this can take a minute.")
             # TODO: Investigate why this may get stuck in an infinite loop.
             lines = [l for l in docker('exec', container, 'mccs', '-i', '/io/input.cudf', '-lexsemiagregate[-removed,-notuptodate,-new]').splitlines()
