@@ -64,8 +64,7 @@ class Image:
         log.info("Make wheels for platform: %s", self.plat)
         scripts = list(info.config.devel.scripts)
         packages = list(chain(info.config.devel.packages, ['sudo'] if scripts else []))
-        # TODO LATER: It would be cool if the complete list could be expressed in aridity.
-        compatibilities = list(chain(*(getattr(info.config.wheel.compatibilities, str(pyversion)) for pyversion in info.config.pyversions)))
+        compatibilities = list(info.config.wheel.compatibilities.all)
         # TODO: Copy not mount so we can run containers in parallel.
         with bgcontainer('-v', "%s:/io" % info.projectdir, "%s%s:%s" % (self.prefix, self.plat, self.imagetag)) as container:
             def run(execargs, command):
