@@ -37,7 +37,7 @@ setup(foo = 'bar', bar = 100, baz = baz)''')
                 setup.write('''from setuptools import setup
 baz = 200
 setup(foo = 'bar', bar = 100, baz = baz)''')
-            self.assertEqual(None, eval(subprocess.check_output([sys.executable, '-c', '''from pyven.setuproot import getsetupkwargs
+            self.assertEqual(dict(foo = 'bar', baz = 200), eval(subprocess.check_output([sys.executable, '-c', '''from pyven.setuproot import getsetupkwargs
 import os, sys
 os.chdir(*sys.argv[1:])
 print(getsetupkwargs('setup.py', ['foo', 'baz', 'x']))''', projectdir], cwd = os.path.dirname(os.path.dirname(__file__)))))
