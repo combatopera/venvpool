@@ -16,8 +16,10 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .setuproot import getsetupkwargs
+from .util import TemporaryDirectory
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
+import os, subprocess, sys
 
 class TestSetupRoot(TestCase):
 
@@ -28,3 +30,14 @@ baz = 200
 setup(foo = 'bar', bar = 100, baz = baz)''')
             setup.flush()
             self.assertEqual(dict(foo = 'bar', baz = 200), getsetupkwargs(setup.name, ['foo', 'baz', 'x']))
+
+    def test_basenameonly(self):
+        with TemporaryDirectory() as projectdir:
+            with open(os.path.join(projectdir, 'setup.py'), 'w') as setup:
+                setup.write('''from setuptools import setup
+baz = 200
+setup(foo = 'bar', bar = 100, baz = baz)''')
+            self.assertEqual(None, eval(subprocess.check_output([sys.executable, '-c', '''from pyven.setuproot import getsetupkwargs
+import os, sys
+os.chdir(*sys.argv[1:])
+print(getsetupkwargs('setup.py', ['foo', 'baz', 'x']))''', projectdir], cwd = os.path.dirname(os.path.dirname(__file__)))))
