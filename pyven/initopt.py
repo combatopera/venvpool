@@ -125,7 +125,8 @@ def main_initopt():
                 future.result()
                 log.debug('Copied.')
     bindir = os.path.join(args.venvroot, 'bin')
-    os.makedirs(bindir)
+    if not os.path.exists(bindir):
+        os.mkdir(bindir)
     for k, info in enumerate(executableinfos):
         info.install()
         log.info("Compact %s venvs.", k + 1)
