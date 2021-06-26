@@ -79,7 +79,7 @@ class Infos:
 class ExecutableInfo:
 
     def __init__(self, venvroot, info):
-        self.venvpath = os.path.join(venvroot, 'projects', info.config.name)
+        self.venvpath = os.path.join(venvroot, info.config.name)
         self.info = info
 
     def exists(self):
@@ -120,7 +120,7 @@ def main_initopt():
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('-f', action = 'store_true')
-    parser.add_argument('venvroot', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..', '..', '..'))
+    parser.add_argument('venvroot', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..', '..'))
     args = parser.parse_args()
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
     versioninfos = Infos(allinfos)
@@ -153,15 +153,3 @@ def main_initopt():
     for info in leafinfos:
         for scriptpath in info.scriptpaths():
             allscripts[os.path.basename(scriptpath)].append(scriptpath)
-    bindir = os.path.join(args.venvroot, 'bin')
-    if os.path.exists(bindir):
-        shutil.rmtree(bindir)
-    os.mkdir(bindir)
-    for name, scriptpaths in allscripts.items():
-        if len(scriptpaths) == len(leafinfos):
-            log.info("Ignore scripts: %s", name)
-        else:
-            linkpath = os.path.join(bindir, name)
-            relpath = os.path.relpath(scriptpaths[0], os.path.dirname(linkpath))
-            log.info("Symlink %s to: %s", linkpath, relpath)
-            os.symlink(relpath, linkpath)
