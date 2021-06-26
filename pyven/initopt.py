@@ -60,6 +60,21 @@ def _prepare(info):
         log.debug("Prepare: %s", info.projectdir)
         pipify(info)
 
+class Infos:
+
+    def __init__(self, allinfos):
+        self.d = {}
+        self.allinfos = allinfos
+
+    def add(self, i):
+        if i not in self.d:
+            self.d[i] = None
+            for p in i.localrequires():
+                self.add(self.allinfos[p])
+
+    def __iter__(self):
+        return iter(self.d)
+
 class ExecutableInfo:
 
     def __init__(self, venvroot, info):
@@ -77,9 +92,11 @@ class ExecutableInfo:
         shutil.copytree(that.venvpath, self.venvpath, symlinks = True)
         subprocess.check_call(['sed', '-i', "s:%s:%s:" % (that.venvpath, self.venvpath)] + list(self.scriptpaths()))
 
-    def install(self):
+    def install(self, allinfos):
+        editables = Infos(allinfos)
+        editables.add(self.info)
         binpath = os.path.join(self.venvpath, 'bin')
-        Pip(os.path.join(binpath, 'pip')).pipinstall(['-e', self.info.projectdir])
+        Pip(os.path.join(binpath, 'pip')).pipinstall(sum([['-e', i.projectdir] for i in editables]))
         magic = ("#!%s" % os.path.join(binpath, 'python')).encode()
         for name in os.listdir(binpath):
             path = os.path.join(binpath, name)
@@ -104,16 +121,11 @@ def main_initopt():
     parser.add_argument('-f', action = 'store_true')
     parser.add_argument('venvroot', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..', '..', '..'))
     args = parser.parse_args()
-    versioninfos = {}
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
-    def add(i):
-        if i not in versioninfos:
-            versioninfos[i] = None
-            for p in i.localrequires():
-                add(allinfos[p])
+    versioninfos = Infos(allinfos)
     for info in allinfos.values():
         if info.config.executable and pyversion in info.config.pyversions:
-            add(info)
+            versioninfos.add(info)
     executableinfos = [ExecutableInfo(args.venvroot, i) for i in versioninfos if i.config.executable]
     newinfos = [i for i in executableinfos if not i.exists()]
     with ThreadPoolExecutor() as e:
@@ -128,12 +140,13 @@ def main_initopt():
     if not os.path.exists(bindir):
         os.mkdir(bindir)
     for k, info in enumerate(executableinfos):
-        info.install()
+        info.install(allinfos)
         log.info("Compact %s venvs.", k + 1)
         subprocess.check_call(['jdupes', '-Lrq'] + [i.venvpath for i in executableinfos[:k + 1]])
         for scriptpath in info.scriptpaths():
             linkpath = os.path.join(bindir, os.path.basename(scriptpath))
-            if not os.path.exists(linkpath):
-                relpath = os.path.relpath(scriptpath, os.path.dirname(linkpath))
-                log.info("Symlink %s to: %s", linkpath, relpath)
-                os.symlink(relpath, linkpath)
+            if os.path.exists(linkpath):
+                os.remove(linkpath)
+            relpath = os.path.relpath(scriptpath, os.path.dirname(linkpath))
+            log.info("Symlink %s to: %s", linkpath, relpath)
+            os.symlink(relpath, linkpath)
