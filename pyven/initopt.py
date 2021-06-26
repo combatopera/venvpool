@@ -150,12 +150,10 @@ def main_initopt():
         shutil.rmtree(bindir)
     os.mkdir(bindir)
     for name, scriptpaths in allscripts.items():
-        try:
-            scriptpath, = scriptpaths
-        except ValueError:
+        if len(scriptpaths) == len(executableinfos):
             log.info("Ignore scripts: %s", name)
         else:
             linkpath = os.path.join(bindir, name)
-            relpath = os.path.relpath(scriptpath, os.path.dirname(linkpath))
+            relpath = os.path.relpath(scriptpaths[0], os.path.dirname(linkpath))
             log.info("Symlink %s to: %s", linkpath, relpath)
             os.symlink(relpath, linkpath)
