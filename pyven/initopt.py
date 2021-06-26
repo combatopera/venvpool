@@ -22,6 +22,7 @@ from .setuproot import setuptoolsinfo
 from .util import initlogging, ThreadPoolExecutor
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
+from collections import defaultdict
 import logging, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
@@ -136,17 +137,23 @@ def main_initopt():
             for future in [e.submit(i.copyfrom, newinfos[0]) for i in newinfos[1:]]:
                 future.result()
                 log.debug('Copied.')
-    bindir = os.path.join(args.venvroot, 'bin')
-    if not os.path.exists(bindir):
-        os.mkdir(bindir)
     for k, info in enumerate(executableinfos):
         info.install(allinfos)
         log.info("Compact %s venvs.", k + 1)
         subprocess.check_call(['jdupes', '-Lrq'] + [i.venvpath for i in executableinfos[:k + 1]])
+    allscripts = defaultdict(list)
+    for info in executableinfos:
         for scriptpath in info.scriptpaths():
-            linkpath = os.path.join(bindir, os.path.basename(scriptpath))
-            if os.path.exists(linkpath):
-                os.remove(linkpath)
-            relpath = os.path.relpath(scriptpath, os.path.dirname(linkpath))
+            allscripts[os.path.basename(scriptpath)].append(scriptpath)
+    bindir = os.path.join(args.venvroot, 'bin')
+    if os.path.exists(bindir):
+        shutil.rmtree(bindir)
+    os.mkdir(bindir)
+    for name, scriptpaths in allscripts.items():
+        if 1 != len(scriptpaths):
+            log.info("Ignore scripts: %s", name)
+        else:
+            linkpath = os.path.join(bindir, name)
+            relpath = os.path.relpath(scriptpaths[0], os.path.dirname(linkpath))
             log.info("Symlink %s to: %s", linkpath, relpath)
             os.symlink(relpath, linkpath)
