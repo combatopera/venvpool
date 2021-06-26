@@ -53,4 +53,4 @@ version=2
 
 initbootvenv setuptools==44.1.1 twine==1.15.0
 
-initoptvenv --solver legacy
+initoptvenv
