@@ -127,8 +127,16 @@ def main_initopt():
     for info in allinfos.values():
         if info.config.executable and pyversion in info.config.pyversions:
             versioninfos.add(info)
-    executableinfos = [ExecutableInfo(args.venvroot, i) for i in versioninfos if i.config.executable]
-    newinfos = [i for i in executableinfos if not i.exists()]
+    leafinfos = []
+    for i in versioninfos:
+        if i.config.executable:
+            for j in versioninfos:
+                if i != j and i.config.name in j.localrequires():
+                    log.info("No dedicated venv for library: %s", i.config.name)
+                    break
+            else:
+                leafinfos.append(ExecutableInfo(args.venvroot, i))
+    newinfos = [i for i in leafinfos if not i.exists()]
     with ThreadPoolExecutor() as e:
         for future in [e.submit(_prepare, info) for info in versioninfos]:
             future.result()
@@ -137,12 +145,12 @@ def main_initopt():
             for future in [e.submit(i.copyfrom, newinfos[0]) for i in newinfos[1:]]:
                 future.result()
                 log.debug('Copied.')
-    for k, info in enumerate(executableinfos):
+    for k, info in enumerate(leafinfos):
         info.install(allinfos)
         log.info("Compact %s venvs.", k + 1)
-        subprocess.check_call(['jdupes', '-Lrq'] + [i.venvpath for i in executableinfos[:k + 1]])
+        subprocess.check_call(['jdupes', '-Lrq'] + [i.venvpath for i in leafinfos[:k + 1]])
     allscripts = defaultdict(list)
-    for info in executableinfos:
+    for info in leafinfos:
         for scriptpath in info.scriptpaths():
             allscripts[os.path.basename(scriptpath)].append(scriptpath)
     bindir = os.path.join(args.venvroot, 'bin')
@@ -150,7 +158,7 @@ def main_initopt():
         shutil.rmtree(bindir)
     os.mkdir(bindir)
     for name, scriptpaths in allscripts.items():
-        if len(scriptpaths) == len(executableinfos):
+        if len(scriptpaths) == len(leafinfos):
             log.info("Ignore scripts: %s", name)
         else:
             linkpath = os.path.join(bindir, name)
