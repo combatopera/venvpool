@@ -33,7 +33,13 @@ function initbootvenv {
 
 function initoptvenv {
 
-    $bootvenv/bin/initopt "$@" ~/opt/venv$version
+    local pathvar=VENV${version}_PATH
+
+    local path="${!pathvar}"
+
+    [[ "$path" ]]
+
+    $bootvenv/bin/initopt "$@" "$path"
 
 }
 
