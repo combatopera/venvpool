@@ -44,7 +44,7 @@ Build a Docker image with automatic tag.
 Remove files matching patterns below #glean in .gitignore file.
 
 ### initopt
-Furnish the venv with editable projects and their dependencies, with mccs solver support.
+Furnish the venv with editable projects and their dependencies.
 
 ### launch
 Run project using a suitable venv from the pool.

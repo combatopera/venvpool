@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import solver
 from .minivenv import Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
@@ -23,7 +22,7 @@ from .setuproot import setuptoolsinfo
 from .util import initlogging, ThreadPoolExecutor
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
-import logging, os, re, subprocess, sys
+import logging, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 pkg_resources = re.compile(br'\bpkg_resources\b')
@@ -61,13 +60,49 @@ def _prepare(info):
         log.debug("Prepare: %s", info.projectdir)
         pipify(info)
 
+class ExecutableInfo:
+
+    def __init__(self, venvroot, info):
+        self.venvpath = os.path.join(venvroot, 'projects', info.config.name)
+        self.info = info
+
+    def exists(self):
+        return os.path.exists(self.venvpath)
+
+    def create(self, pyversion):
+        subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, self.venvpath])
+
+    def copyfrom(self, that):
+        log.info("Copy blank venv to: %s", self.venvpath)
+        shutil.copytree(that.venvpath, self.venvpath, symlinks = True)
+        subprocess.check_call(['sed', '-i', "s:%s:%s:" % (that.venvpath, self.venvpath)] + list(self.scriptpaths()))
+
+    def install(self):
+        binpath = os.path.join(self.venvpath, 'bin')
+        Pip(os.path.join(binpath, 'pip')).pipinstall(['-e', self.info.projectdir])
+        magic = ("#!%s" % os.path.join(binpath, 'python')).encode()
+        for name in os.listdir(binpath):
+            path = os.path.join(binpath, name)
+            if not os.path.isdir(path):
+                with open(path, 'rb') as f:
+                    data = f.read(len(magic) + 1)
+                if data[:-1] == magic and data[-1] in eolbytes:
+                    with open(path, 'rb') as f:
+                        data = f.read()
+                    with open(path, 'wb') as f:
+                        f.write(pkg_resources.sub(b'pkg_resources_lite', data))
+
+    def scriptpaths(self):
+        bindir = os.path.join(self.venvpath, 'bin')
+        for name in sorted(os.listdir(bindir)):
+            yield os.path.join(bindir, name)
+
 def main_initopt():
-    'Furnish the venv with editable projects and their dependencies, with mccs solver support.'
+    'Furnish the venv with editable projects and their dependencies.'
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('-f', action = 'store_true')
-    parser.add_argument('--solver', type = lambda name: getattr(solver, name), default = solver.mccs)
-    parser.add_argument('venvpath', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..'))
+    parser.add_argument('venvroot', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..', '..', '..'))
     args = parser.parse_args()
     versioninfos = {}
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
@@ -79,22 +114,25 @@ def main_initopt():
     for info in allinfos.values():
         if info.config.executable and pyversion in info.config.pyversions:
             add(info)
+    executableinfos = [ExecutableInfo(args.venvroot, i) for i in versioninfos if i.config.executable]
+    newinfos = [i for i in executableinfos if not i.exists()]
     with ThreadPoolExecutor() as e:
         for future in [e.submit(_prepare, info) for info in versioninfos]:
             future.result()
-    pythonname = "python%s" % pyversion
-    if not os.path.exists(args.venvpath):
-        subprocess.check_call(['virtualenv', '-p', pythonname, args.venvpath])
-    binpath = os.path.join(args.venvpath, 'bin')
-    Pip(os.path.join(binpath, 'pip')).installeditable(args.solver(args, versioninfos), versioninfos)
-    magic = ("#!%s" % os.path.join(binpath, pythonname)).encode()
-    for name in os.listdir(binpath):
-        path = os.path.join(binpath, name)
-        if not os.path.isdir(path):
-            with open(path, 'rb') as f:
-                data = f.read(len(magic) + 1)
-            if data[:-1] == magic and data[-1] in eolbytes:
-                with open(path, 'rb') as f:
-                    data = f.read()
-                with open(path, 'wb') as f:
-                    f.write(pkg_resources.sub(b'pkg_resources_lite', data))
+        if newinfos:
+            newinfos[0].create(pyversion)
+            for future in [e.submit(i.copyfrom, newinfos[0]) for i in newinfos[1:]]:
+                future.result()
+                log.debug('Copied.')
+    bindir = os.path.join(args.venvroot, 'bin')
+    os.makedirs(bindir)
+    for k, info in enumerate(executableinfos):
+        info.install()
+        log.info("Compact %s venvs.", k + 1)
+        subprocess.check_call(['jdupes', '-Lrq'] + [i.venvpath for i in executableinfos[:k + 1]])
+        for scriptpath in info.scriptpaths():
+            linkpath = os.path.join(bindir, os.path.basename(scriptpath))
+            if not os.path.exists(linkpath):
+                relpath = os.path.relpath(scriptpath, os.path.dirname(linkpath))
+                log.info("Symlink %s to: %s", linkpath, relpath)
+                os.symlink(relpath, linkpath)
