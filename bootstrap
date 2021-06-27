@@ -6,29 +6,23 @@ bootvenv=$(mktemp -d)
 
 trap 'rm -r $bootvenv' EXIT
 
-function initbootvenv {
+virtualenv $bootvenv
 
-    virtualenv $bootvenv
+$bootvenv/bin/pip install pyven
 
-    $bootvenv/bin/pip install pyven
+(
 
-    (
+    cd "$(dirname "$0")"
 
-        cd "$(dirname "$0")"
+    # TODO: Inspect project.arid to get these names.
+    for p in ../aridity ../diapyr ../lagoon .; do
 
-        # TODO: Inspect project.arid to get these names.
-        for p in ../aridity ../diapyr ../lagoon .; do
+        (cd $p; $bootvenv/bin/pipify)
 
-            (cd $p; $bootvenv/bin/pipify)
+        $bootvenv/bin/pip install -e $p
 
-            $bootvenv/bin/pip install -e $p
+    done
 
-        done
-
-    )
-
-}
-
-initbootvenv
+)
 
 $bootvenv/bin/initopt "$@" "$USER_OPT"
