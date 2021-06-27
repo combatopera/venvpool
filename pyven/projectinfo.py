@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from . import mainfunctions
 from .files import Files
 from .setuproot import setuptoolsinfo
 from .util import initlogging, Path
@@ -199,17 +200,9 @@ class ProjectInfo:
         return [name for name in os.listdir(self.projectdir) if isscript(os.path.join(self.projectdir, name))]
 
     def mainfunctions(self):
-        import ast
-        for path in Files.relpaths(self.projectdir, [MainFunction.extension], []):
-            with open(os.path.join(self.projectdir, path)) as f:
-                try:
-                    m = ast.parse(f.read())
-                except SyntaxError:
-                    log.warning("Skip: %s" % path, exc_info = True)
-                    continue
-            for obj in m.body:
-                if isinstance(obj, ast.FunctionDef) and obj.name.startswith(MainFunction.prefix):
-                    yield MainFunction(path, obj)
+        paths = list(Files.relpaths(self.projectdir, [mainfunctions.extension], []))
+        for line in subprocess.check_output(["python%s" % next(iter(self.config.pyversions)), mainfunctions.__file__, self.projectdir] + paths).splitlines():
+            yield MainFunction(eval(line))
 
     def console_scripts(self):
         return [mf.console_script for mf in self.mainfunctions()]
@@ -220,11 +213,6 @@ class ProjectInfo:
 
 class MainFunction:
 
-    prefix = 'main_'
-    extension = '.py'
-
-    def __init__(self, path, obj):
-        import ast
-        self.name = obj.name[len(self.prefix):].replace('_', '-')
-        self.console_script = "%s=%s:%s" % (self.name, path[:-len(self.extension)].replace(os.sep, '.'), obj.name)
-        self.doc = ast.get_docstring(obj)
+    def __init__(self, d):
+        for k, v in d.items():
+            setattr(self, k, v)
