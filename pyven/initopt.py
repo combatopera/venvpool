@@ -124,10 +124,14 @@ def main_initopt():
     parser.add_argument('venvroot', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..', '..'))
     args = parser.parse_args()
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
-    leafinfos = []
+    participants = Infos(allinfos)
     for i in allinfos.values():
         if i.config.executable:
-            for j in allinfos.values():
+            participants.add(i)
+    leafinfos = []
+    for i in participants:
+        if i.config.executable:
+            for j in participants:
                 if i != j and i.config.name in j.localrequires():
                     log.info("No dedicated venv for library: %s", i.config.name)
                     break
@@ -138,7 +142,7 @@ def main_initopt():
         if not i.exists():
             pyversiontonewinfos[i.pyversion].append(i)
     with ThreadPoolExecutor() as e:
-        futures = [e.submit(_prepare, info) for info in allinfos.values()]
+        futures = [e.submit(_prepare, info) for info in participants]
         for newinfos in pyversiontonewinfos.values():
             newinfos[0].create()
             futures.extend(e.submit(i.copyfrom, newinfos[0]) for i in newinfos[1:])
