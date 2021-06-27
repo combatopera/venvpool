@@ -2,17 +2,15 @@
 
 set -eux
 
-tempdir=$(mktemp -d)
+bootvenv=$(mktemp -d)
 
-trap 'rm -r $tempdir' EXIT
+trap 'rm -r $bootvenv' EXIT
 
 function initbootvenv {
 
-    bootvenv=$tempdir/$version
+    virtualenv $bootvenv
 
-    virtualenv -p python$version $bootvenv
-
-    $bootvenv/bin/pip install "$@" pyven
+    $bootvenv/bin/pip install pyven
 
     (
 
@@ -30,8 +28,6 @@ function initbootvenv {
     )
 
 }
-
-version=3
 
 initbootvenv
 
