@@ -28,7 +28,6 @@ import logging, os, re, shutil, subprocess, sys
 log = logging.getLogger(__name__)
 pkg_resources = re.compile(br'\bpkg_resources\b')
 eolbytes = set(b'\r\n')
-pyversion = sys.version_info.major
 
 def _ispyvenproject(projectdir):
     return os.path.exists(os.path.join(projectdir, ProjectInfo.projectaridname))
@@ -51,7 +50,7 @@ def _projectinfos():
         else:
             setuppath = os.path.join(projectdir, 'setup.py')
             if os.path.exists(setuppath):
-                if pyversion < 3:
+                if sys.version_info.major < 3:
                     log.debug("Ignore: %s", projectdir)
                 else:
                     yield setuptoolsinfo(setuppath)
@@ -80,18 +79,20 @@ class ExecutableInfo:
 
     def __init__(self, venvroot, info):
         self.venvpath = os.path.join(venvroot, info.config.name)
+        self.pyversion = max(info.config.pyversions)
         self.info = info
 
     def exists(self):
         return os.path.exists(self.venvpath)
 
-    def create(self, pyversion):
-        subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, self.venvpath])
+    def create(self):
+        subprocess.check_call(['virtualenv', '-p', "python%s" % self.pyversion, self.venvpath])
 
     def copyfrom(self, that):
         log.info("Copy blank venv to: %s", self.venvpath)
         shutil.copytree(that.venvpath, self.venvpath, symlinks = True)
         subprocess.check_call(['sed', '-i', "s:%s:%s:" % (that.venvpath, self.venvpath)] + list(self.scriptpaths()))
+        log.debug('Copied.')
 
     def install(self, allinfos):
         editables = Infos(allinfos)
@@ -123,33 +124,27 @@ def main_initopt():
     parser.add_argument('venvroot', nargs = '?', default = os.path.join(os.path.dirname(sys.executable), '..', '..'))
     args = parser.parse_args()
     allinfos = {i.config.name: i for i in _projectinfos() if _hasname(i)}
-    versioninfos = Infos(allinfos)
-    for info in allinfos.values():
-        if info.config.executable and pyversion in info.config.pyversions:
-            versioninfos.add(info)
     leafinfos = []
-    for i in versioninfos:
+    for i in allinfos.values():
         if i.config.executable:
-            for j in versioninfos:
+            for j in allinfos.values():
                 if i != j and i.config.name in j.localrequires():
                     log.info("No dedicated venv for library: %s", i.config.name)
                     break
             else:
                 leafinfos.append(ExecutableInfo(args.venvroot, i))
-    newinfos = [i for i in leafinfos if not i.exists()]
+    pyversiontonewinfos = defaultdict(list)
+    for i in leafinfos:
+        if not i.exists():
+            pyversiontonewinfos[i.pyversion].append(i)
     with ThreadPoolExecutor() as e:
-        for future in [e.submit(_prepare, info) for info in versioninfos]:
+        futures = [e.submit(_prepare, info) for info in allinfos.values()]
+        for newinfos in pyversiontonewinfos.values():
+            newinfos[0].create()
+            futures.extend(e.submit(i.copyfrom, newinfos[0]) for i in newinfos[1:])
+        for future in futures:
             future.result()
-        if newinfos:
-            newinfos[0].create(pyversion)
-            for future in [e.submit(i.copyfrom, newinfos[0]) for i in newinfos[1:]]:
-                future.result()
-                log.debug('Copied.')
     for k, info in enumerate(leafinfos):
         info.install(allinfos)
         log.info("Compact %s venvs.", k + 1)
         subprocess.check_call(['jdupes', '-Lrq'] + [i.venvpath for i in leafinfos[:k + 1]])
-    allscripts = defaultdict(list)
-    for info in leafinfos:
-        for scriptpath in info.scriptpaths():
-            allscripts[os.path.basename(scriptpath)].append(scriptpath)
