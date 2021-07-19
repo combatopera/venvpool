@@ -98,7 +98,7 @@ class ExecutableInfo:
         editables = Infos(allinfos)
         editables.add(self.info)
         binpath = os.path.join(self.venvpath, 'bin')
-        Pip(os.path.join(binpath, 'pip')).pipinstall(sum([['-e', i.projectdir] for i in editables], []))
+        Pip(os.path.join(binpath, 'pip')).pipinstall(sum([['-e', i.projectdir] for i in editables], [])) # XXX: Use pip check to catch conflicts?
         magic = ("#!%s" % os.path.join(binpath, 'python')).encode()
         for name in os.listdir(binpath):
             path = os.path.join(binpath, name)
