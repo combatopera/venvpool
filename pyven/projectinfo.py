@@ -74,6 +74,7 @@ class Req:
         from urllib.request import Request, urlopen
         for r in cls.parsemany(reqstrs):
             try:
+                # FIXME: Allow running tests offline.
                 with urlopen(Request("https://pypi.org/simple/%s/" % quote(r.namepart, safe = ''), method = 'HEAD')):
                     pass
                 yield r
