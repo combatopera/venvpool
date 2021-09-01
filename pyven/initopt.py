@@ -91,7 +91,12 @@ class ExecutableInfo:
     def copyfrom(self, that):
         log.info("Copy blank venv to: %s", self.venvpath)
         shutil.copytree(that.venvpath, self.venvpath, symlinks = True)
-        subprocess.check_call([any(shutil.which(name) for name in ['gsed', 'sed']), '-i', "s:%s:%s:" % (that.venvpath, self.venvpath)] + list(self.scriptpaths()))
+        def sed():
+            for name in 'gsed', 'sed':
+                path = shutil.which(name)
+                if path is not None:
+                    return path
+        subprocess.check_call([sed(), '-i', "s:%s:%s:" % (that.venvpath, self.venvpath)] + list(self.scriptpaths()))
         log.debug('Copied.')
 
     def install(self, allinfos):
