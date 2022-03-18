@@ -33,7 +33,7 @@ pyvenvenv/bin/pipify $(name)
 python$first$(pyversions) -m venv venvname
 venvname/bin/pip install -e $(name)
 . venvname/bin/activate
-```$try($join$map($list$first$(commands) $.[
+```$try($join$map($list$first$(commands) $.[$(zwsp)
 
 ## Commands$join$map($(commands) $.[
 
