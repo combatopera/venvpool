@@ -149,7 +149,6 @@ class EveryVersion:
                 return skip
             config = (-self.info.config).childctrl().node
             config.first = first
-            config.zwsp = ''
             config.tagline, _ = self.info.descriptionandurl()
             (-config).execute('commands * name = $label()')
             for mf in sorted(self.info.mainfunctions(), key = lambda mf: mf.name):
