@@ -23,6 +23,7 @@ from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from .util import bgcontainer, initlogging
 from argparse import ArgumentParser
+from aridity.config import ConfigCtrl
 from diapyr.util import enum, singleton
 from itertools import chain
 from lagoon.program import partial, Program
@@ -88,10 +89,11 @@ class Image:
 def main_release():
     'Release project to PyPI, with manylinux wheels as needed.'
     initlogging()
+    config = ConfigCtrl().loadappconfig(main_release, 'release.arid')
     parser = ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')
     parser.add_argument('path', nargs = '?', default = '.')
-    config = parser.parse_args()
+    parser.parse_args(namespace = config.cli)
     info = ProjectInfo.seek(config.path)
     git = lagoon.git[partial](cwd = info.projectdir)
     if git.status.__porcelain():

@@ -1,0 +1,5 @@
+cli
+    path = $(void)
+    upload = $(void)
+path = $(cli path)
+upload = $(cli upload)
