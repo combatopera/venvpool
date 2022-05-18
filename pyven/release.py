@@ -158,7 +158,8 @@ def release(config, srcgit, info):
         srcgit.tag("v%s" % version, stdout = None)
         # TODO LATER: If tag succeeded but push fails, we're left with a bogus tag.
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
-        python._m.twine.upload(*uploadableartifacts(artifactrelpaths), env = Pip.envpatch)
+        with config.token as token:
+            python._m.twine.upload('-u', '__token__', '-p', token, *uploadableartifacts(artifactrelpaths), env = Pip.envpatch)
     else:
         log.warning("Upload skipped, use --upload to upload: %s", ' '.join(uploadableartifacts(artifactrelpaths)))
     return artifactrelpaths

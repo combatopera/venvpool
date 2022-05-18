@@ -1,5 +1,7 @@
+appname := $label()
 cli
     path = $(void)
     upload = $(void)
 path = $(cli path)
+token = $keyring($(appname) token)
 upload = $(cli upload)
