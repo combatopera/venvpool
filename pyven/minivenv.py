@@ -166,5 +166,6 @@ def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
 
 def compactvenvs(venvpaths):
     log.info("Compact %s venvs.", len(venvpaths))
-    # FIXME: Exclude paths that may be overwritten e.g. scripts.
-    subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
+    if venvpaths:
+        # FIXME: Exclude paths that may be overwritten e.g. scripts.
+        subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
