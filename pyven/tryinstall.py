@@ -16,10 +16,10 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .checks import EveryVersion
-from .minivenv import poolsession
+from .minivenv import initlogging, poolsession
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from .util import bgcontainer, initlogging, pyversiontags
+from .util import bgcontainer, pyversiontags
 from lagoon import git
 from lagoon.program import partial
 from urllib.request import urlopen

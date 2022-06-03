@@ -20,9 +20,6 @@ import logging, os, re, sys
 
 pyversiontags = {2: ['2'], 3: ['3.6', '3.7', '3.8', '3.9']}
 
-def initlogging():
-    logging.basicConfig(format = "%(asctime)s [%(levelname)s] %(message)s", level = logging.DEBUG)
-
 def stderr(obj):
     sys.stderr.write(str(obj))
     sys.stderr.write(os.linesep)

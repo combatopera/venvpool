@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import Jdupes, Pip
+from .minivenv import compactvenvs, initlogging, Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .setuproot import setuptoolsinfo
-from .util import initlogging, ThreadPoolExecutor
+from .util import ThreadPoolExecutor
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 from collections import defaultdict
@@ -153,8 +153,6 @@ def main_initopt():
             futures.extend(e.submit(i.copyfrom, newinfos[0]) for i in newinfos[1:])
         for future in futures:
             future.result()
-    jdupes = Jdupes.getornone()
     for k, info in enumerate(leafinfos):
         info.install(allinfos)
-        if jdupes is not None:
-            jdupes.compactvenvs([i.venvpath for i in leafinfos[:k + 1]])
+        compactvenvs([i.venvpath for i in leafinfos[:k + 1]])

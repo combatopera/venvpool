@@ -17,8 +17,9 @@
 
 from . import mainfunctions
 from .files import Files
+from .minivenv import initlogging
 from .setuproot import setuptoolsinfo
-from .util import initlogging, Path
+from .util import Path
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
 from pkg_resources import parse_requirements

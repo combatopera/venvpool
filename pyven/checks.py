@@ -16,10 +16,10 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .files import Files
-from .minivenv import poolsession
+from .minivenv import initlogging, poolsession
 from .pipify import InstallDeps, SimpleInstallDeps
 from .projectinfo import ProjectInfo
-from .util import bgcontainer, Excludes, initlogging, pyversiontags, stderr
+from .util import bgcontainer, Excludes, pyversiontags, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 from aridity.util import NoSuchPathException, openresource

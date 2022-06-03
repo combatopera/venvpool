@@ -24,6 +24,9 @@ log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # FIXME: Honour XDG_CACHE_HOME.
 pooldir = os.path.join(cachedir, 'pool')
 
+def initlogging():
+    logging.basicConfig(format = "%(asctime)s [%(levelname)s] %(message)s", level = logging.DEBUG)
+
 @contextmanager
 def TemporaryDirectory():
     tempdir = mkdtemp()
@@ -140,22 +143,15 @@ def poolsession(transient):
             with _onerror(venv.delete):
                 venv.create(pyversion)
                 installdeps(venv)
-            if not transient:
-                newvenvs.append(venv)
         try:
             yield venv
         finally:
             (venv.delete if transient else venv.unlock)()
-    newvenvs = []
     yield openvenv
-    if newvenvs:
-        _compactpool()
 
-def _compactpool(): # XXX: Combine venvs with orthogonal dependencies?
-    jdupes = Jdupes.getornone()
-    if jdupes is None:
-        log.debug("Skip compact venvs as jdupes not available.")
-        return
+def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
+    'Use jdupes to combine identical files in the pool.'
+    initlogging()
     locked = []
     try:
         for version in sorted(os.listdir(pooldir)):
@@ -166,23 +162,12 @@ def _compactpool(): # XXX: Combine venvs with orthogonal dependencies?
                     locked.append(venv)
                 else:
                     log.debug("Busy: %s", venv.venvpath)
-        jdupes.compactvenvs([l.venvpath for l in locked])
+        compactvenvs([l.venvpath for l in locked])
     finally:
         for l in reversed(locked):
             l.unlock()
 
-class Jdupes:
-
-    @classmethod
-    def getornone(cls):
-        jdupes = shutil.which('jdupes')
-        if jdupes is not None:
-            return cls(jdupes)
-
-    def __init__(self, jdupes):
-        self.jdupes = jdupes
-
-    def compactvenvs(self, venvpaths):
-        log.info("Compact %s venvs.", len(venvpaths))
-        # FIXME: Exclude paths that may be overwritten e.g. scripts.
-        subprocess.check_call([self.jdupes, '-Lrq'] + venvpaths)
+def compactvenvs(venvpaths):
+    log.info("Compact %s venvs.", len(venvpaths))
+    # FIXME: Exclude paths that may be overwritten e.g. scripts.
+    subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)

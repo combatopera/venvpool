@@ -17,11 +17,11 @@
 
 from . import targetremote
 from .checks import EveryVersion
-from .minivenv import Pip, poolsession, TemporaryDirectory
+from .minivenv import initlogging, Pip, poolsession, TemporaryDirectory
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
-from .util import bgcontainer, initlogging
+from .util import bgcontainer
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 from diapyr.util import enum, singleton
