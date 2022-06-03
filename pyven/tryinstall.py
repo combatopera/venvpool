@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .checks import EveryVersion
-from .minivenv import initlogging, poolsession
+from .minivenv import initlogging
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .util import bgcontainer, pyversiontags
@@ -52,5 +52,4 @@ def main_tryinstall():
     git.checkout("v%s" % version, stdout = None)
     info = ProjectInfo.seek('.')
     pipify(info)
-    with poolsession(True) as openvenv:
-        EveryVersion(info, False, False, [], False, openvenv).nose()
+    EveryVersion(info, False, False, [], False, True).nose()

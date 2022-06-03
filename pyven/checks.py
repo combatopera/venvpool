@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .files import Files
-from .minivenv import initlogging, poolsession
+from .minivenv import initlogging, openvenv
 from .pipify import InstallDeps, SimpleInstallDeps
 from .projectinfo import ProjectInfo
 from .util import bgcontainer, Excludes, pyversiontags, stderr
@@ -53,14 +53,14 @@ def _runcheck(variant, check, *args):
 
 class EveryVersion:
 
-    def __init__(self, info, siblings, userepo, noseargs, docker, openvenv):
+    def __init__(self, info, siblings, userepo, noseargs, docker, transient):
         self.files = Files(info.projectdir)
         self.info = info
         self.siblings = siblings
         self.userepo = userepo
         self.noseargs = noseargs
         self.docker = docker
-        self.openvenv = openvenv
+        self.transient = transient
 
     def allchecks(self):
         for check in self.licheck, self.nlcheck, self.execcheck, self.divcheck, self.pyflakes, self.nose, self.readme:
@@ -98,7 +98,7 @@ class EveryVersion:
                 for path in self.files.pypaths if os.path.relpath(path, self.files.root) not in excludes]
         def pyflakes():
             if paths:
-                with self.openvenv(pyversion, SimpleInstallDeps(['pyflakes'])) as venv:
+                with openvenv(self.transient, pyversion, SimpleInstallDeps(['pyflakes'])) as venv:
                     subprocess.check_call([venv.programpath('pyflakes')] + paths)
         for pyversion in self.info.config.pyversions:
             _runcheck(pyversion, pyflakes)
@@ -128,7 +128,7 @@ class EveryVersion:
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(xmlpath)] + self.noseargs)
                 else:
                     coveragepath = '.coverage'
-                    with self.openvenv(pyversion, installdeps) as venv:
+                    with openvenv(self.transient, pyversion, installdeps) as venv:
                         status = subprocess.call([
                             venv.programpath('nosetests'), '--exe', '-v',
                             '--with-xunit', '--xunit-file', xmlpath,
@@ -197,5 +197,4 @@ def main_tests():
     parser.add_argument('--siblings', type = yesno, default = True)
     parser.add_argument('--transient', action = 'store_true')
     args, noseargs = parser.parse_known_args()
-    with poolsession(args.transient) as openvenv:
-        EveryVersion(ProjectInfo.seekany('.'), args.siblings, args.repo, noseargs, args.docker, openvenv).allchecks()
+    EveryVersion(ProjectInfo.seekany('.'), args.siblings, args.repo, noseargs, args.docker, args.transient).allchecks()

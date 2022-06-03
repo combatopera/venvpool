@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from contextlib import contextmanager
-import logging, os, re, sys
+import os, re, sys
 
 pyversiontags = {2: ['2'], 3: ['3.6', '3.7', '3.8', '3.9']}
 
