@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .util import onerror, TemporaryDirectory
+from .util import TemporaryDirectory
 from contextlib import contextmanager
 from pkg_resources import safe_name, to_filename
 from tempfile import mkdtemp
@@ -24,6 +24,14 @@ import errno, logging, os, re, shutil, subprocess, sys
 log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # FIXME: Honour XDG_CACHE_HOME.
 pooldir = os.path.join(cachedir, 'pool')
+
+@contextmanager
+def _onerror(f):
+    try:
+        yield
+    except:
+        f()
+        raise
 
 class Pip:
 
@@ -111,13 +119,13 @@ def poolsession(transient):
         for name in [] if transient else sorted(os.listdir(versiondir)):
             venv = Venv(os.path.join(versiondir, name))
             if venv.trylock():
-                with onerror(venv.unlock):
+                with _onerror(venv.unlock):
                     if venv.compatible(installdeps):
                         break
                 venv.unlock()
         else:
             venv = Venv(mkdtemp(dir = versiondir))
-            with onerror(venv.delete):
+            with _onerror(venv.delete):
                 venv.create(pyversion)
                 installdeps(venv)
             if not transient:

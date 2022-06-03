@@ -105,11 +105,3 @@ def bgcontainer(*dockerrunargs):
         yield container
     finally:
         docker.rm._f(container, stdout = None)
-
-@contextmanager
-def onerror(f):
-    try:
-        yield
-    except:
-        f()
-        raise
