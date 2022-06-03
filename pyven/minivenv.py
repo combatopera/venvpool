@@ -35,12 +35,6 @@ class Pip:
     def pipinstall(self, command):
         subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage, stdout = sys.stderr)
 
-    def installeditable(self, solution, infos):
-        log.debug("Install solution: %s", ' '.join(solution))
-        self.pipinstall(solution)
-        log.debug("Install editable: %s", ' '.join(safe_name(i.config.name) for i in infos))
-        self.pipinstall(['--no-deps'] + sum((['-e', i.projectdir] for i in infos), []))
-
 class Venv:
 
     @property
