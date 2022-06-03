@@ -16,8 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from contextlib import contextmanager
-from tempfile import mkdtemp
-import logging, os, re, shutil, sys
+import logging, os, re, sys
 
 pyversiontags = {2: ['2'], 3: ['3.6', '3.7', '3.8', '3.9']}
 
