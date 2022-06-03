@@ -54,17 +54,24 @@ class Pip:
     def pipinstall(self, command):
         subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage, stdout = sys.stderr)
 
+class LockStateException(Exception): pass
+
 class SharedDir:
 
     def __init__(self, dirpath):
-        self.tokenpath = os.path.join(dirpath, 'token')
+        self.readlocks = os.path.join(dirpath, 'token')
 
     def unlock(self):
-        os.mkdir(self.tokenpath)
+        try:
+            os.mkdir(self.readlocks)
+        except OSError as e:
+            if errno.EEXIST != e.errno:
+                raise
+            raise LockStateException
 
     def trylock(self):
         try:
-            os.rmdir(self.tokenpath)
+            os.rmdir(self.readlocks)
             return True
         except OSError as e:
             if errno.ENOENT != e.errno:
