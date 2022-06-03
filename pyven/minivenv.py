@@ -152,7 +152,7 @@ def poolsession(transient):
         _compactpool()
 
 def _compactpool(): # XXX: Combine venvs with orthogonal dependencies?
-    jdupes = shutil.which('jdupes')
+    jdupes = Jdupes.getornone()
     if jdupes is None:
         log.debug("Skip compact venvs as jdupes not available.")
         return
@@ -166,9 +166,23 @@ def _compactpool(): # XXX: Combine venvs with orthogonal dependencies?
                     locked.append(venv)
                 else:
                     log.debug("Busy: %s", venv.venvpath)
-        log.debug("Compact %s venvs.", len(locked))
-        # FIXME: Exclude paths that may be overwritten e.g. scripts.
-        subprocess.check_call([jdupes, '-Lrq'] + [l.venvpath for l in locked])
+        jdupes.compactvenvs([l.venvpath for l in locked])
     finally:
         for l in reversed(locked):
             l.unlock()
+
+class Jdupes:
+
+    @classmethod
+    def getornone(cls):
+        jdupes = shutil.which('jdupes')
+        if jdupes is not None:
+            return cls(jdupes)
+
+    def __init__(self, jdupes):
+        self.jdupes = jdupes
+
+    def compactvenvs(self, venvpaths):
+        log.info("Compact %s venvs.", len(venvpaths))
+        # FIXME: Exclude paths that may be overwritten e.g. scripts.
+        subprocess.check_call([self.jdupes, '-Lrq'] + venvpaths)
