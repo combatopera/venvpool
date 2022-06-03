@@ -17,7 +17,7 @@
 
 from . import targetremote
 from .checks import EveryVersion
-from .minivenv import Pip, poolsession
+from .minivenv import Pip, poolsession, TemporaryDirectory
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
@@ -29,7 +29,6 @@ from itertools import chain
 from lagoon.program import partial, Program
 from pkg_resources import resource_filename
 from subprocess import CalledProcessError
-from tempfile import TemporaryDirectory
 import lagoon, logging, os, re, shutil, sys, sysconfig
 
 log = logging.getLogger(__name__)

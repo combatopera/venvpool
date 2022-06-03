@@ -89,14 +89,6 @@ except ImportError:
     pass
 
 @contextmanager
-def TemporaryDirectory():
-    tempdir = mkdtemp()
-    try:
-        yield tempdir
-    finally:
-        shutil.rmtree(tempdir)
-
-@contextmanager
 def bgcontainer(*dockerrunargs):
     from lagoon import docker
     from lagoon.program import NOEOL
