@@ -51,21 +51,10 @@ class Pip:
     def pipinstall(self, command):
         subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage, stdout = sys.stderr)
 
-class Venv:
+class SharedDir:
 
-    @property
-    def site_packages(self):
-        libpath = os.path.join(self.venvpath, 'lib')
-        pyname, = os.listdir(libpath)
-        return os.path.join(libpath, pyname, 'site-packages')
-
-    def __init__(self, venvpath):
-        self.tokenpath = os.path.join(venvpath, 'token')
-        self.venvpath = venvpath
-
-    def create(self, pyversion):
-        with TemporaryDirectory() as tempdir:
-            subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, os.path.abspath(self.venvpath)], cwd = tempdir, stdout = sys.stderr)
+    def __init__(self, dirpath):
+        self.tokenpath = os.path.join(dirpath, 'token')
 
     def unlock(self):
         os.mkdir(self.tokenpath)
@@ -77,6 +66,22 @@ class Venv:
         except OSError as e:
             if errno.ENOENT != e.errno:
                 raise
+
+class Venv(SharedDir):
+
+    @property
+    def site_packages(self):
+        libpath = os.path.join(self.venvpath, 'lib')
+        pyname, = os.listdir(libpath)
+        return os.path.join(libpath, pyname, 'site-packages')
+
+    def __init__(self, venvpath):
+        super(Venv, self).__init__(venvpath)
+        self.venvpath = venvpath
+
+    def create(self, pyversion):
+        with TemporaryDirectory() as tempdir:
+            subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, os.path.abspath(self.venvpath)], cwd = tempdir, stdout = sys.stderr)
 
     def delete(self):
         log.debug("Delete transient venv: %s", self.venvpath)
