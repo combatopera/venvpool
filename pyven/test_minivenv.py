@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import oserrors, _osop, TemporaryDirectory
+from .minivenv import LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from tempfile import mkstemp
 from unittest import TestCase
 import errno, os
 
@@ -29,3 +30,17 @@ class TestMiniVenv(TestCase):
                 self.assertEqual(errno.ENOENT, e.errno)
             else:
                 self.fail()
+
+    def test_readlock(self):
+        h, p = mkstemp()
+        try:
+            lock = ReadLock(h)
+            lock.unlock()
+            with self.assertRaises(LockStateException):
+                lock.unlock()
+        finally:
+            os.remove(p)
+            try:
+                os.close(h)
+            except OSError:
+                pass
