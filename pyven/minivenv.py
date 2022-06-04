@@ -180,3 +180,4 @@ def compactvenvs(venvpaths):
     if venvpaths:
         # FIXME: Exclude paths that may be overwritten e.g. scripts.
         subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
+    log.info('Compaction complete.')
