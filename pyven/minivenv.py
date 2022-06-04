@@ -80,8 +80,27 @@ class ReadLock:
         except oserrors[errno.EBADF]:
             raise LockStateException
 
-def _sweepone(readlock):
-    pass # TODO: Implement.
+def _idempotentunlink(path):
+    try:
+        os.remove(path)
+    except oserrors[errno.ENOENT]:
+        pass
+
+if '/' == os.sep:
+    def _sweepone(readlock):
+        try:
+            stdout = subprocess.check_output(['lsof', '-t', readlock])
+        except subprocess.CalledProcessError:
+            pass
+        else:
+            if not stdout:
+                _idempotentunlink(readlock)
+else:
+    def _sweepone(readlock): # TODO: Untested!
+        try:
+            _idempotentunlink(readlock)
+        except oserrors[errno.EACCES]:
+            pass
 
 class SharedDir:
 
