@@ -67,18 +67,18 @@ class SharedDir:
     def __init__(self, dirpath):
         self.readlocks = os.path.join(dirpath, 'token')
 
-    def writeunlock(self):
-        try:
-            _osop(os.mkdir, self.readlocks)
-        except oserrors[errno.EEXIST]:
-            raise LockStateException
-
     def trywritelock(self):
         try:
             _osop(os.rmdir, self.readlocks)
             return True
         except oserrors[errno.ENOENT]:
             pass
+
+    def writeunlock(self):
+        try:
+            _osop(os.mkdir, self.readlocks)
+        except oserrors[errno.EEXIST]:
+            raise LockStateException
 
 class Venv(SharedDir):
 
