@@ -53,13 +53,12 @@ def _onerror(f):
 class Pip:
 
     envpatch = dict(PYTHON_KEYRING_BACKEND = 'keyring.backends.null.Keyring')
-    envimage = dict(os.environ, **envpatch)
 
     def __init__(self, pippath):
         self.pippath = pippath
 
     def pipinstall(self, command):
-        subprocess.check_call([self.pippath, 'install'] + command, env = self.envimage, stdout = sys.stderr)
+        subprocess.check_call([self.pippath, 'install'] + command, env = dict(os.environ, **self.envpatch), stdout = sys.stderr)
 
 class LockStateException(Exception): pass
 
