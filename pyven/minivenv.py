@@ -17,7 +17,7 @@
 
 from contextlib import contextmanager
 from pkg_resources import safe_name, to_filename
-from tempfile import mkdtemp
+from tempfile import mkdtemp, mkstemp
 import errno, logging, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
