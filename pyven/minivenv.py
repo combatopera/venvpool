@@ -62,6 +62,17 @@ class Pip:
 
 class LockStateException(Exception): pass
 
+class ReadLock:
+
+    def __init__(self, handle):
+        self.handle = handle
+
+    def unlock(self):
+        try:
+            _osop(os.close, self.handle)
+        except oserrors[errno.EBADF]:
+            raise LockStateException
+
 class SharedDir:
 
     def __init__(self, dirpath):
@@ -71,7 +82,7 @@ class SharedDir:
         try:
             _osop(os.rmdir, self.readlocks)
             return True
-        except oserrors[errno.ENOENT]:
+        except (oserrors[errno.ENOENT], oserrors[errno.ENOTEMPTY]):
             pass
 
     def writeunlock(self):
@@ -79,6 +90,12 @@ class SharedDir:
             _osop(os.mkdir, self.readlocks)
         except oserrors[errno.EEXIST]:
             raise LockStateException
+
+    def tryreadlock(self):
+        try:
+            return ReadLock(_osop(mkstemp, dir = self.readlocks)[0])
+        except oserrors[errno.ENOENT]:
+            pass
 
 class Venv(SharedDir):
 
