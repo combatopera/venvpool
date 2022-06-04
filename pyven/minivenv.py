@@ -67,13 +67,13 @@ class SharedDir:
     def __init__(self, dirpath):
         self.readlocks = os.path.join(dirpath, 'token')
 
-    def unlock(self):
+    def writeunlock(self):
         try:
             _osop(os.mkdir, self.readlocks)
         except oserrors[errno.EEXIST]:
             raise LockStateException
 
-    def trylock(self):
+    def trywritelock(self):
         try:
             _osop(os.rmdir, self.readlocks)
             return True
@@ -141,11 +141,11 @@ def openvenv(transient, pyversion, installdeps):
     os.makedirs(versiondir, exist_ok = True)
     for name in [] if transient else sorted(os.listdir(versiondir)):
         venv = Venv(os.path.join(versiondir, name))
-        if venv.trylock():
-            with _onerror(venv.unlock):
+        if venv.trywritelock():
+            with _onerror(venv.writeunlock):
                 if venv.compatible(installdeps):
                     break
-            venv.unlock()
+            venv.writeunlock()
     else:
         venv = Venv(mkdtemp(dir = versiondir))
         with _onerror(venv.delete):
@@ -154,7 +154,7 @@ def openvenv(transient, pyversion, installdeps):
     try:
         yield venv
     finally:
-        (venv.delete if transient else venv.unlock)()
+        (venv.delete if transient else venv.writeunlock)()
 
 def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
     'Use jdupes to combine identical files in the pool.'
@@ -165,14 +165,14 @@ def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
             versiondir = os.path.join(pooldir, version)
             for name in sorted(os.listdir(versiondir)):
                 venv = Venv(os.path.join(versiondir, name))
-                if venv.trylock():
+                if venv.trywritelock():
                     locked.append(venv)
                 else:
                     log.debug("Busy: %s", venv.venvpath)
         compactvenvs([l.venvpath for l in locked])
     finally:
         for l in reversed(locked):
-            l.unlock()
+            l.writeunlock()
 
 def compactvenvs(venvpaths):
     log.info("Compact %s venvs.", len(venvpaths))
