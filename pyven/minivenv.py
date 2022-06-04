@@ -21,7 +21,7 @@ from tempfile import mkdtemp
 import errno, logging, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
-cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # FIXME: Honour XDG_CACHE_HOME.
+cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Honour XDG_CACHE_HOME.
 oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
 pooldir = os.path.join(cachedir, 'pool')
 
