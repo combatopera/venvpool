@@ -22,7 +22,14 @@ import errno, logging, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # FIXME: Honour XDG_CACHE_HOME.
+oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
 pooldir = os.path.join(cachedir, 'pool')
+
+def _osop(f, *args, **kwargs):
+    try:
+        return f(*args, **kwargs)
+    except OSError as e:
+        raise oserrors[e.errno](*e.args)
 
 def initlogging():
     logging.basicConfig(format = "%(asctime)s [%(levelname)s] %(message)s", level = logging.DEBUG)
@@ -63,19 +70,16 @@ class SharedDir:
 
     def unlock(self):
         try:
-            os.mkdir(self.readlocks)
-        except OSError as e:
-            if errno.EEXIST != e.errno:
-                raise
+            _osop(os.mkdir, self.readlocks)
+        except oserrors[errno.EEXIST]:
             raise LockStateException
 
     def trylock(self):
         try:
-            os.rmdir(self.readlocks)
+            _osop(os.rmdir, self.readlocks)
             return True
-        except OSError as e:
-            if errno.ENOENT != e.errno:
-                raise
+        except oserrors[errno.ENOENT]:
+            pass
 
 class Venv(SharedDir):
 
