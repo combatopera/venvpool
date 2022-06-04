@@ -60,6 +60,13 @@ class Pip:
     def pipinstall(self, command):
         subprocess.check_call([self.pippath, 'install'] + command, env = dict(os.environ, **self.envpatch), stdout = sys.stderr)
 
+def _listorempty(d):
+    try:
+        names = _osop(os.listdir, d)
+    except oserrors[errno.ENOENT]:
+        return []
+    return [os.path.join(d, n) for n in names]
+
 class LockStateException(Exception): pass
 
 class ReadLock:
@@ -73,12 +80,20 @@ class ReadLock:
         except oserrors[errno.EBADF]:
             raise LockStateException
 
+def _sweepone(readlock):
+    pass # TODO: Implement.
+
 class SharedDir:
 
     def __init__(self, dirpath):
         self.readlocks = os.path.join(dirpath, 'token')
 
+    def _sweep(self):
+        for readlock in _listorempty(self.readlocks):
+            _sweepone(readlock)
+
     def trywritelock(self):
+        self._sweep()
         try:
             _osop(os.rmdir, self.readlocks)
             return True
