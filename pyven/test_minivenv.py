@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from .minivenv import _listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
 from tempfile import mkstemp
 from unittest import TestCase
 import errno, os
@@ -44,3 +44,13 @@ class TestMiniVenv(TestCase):
                 os.close(h)
             except OSError:
                 pass
+
+    def test_listorempty(self):
+        with TemporaryDirectory() as tempdir:
+            d = os.path.join(tempdir, 'woo')
+            self.assertEqual([], _listorempty(d))
+            os.mkdir(d)
+            self.assertEqual([], _listorempty(d))
+            with open(os.path.join(d, 'yay'), 'w'):
+                pass
+            self.assertEqual([os.path.join(d, 'yay')], _listorempty(d))
