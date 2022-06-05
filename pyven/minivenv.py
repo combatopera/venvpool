@@ -71,7 +71,8 @@ class LockStateException(Exception): pass
 
 class ReadLock:
 
-    def __init__(self, handle):
+    def __init__(self, venv, handle):
+        self.venv = venv
         self.handle = handle
 
     def unlock(self):
@@ -124,7 +125,7 @@ class SharedDir:
 
     def tryreadlock(self):
         try:
-            return ReadLock(_osop(mkstemp, dir = self.readlocks)[0])
+            return ReadLock(self, _osop(mkstemp, dir = self.readlocks)[0])
         except oserrors[errno.ENOENT]:
             pass
 
@@ -194,11 +195,12 @@ def openvenv(transient, pyversion, installdeps):
             return venv
     def compatiblevenv():
         for venv in _listorempty(versiondir, Venv):
-            if venv.trywritelock():
-                with _onerror(venv.writeunlock):
+            readlock = venv.tryreadlock()
+            if readlock is not None:
+                with _onerror(readlock.unlock):
                     if venv.compatible(installdeps):
-                        return venv
-                venv.writeunlock()
+                        return readlock
+                readlock.unlock()
     versiondir = os.path.join(pooldir, str(pyversion))
     if transient:
         venv = newvenv()
@@ -208,14 +210,14 @@ def openvenv(transient, pyversion, installdeps):
             venv.delete()
     else:
         while True:
-            venv = compatiblevenv()
-            if venv is not None:
+            readlock = compatiblevenv()
+            if readlock is not None:
                 break
             newvenv().writeunlock()
         try:
-            yield venv
+            yield readlock.venv
         finally:
-            venv.writeunlock()
+            readlock.unlock()
 
 def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
     'Use jdupes to combine identical files in the pool.'
