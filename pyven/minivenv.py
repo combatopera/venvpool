@@ -88,12 +88,10 @@ def _idempotentunlink(path):
 
 if '/' == os.sep:
     def _sweepone(readlock):
-        try:
-            stdout = subprocess.check_output(['lsof', '-t', readlock])
-        except subprocess.CalledProcessError:
-            pass
-        else:
-            stdout or _idempotentunlink(readlock)
+        # Check stderr instead of returncode for errors:
+        stdout, stderr = subprocess.Popen(['lsof', '-t', readlock], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+        if not stderr and not stdout:
+            _idempotentunlink(readlock)
 else:
     def _sweepone(readlock): # TODO: Untested!
         try:
