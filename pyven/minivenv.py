@@ -194,6 +194,13 @@ def openvenv(transient, pyversion, installdeps):
             venv.create(pyversion)
             installdeps.invoke(venv)
             return venv
+    def compatiblevenv():
+        for venv in _listorempty(versiondir, Venv):
+            if venv.trywritelock():
+                with _onerror(venv.writeunlock):
+                    if venv.compatible(installdeps):
+                        return venv
+                venv.writeunlock()
     versiondir = os.path.join(pooldir, str(pyversion))
     if transient:
         venv = newvenv()
@@ -202,14 +209,11 @@ def openvenv(transient, pyversion, installdeps):
         finally:
             venv.delete()
     else:
-        for venv in _listorempty(versiondir, Venv):
-            if venv.trywritelock():
-                with _onerror(venv.writeunlock):
-                    if venv.compatible(installdeps):
-                        break
-                venv.writeunlock()
-        else:
-            venv = newvenv()
+        while True:
+            venv = compatiblevenv()
+            if venv is not None:
+                break
+            newvenv().writeunlock()
         try:
             yield venv
         finally:
