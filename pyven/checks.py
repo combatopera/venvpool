@@ -119,7 +119,7 @@ class EveryVersion:
                         if upstream_devel_packages:
                             for command in ['apt-get', 'update'], ['apt-get', 'install', '-y'] + upstream_devel_packages:
                                 container.call(command, check = True, root = True)
-                        installdeps(container)
+                        installdeps.invoke(container)
                         cpath = lambda p: os.path.relpath(p, self.info.projectdir).replace(os.sep, '/')
                         status = container.call([
                             'nosetests', '--exe', '-v',

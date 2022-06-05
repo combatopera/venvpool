@@ -98,7 +98,7 @@ class SimpleInstallDeps:
     def __init__(self, requires):
         self.pypireqs = Req.parsemany(requires)
 
-    def __call__(self, venv):
+    def invoke(self, venv):
         venv.install([r.reqstr for r in self.pypireqs])
 
 class InstallDeps:
@@ -155,7 +155,7 @@ class InstallDeps:
     def add(self, *requires):
         self.pypireqs.extend(Req.parsemany(requires))
 
-    def __call__(self, venv):
+    def invoke(self, venv):
         venv.install(sum((['-e', i.projectdir] for i in self.editableprojects), []) + [i.projectdir for i in self.volatileprojects] + [r.reqstr for r in self.pypireqs])
 
     def __exit__(self, *exc_info):

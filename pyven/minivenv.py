@@ -192,7 +192,7 @@ def openvenv(transient, pyversion, installdeps):
         venv = Venv(mkdtemp(dir = versiondir, prefix = 'venv'))
         with _onerror(venv.delete):
             venv.create(pyversion)
-            installdeps(venv)
+            installdeps.invoke(venv)
             return venv
     versiondir = os.path.join(pooldir, str(pyversion))
     if transient:
