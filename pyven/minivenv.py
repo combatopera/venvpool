@@ -210,10 +210,8 @@ def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
     initlogging()
     locked = []
     try:
-        for version in sorted(os.listdir(pooldir)):
-            versiondir = os.path.join(pooldir, version)
-            for name in sorted(os.listdir(versiondir)):
-                venv = Venv(os.path.join(versiondir, name))
+        for versiondir in _listorempty(pooldir):
+            for venv in _listorempty(versiondir, Venv):
                 if venv.trywritelock():
                     locked.append(venv)
                 else:
