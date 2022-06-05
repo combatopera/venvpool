@@ -60,12 +60,12 @@ class Pip:
     def pipinstall(self, command):
         subprocess.check_call([self.pippath, 'install'] + command, env = dict(os.environ, **self.envpatch), stdout = sys.stderr)
 
-def _listorempty(d):
+def _listorempty(d, xform = lambda p: p):
     try:
         names = _osop(os.listdir, d)
     except oserrors[errno.ENOENT]:
         return []
-    return [os.path.join(d, n) for n in sorted(names)]
+    return [xform(os.path.join(d, n)) for n in sorted(names)]
 
 class LockStateException(Exception): pass
 
@@ -188,15 +188,14 @@ class Venv(SharedDir):
 @contextmanager
 def openvenv(transient, pyversion, installdeps):
     versiondir = os.path.join(pooldir, str(pyversion))
-    os.makedirs(versiondir, exist_ok = True)
-    for name in [] if transient else sorted(os.listdir(versiondir)):
-        venv = Venv(os.path.join(versiondir, name))
+    for venv in [] if transient else _listorempty(versiondir, Venv):
         if venv.trywritelock():
             with _onerror(venv.writeunlock):
                 if venv.compatible(installdeps):
                     break
             venv.writeunlock()
     else:
+        os.makedirs(versiondir, exist_ok = True)
         venv = Venv(mkdtemp(dir = versiondir))
         with _onerror(venv.delete):
             venv.create(pyversion)
