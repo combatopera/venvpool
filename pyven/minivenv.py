@@ -65,7 +65,7 @@ def _listorempty(d):
         names = _osop(os.listdir, d)
     except oserrors[errno.ENOENT]:
         return []
-    return [os.path.join(d, n) for n in names]
+    return [os.path.join(d, n) for n in sorted(names)]
 
 class LockStateException(Exception): pass
 
