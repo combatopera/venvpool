@@ -196,7 +196,7 @@ def openvenv(transient, pyversion, installdeps):
             venv.writeunlock()
     else:
         os.makedirs(versiondir, exist_ok = True)
-        venv = Venv(mkdtemp(dir = versiondir))
+        venv = Venv(mkdtemp(dir = versiondir, prefix = 'venv'))
         with _onerror(venv.delete):
             venv.create(pyversion)
             installdeps(venv)
