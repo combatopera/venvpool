@@ -187,23 +187,33 @@ class Venv(SharedDir):
 
 @contextmanager
 def openvenv(transient, pyversion, installdeps):
-    versiondir = os.path.join(pooldir, str(pyversion))
-    for venv in [] if transient else _listorempty(versiondir, Venv):
-        if venv.trywritelock():
-            with _onerror(venv.writeunlock):
-                if venv.compatible(installdeps):
-                    break
-            venv.writeunlock()
-    else:
+    def newvenv():
         os.makedirs(versiondir, exist_ok = True)
         venv = Venv(mkdtemp(dir = versiondir, prefix = 'venv'))
         with _onerror(venv.delete):
             venv.create(pyversion)
             installdeps(venv)
-    try:
-        yield venv
-    finally:
-        (venv.delete if transient else venv.writeunlock)()
+            return venv
+    versiondir = os.path.join(pooldir, str(pyversion))
+    if transient:
+        venv = newvenv()
+        try:
+            yield venv
+        finally:
+            venv.delete()
+    else:
+        for venv in _listorempty(versiondir, Venv):
+            if venv.trywritelock():
+                with _onerror(venv.writeunlock):
+                    if venv.compatible(installdeps):
+                        break
+                venv.writeunlock()
+        else:
+            venv = newvenv()
+        try:
+            yield venv
+        finally:
+            venv.writeunlock()
 
 def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
     'Use jdupes to combine identical files in the pool.'
