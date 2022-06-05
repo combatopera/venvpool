@@ -93,8 +93,7 @@ if '/' == os.sep:
         except subprocess.CalledProcessError:
             pass
         else:
-            if not stdout:
-                _idempotentunlink(readlock)
+            stdout or _idempotentunlink(readlock)
 else:
     def _sweepone(readlock): # TODO: Untested!
         try:
