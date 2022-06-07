@@ -71,8 +71,7 @@ class LockStateException(Exception): pass
 
 class ReadLock:
 
-    def __init__(self, venv, handle):
-        self.venv = venv
+    def __init__(self, handle):
         self.handle = handle
 
     def unlock(self):
@@ -125,7 +124,7 @@ class SharedDir:
 
     def tryreadlock(self):
         try:
-            return ReadLock(self, _osop(mkstemp, dir = self.readlocks)[0])
+            return ReadLock(_osop(mkstemp, dir = self.readlocks)[0])
         except oserrors[errno.ENOENT]:
             pass
 
@@ -199,7 +198,7 @@ def openvenv(transient, pyversion, installdeps):
             if readlock is not None:
                 with _onerror(readlock.unlock):
                     if venv.compatible(installdeps):
-                        return readlock
+                        return venv, readlock
                 readlock.unlock()
     versiondir = os.path.join(pooldir, str(pyversion))
     if transient:
@@ -210,12 +209,13 @@ def openvenv(transient, pyversion, installdeps):
             venv.delete()
     else:
         while True:
-            readlock = compatiblevenv()
-            if readlock is not None:
+            t = compatiblevenv()
+            if t is not None:
+                venv, readlock = t
                 break
             newvenv().writeunlock()
         try:
-            yield readlock.venv
+            yield venv
         finally:
             readlock.unlock()
 
