@@ -34,7 +34,7 @@ class TestMiniVenv(TestCase):
     def test_readlock(self):
         h, p = mkstemp()
         try:
-            lock = ReadLock(None, h)
+            lock = ReadLock(h)
             lock.unlock()
             with self.assertRaises(LockStateException):
                 lock.unlock()

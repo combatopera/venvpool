@@ -220,7 +220,7 @@ def openvenv(transient, pyversion, installdeps):
             readlock.unlock()
 
 def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
-    'Use jdupes to combine identical files in the pool.'
+    'Use jdupes to combine identical files in the venv pool.'
     initlogging()
     locked = []
     try:
