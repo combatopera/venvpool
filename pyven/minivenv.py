@@ -204,14 +204,14 @@ class Pool:
             installdeps.invoke(venv)
             return venv
 
-    def _compatiblevenv(self, installdeps):
+    def _compatiblevenv(self, trylock, installdeps):
         for venv in _listorempty(self.versiondir, Venv):
-            readlock = venv.tryreadlock()
-            if readlock is not None:
-                with _onerror(readlock.unlock):
+            lock = trylock(venv)
+            if lock is not None:
+                with _onerror(lock.unlock):
                     if venv.compatible(installdeps):
-                        return venv, readlock
-                readlock.unlock()
+                        return venv, lock
+                lock.unlock()
 
     @contextmanager
     def _transient(self, installdeps):
@@ -224,7 +224,7 @@ class Pool:
     @contextmanager
     def readonly(self, installdeps):
         while True:
-            t = self._compatiblevenv(installdeps)
+            t = self._compatiblevenv(Venv.tryreadlock, installdeps)
             if t is not None:
                 venv, readlock = t
                 break
@@ -233,6 +233,34 @@ class Pool:
             yield venv
         finally:
             readlock.unlock()
+
+    @contextmanager
+    def readwrite(self, installdeps):
+        def trywritelock(venv):
+            if venv.trywritelock():
+                class WriteLock:
+                    def unlock(self):
+                        venv.writeunlock()
+                return WriteLock()
+        t = self._compatiblevenv(trywritelock, installdeps)
+        if t is None:
+            venv = self._newvenv(installdeps)
+        else:
+            venv = t[0]
+            with _onerror(venv.writeunlock):
+                for dirpath, dirnames, filenames in os.walk(venv.venvpath):
+                    for name in filenames:
+                        p = os.path.join(dirpath, name)
+                        if 1 != os.stat(p).st_nlink:
+                            h, q = mkstemp(dir = dirpath)
+                            os.close(h)
+                            shutil.copy2(p, q)
+                            os.remove(p) # Cross-platform.
+                            os.rename(q, p)
+        try:
+            yield venv
+        finally:
+            venv.writeunlock()
 
 def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
     'Use jdupes to combine identical files in the venv pool.'
