@@ -32,6 +32,7 @@ def main_launch():
     modulename, qname = objref.split(':')
     with InstallDeps(info, False, None) as installdeps, openvenv(False, sys.version_info.major, installdeps) as venv:
         if args.build:
+            # FIXME: This requires a writable venv.
             venv.install(['--no-deps', '-e', info.projectdir])
         status = subprocess.call([venv.programpath('python'), '-c', "from %s import %s; %s()" % (modulename, qname.split('.')[0], qname)])
     sys.exit(status)
