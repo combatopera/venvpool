@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import initlogging, openvenv
+from .minivenv import initlogging, Pool
 from .pipify import InstallDeps
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
@@ -30,7 +30,7 @@ def main_launch():
     info = ProjectInfo.seekany('.')
     _, objref = next(iter(info.console_scripts())).split('=') # XXX: Support more than just the first?
     modulename, qname = objref.split(':')
-    with InstallDeps(info, False, None) as installdeps, openvenv(False, sys.version_info.major, installdeps) as venv:
+    with InstallDeps(info, False, None) as installdeps, Pool(sys.version_info.major).readonly(installdeps) as venv:
         if args.build:
             # FIXME: This requires a writable venv.
             venv.install(['--no-deps', '-e', info.projectdir])

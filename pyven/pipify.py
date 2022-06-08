@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import initlogging, openvenv
+from .minivenv import initlogging, Pool
 from .projectinfo import ProjectInfo, Req
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
@@ -88,7 +88,7 @@ def setupcommand(info, pyversion, transient, *command):
     if {'setuptools', 'wheel'} == set(buildreqs) and sys.version_info.major == pyversion:
         setup(sys.executable)
     else:
-        with openvenv(transient, pyversion, SimpleInstallDeps(buildreqs)) as venv:
+        with Pool(pyversion).readonlyortransient[transient](SimpleInstallDeps(buildreqs)) as venv:
             setup(venv.programpath('python'))
 
 class SimpleInstallDeps:

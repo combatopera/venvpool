@@ -183,37 +183,52 @@ class Venv(SharedDir):
             if m is not None:
                 return m.group(1)
 
-@contextmanager
-def openvenv(transient, pyversion, installdeps):
-    def newvenv():
-        os.makedirs(versiondir, exist_ok = True)
-        venv = Venv(mkdtemp(dir = versiondir, prefix = 'venv'))
+class Pool:
+
+    @property
+    def versiondir(self):
+        return os.path.join(pooldir, str(self.pyversion))
+
+    def __init__(self, pyversion):
+        self.readonlyortransient = {
+            False: self.readonly,
+            True: self._transient,
+        }
+        self.pyversion = pyversion
+
+    def _newvenv(self, installdeps):
+        os.makedirs(self.versiondir, exist_ok = True)
+        venv = Venv(mkdtemp(dir = self.versiondir, prefix = 'venv'))
         with _onerror(venv.delete):
-            venv.create(pyversion)
+            venv.create(self.pyversion)
             installdeps.invoke(venv)
             return venv
-    def compatiblevenv():
-        for venv in _listorempty(versiondir, Venv):
+
+    def _compatiblevenv(self, installdeps):
+        for venv in _listorempty(self.versiondir, Venv):
             readlock = venv.tryreadlock()
             if readlock is not None:
                 with _onerror(readlock.unlock):
                     if venv.compatible(installdeps):
                         return venv, readlock
                 readlock.unlock()
-    versiondir = os.path.join(pooldir, str(pyversion))
-    if transient:
-        venv = newvenv()
+
+    @contextmanager
+    def _transient(self, installdeps):
+        venv = self._newvenv(installdeps)
         try:
             yield venv
         finally:
             venv.delete()
-    else:
+
+    @contextmanager
+    def readonly(self, installdeps):
         while True:
-            t = compatiblevenv()
+            t = self._compatiblevenv(installdeps)
             if t is not None:
                 venv, readlock = t
                 break
-            newvenv().writeunlock()
+            self._newvenv(installdeps).writeunlock() # TODO: Infinite loop if compatibility check fails.
         try:
             yield venv
         finally:

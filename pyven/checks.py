@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .files import Files
-from .minivenv import initlogging, openvenv
+from .minivenv import initlogging, Pool
 from .pipify import InstallDeps, SimpleInstallDeps
 from .projectinfo import ProjectInfo
 from .util import bgcontainer, Excludes, pyversiontags, stderr
@@ -98,7 +98,7 @@ class EveryVersion:
                 for path in self.files.pypaths if os.path.relpath(path, self.files.root) not in excludes]
         def pyflakes():
             if paths:
-                with openvenv(self.transient, pyversion, SimpleInstallDeps(['pyflakes'])) as venv:
+                with Pool(pyversion).readonlyortransient[self.transient](SimpleInstallDeps(['pyflakes'])) as venv:
                     subprocess.check_call([venv.programpath('pyflakes')] + paths)
         for pyversion in self.info.config.pyversions:
             _runcheck(pyversion, pyflakes)
@@ -128,7 +128,7 @@ class EveryVersion:
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(xmlpath)] + self.noseargs)
                 else:
                     coveragepath = '.coverage'
-                    with openvenv(self.transient, pyversion, installdeps) as venv:
+                    with Pool(pyversion).readonlyortransient[self.transient](installdeps) as venv:
                         status = subprocess.call([
                             venv.programpath('nosetests'), '--exe', '-v',
                             '--with-xunit', '--xunit-file', xmlpath,
