@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from contextlib import contextmanager
-from pkg_resources import safe_name, to_filename
+from pkg_resources import parse_requirements, safe_name, to_filename
 from tempfile import mkdtemp, mkstemp
 import errno, logging, os, re, shutil, subprocess, sys
 

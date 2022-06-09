@@ -22,7 +22,6 @@ from .setuproot import setuptoolsinfo
 from .util import Path
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
-from pkg_resources import parse_requirements
 from pkg_resources.extern.packaging.markers import UndefinedEnvironmentName
 import logging, os, re, stat, subprocess
 
