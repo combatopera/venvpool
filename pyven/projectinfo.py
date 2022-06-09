@@ -17,12 +17,11 @@
 
 from . import mainfunctions
 from .files import Files
-from .minivenv import initlogging
+from .minivenv import BaseReq, initlogging
 from .setuproot import setuptoolsinfo
 from .util import Path
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
-from pkg_resources import parse_requirements
 from pkg_resources.extern.packaging.markers import UndefinedEnvironmentName
 import logging, os, re, stat, subprocess
 
@@ -41,25 +40,13 @@ def textcontent(node):
             yield value
     return ''.join(iterparts(node))
 
-class Req:
+class Req(BaseReq):
 
     namematch = re.compile(r'\S+').search
-
-    @classmethod
-    def parsemany(cls, reqstrs):
-        return [cls(reqstr, req) for reqstr, req in zip(reqstrs, parse_requirements(reqstrs))]
-
-    @property
-    def namepart(self):
-        return self.parsed.name
 
     @property
     def specifierset(self):
         return self.parsed.specifier
-
-    def __init__(self, reqstr, req):
-        self.reqstr = reqstr
-        self.parsed = req
 
     def siblingpath(self, workspace):
         return os.path.join(workspace, self.namepart)
@@ -73,7 +60,7 @@ class Req:
         from urllib.error import HTTPError
         from urllib.parse import quote
         from urllib.request import Request, urlopen
-        for r in cls.parsemany(reqstrs):
+        for r in cls.parselines(reqstrs):
             try:
                 # FIXME: Allow running tests offline.
                 with urlopen(Request("https://pypi.org/simple/%s/" % quote(r.namepart, safe = ''), method = 'HEAD')):
@@ -152,7 +139,7 @@ class ProjectInfo:
         return list(self.config.requires)
 
     def parsedrequires(self):
-        return Req.parsemany(self.allrequires())
+        return Req.parselines(self.allrequires())
 
     def localrequires(self):
         return [r.namepart for r in self.parsedrequires() if r.isproject(self)]

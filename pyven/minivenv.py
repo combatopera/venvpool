@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from contextlib import contextmanager
-from pkg_resources import safe_name, to_filename
+from pkg_resources import parse_requirements, safe_name, to_filename
 from tempfile import mkdtemp, mkstemp
 import errno, logging, os, re, shutil, subprocess, sys
 
@@ -284,3 +284,30 @@ def compactvenvs(venvpaths):
         # FIXME: Exclude paths that may be overwritten e.g. scripts.
         subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
     log.info('Compaction complete.')
+
+class BaseReq:
+
+    @classmethod
+    def parselines(cls, lines):
+        return [cls(parsed) for parsed in parse_requirements(lines)]
+
+    @property
+    def namepart(self):
+        return self.parsed.name
+
+    @property
+    def reqstr(self):
+        return str(self.parsed)
+
+    def __init__(self, parsed):
+        self.parsed = parsed
+
+class SimpleInstallDeps:
+
+    editableprojects = volatileprojects = ()
+
+    def __init__(self, requires):
+        self.pypireqs = BaseReq.parselines(requires)
+
+    def invoke(self, venv):
+        venv.install([r.reqstr for r in self.pypireqs])
