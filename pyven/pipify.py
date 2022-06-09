@@ -96,7 +96,7 @@ class SimpleInstallDeps:
     editableprojects = volatileprojects = ()
 
     def __init__(self, requires):
-        self.pypireqs = Req.parsemany(requires)
+        self.pypireqs = Req.parselines(requires)
 
     def invoke(self, venv):
         venv.install([r.reqstr for r in self.pypireqs])
@@ -153,7 +153,7 @@ class InstallDeps:
         return self
 
     def add(self, *requires):
-        self.pypireqs.extend(Req.parsemany(requires))
+        self.pypireqs.extend(Req.parselines(requires))
 
     def invoke(self, venv):
         venv.install(sum((['-e', i.projectdir] for i in self.editableprojects), []) + [i.projectdir for i in self.volatileprojects] + [r.reqstr for r in self.pypireqs])

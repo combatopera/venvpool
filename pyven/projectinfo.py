@@ -46,7 +46,7 @@ class Req:
     namematch = re.compile(r'\S+').search
 
     @classmethod
-    def parsemany(cls, lines):
+    def parselines(cls, lines):
         return [cls(parsed) for parsed in parse_requirements(lines)]
 
     @property
@@ -76,7 +76,7 @@ class Req:
         from urllib.error import HTTPError
         from urllib.parse import quote
         from urllib.request import Request, urlopen
-        for r in cls.parsemany(reqstrs):
+        for r in cls.parselines(reqstrs):
             try:
                 # FIXME: Allow running tests offline.
                 with urlopen(Request("https://pypi.org/simple/%s/" % quote(r.namepart, safe = ''), method = 'HEAD')):
@@ -155,7 +155,7 @@ class ProjectInfo:
         return list(self.config.requires)
 
     def parsedrequires(self):
-        return Req.parsemany(self.allrequires())
+        return Req.parselines(self.allrequires())
 
     def localrequires(self):
         return [r.namepart for r in self.parsedrequires() if r.isproject(self)]
