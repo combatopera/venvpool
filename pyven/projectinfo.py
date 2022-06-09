@@ -17,7 +17,7 @@
 
 from . import mainfunctions
 from .files import Files
-from .minivenv import initlogging
+from .minivenv import BaseReq, initlogging
 from .setuproot import setuptoolsinfo
 from .util import Path
 from aridity.config import ConfigCtrl
@@ -41,28 +41,13 @@ def textcontent(node):
             yield value
     return ''.join(iterparts(node))
 
-class Req:
+class Req(BaseReq):
 
     namematch = re.compile(r'\S+').search
-
-    @classmethod
-    def parselines(cls, lines):
-        return [cls(parsed) for parsed in parse_requirements(lines)]
-
-    @property
-    def namepart(self):
-        return self.parsed.name
 
     @property
     def specifierset(self):
         return self.parsed.specifier
-
-    @property
-    def reqstr(self):
-        return str(self.parsed)
-
-    def __init__(self, parsed):
-        self.parsed = parsed
 
     def siblingpath(self, workspace):
         return os.path.join(workspace, self.namepart)

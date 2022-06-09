@@ -256,3 +256,20 @@ def compactvenvs(venvpaths):
         # FIXME: Exclude paths that may be overwritten e.g. scripts.
         subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
     log.info('Compaction complete.')
+
+class BaseReq:
+
+    @classmethod
+    def parselines(cls, lines):
+        return [cls(parsed) for parsed in parse_requirements(lines)]
+
+    @property
+    def namepart(self):
+        return self.parsed.name
+
+    @property
+    def reqstr(self):
+        return str(self.parsed)
+
+    def __init__(self, parsed):
+        self.parsed = parsed
