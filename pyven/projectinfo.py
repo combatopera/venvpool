@@ -46,8 +46,8 @@ class Req:
     namematch = re.compile(r'\S+').search
 
     @classmethod
-    def parsemany(cls, reqstrs):
-        return [cls(reqstr, req) for reqstr, req in zip(reqstrs, parse_requirements(reqstrs))]
+    def parsemany(cls, lines):
+        return [cls(parsed) for parsed in parse_requirements(lines)]
 
     @property
     def namepart(self):
@@ -57,9 +57,12 @@ class Req:
     def specifierset(self):
         return self.parsed.specifier
 
-    def __init__(self, reqstr, req):
-        self.reqstr = reqstr
-        self.parsed = req
+    @property
+    def reqstr(self):
+        return str(self.parsed)
+
+    def __init__(self, parsed):
+        self.parsed = parsed
 
     def siblingpath(self, workspace):
         return os.path.join(workspace, self.namepart)
