@@ -273,3 +273,13 @@ class BaseReq:
 
     def __init__(self, parsed):
         self.parsed = parsed
+
+class SimpleInstallDeps:
+
+    editableprojects = volatileprojects = ()
+
+    def __init__(self, requires):
+        self.pypireqs = BaseReq.parselines(requires)
+
+    def invoke(self, venv):
+        venv.install([r.reqstr for r in self.pypireqs])

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import initlogging, Pool
+from .minivenv import initlogging, Pool, SimpleInstallDeps
 from .projectinfo import ProjectInfo, Req
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
@@ -90,16 +90,6 @@ def setupcommand(info, pyversion, transient, *command):
     else:
         with Pool(pyversion).readonlyortransient[transient](SimpleInstallDeps(buildreqs)) as venv:
             setup(venv.programpath('python'))
-
-class SimpleInstallDeps:
-
-    editableprojects = volatileprojects = ()
-
-    def __init__(self, requires):
-        self.pypireqs = Req.parselines(requires)
-
-    def invoke(self, venv):
-        venv.install([r.reqstr for r in self.pypireqs])
 
 class InstallDeps:
 
