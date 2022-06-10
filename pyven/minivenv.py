@@ -319,8 +319,8 @@ class SimpleInstallDeps:
 
 def _launch():
     initlogging()
-    scriptpath, *scriptargs = sys.argv[1:]
-    scriptpath = os.path.abspath(scriptpath)
+    scriptpath = os.path.abspath(sys.argv[1])
+    scriptargs = sys.argv[2:]
     projectdir = os.path.dirname(scriptpath)
     while True:
         requirementspath = os.path.join(projectdir, 'requirements.txt')
@@ -334,7 +334,7 @@ def _launch():
         installdeps = SimpleInstallDeps(f.read().splitlines())
     module = os.path.relpath(scriptpath[:-len('.py')], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
-        os.execle(os.path.join(venv.venvpath, 'bin', 'python'), '-m', '-m', module, *scriptargs, dict(
+        os.execle(os.path.join(venv.venvpath, 'bin', 'python'), '-m', '-m', module, *scriptargs, env = dict(
             os.environ,
             PYTHONHOME = venv.venvpath,
             PYTHONPATH = projectdir, # XXX: What if there already is one?
