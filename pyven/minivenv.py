@@ -90,6 +90,7 @@ def _idempotentunlink(path):
 
 if '/' == os.sep:
     def _sweepone(readlock):
+        # TODO: Run lsof fewer times.
         # Check stderr instead of returncode for errors:
         stdout, stderr = subprocess.Popen(['lsof', '-t', readlock], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
         if not stderr and not stdout:
