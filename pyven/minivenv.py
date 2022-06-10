@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from contextlib import contextmanager
+from fcntl import fcntl, FD_CLOEXEC, F_GETFD, F_SETFD
 from pkg_resources import parse_requirements, safe_name, to_filename
 from tempfile import mkdtemp, mkstemp
 import errno, logging, os, re, shutil, subprocess, sys
@@ -126,7 +127,9 @@ class SharedDir:
 
     def tryreadlock(self):
         try:
-            return ReadLock(_osop(mkstemp, dir = self.readlocks)[0])
+            h = _osop(mkstemp, dir = self.readlocks)[0]
+            fcntl(h, F_SETFD, fcntl(h, F_GETFD) & ~FD_CLOEXEC)
+            return ReadLock(h)
         except oserrors[errno.ENOENT]:
             pass
 
