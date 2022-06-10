@@ -334,7 +334,7 @@ def _launch():
         installdeps = SimpleInstallDeps(f.read().splitlines())
     module = os.path.relpath(scriptpath[:-len('.py')], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
-        os.execle(os.path.join(venv.venvpath, 'bin', 'python'), '-m', '-m', module, *scriptargs, env = dict(
+        os.execve(os.path.join(venv.venvpath, 'bin', 'python'), ['-m', '-m', module] + scriptargs, dict(
             os.environ,
             PYTHONHOME = venv.venvpath,
             PYTHONPATH = projectdir, # XXX: What if there already is one?
