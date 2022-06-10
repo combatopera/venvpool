@@ -83,6 +83,7 @@ class ReadLock:
 def _idempotentunlink(path):
     try:
         _osop(os.remove, path)
+        return True
     except oserrors[errno.ENOENT]:
         pass
 
@@ -91,11 +92,11 @@ if '/' == os.sep:
         # Check stderr instead of returncode for errors:
         stdout, stderr = subprocess.Popen(['lsof', '-t', readlock], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
         if not stderr and not stdout:
-            _idempotentunlink(readlock)
+            return _idempotentunlink(readlock)
 else:
     def _sweepone(readlock): # TODO: Untested!
         try:
-            _idempotentunlink(readlock)
+            return _idempotentunlink(readlock)
         except oserrors[errno.EACCES]:
             pass
 
@@ -106,7 +107,8 @@ class SharedDir:
 
     def _sweep(self):
         for readlock in _listorempty(self.readlocks):
-            _sweepone(readlock)
+            if _sweepone(readlock):
+                log.debug("Swept: %s", readlock)
 
     def trywritelock(self):
         self._sweep()
