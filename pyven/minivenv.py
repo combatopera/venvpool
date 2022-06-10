@@ -316,3 +316,29 @@ class SimpleInstallDeps:
 
     def invoke(self, venv):
         venv.install([r.reqstr for r in self.pypireqs])
+
+def _launch():
+    initlogging()
+    scriptpath, *scriptargs = sys.argv[1:]
+    scriptpath = os.path.abspath(scriptpath)
+    projectdir = os.path.dirname(scriptpath)
+    while True:
+        requirementspath = os.path.join(projectdir, 'requirements.txt')
+        if os.path.exists(requirementspath):
+            log.debug("Found requirements: %s", requirementspath)
+            break
+        parent = os.path.dirname(projectdir)
+        assert parent != projectdir
+        projectdir = parent
+    with open(requirementspath) as f:
+        installdeps = SimpleInstallDeps(f.read().splitlines())
+    module = os.path.relpath(scriptpath[:-len('.py')], projectdir).replace(os.sep, '.')
+    with Pool(sys.version_info.major).readonly(installdeps) as venv:
+        os.execle(os.path.join(venv.venvpath, 'bin', 'python'), '-m', '-m', module, *scriptargs, dict(
+            os.environ,
+            PYTHONHOME = venv.venvpath,
+            PYTHONPATH = projectdir, # XXX: What if there already is one?
+        ))
+
+if '__main__' == __name__:
+    _launch()
