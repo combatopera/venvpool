@@ -82,7 +82,7 @@ class ReadLock:
 
 def _idempotentunlink(path):
     try:
-        os.remove(path)
+        _osop(os.remove, path)
     except oserrors[errno.ENOENT]:
         pass
 
