@@ -32,7 +32,7 @@ def _inherithandle(tempdir):
     lock = d.tryreadlock()
     childpid = os.fork()
     if not childpid:
-        os.execl(sys.executable, '-c', '-c', "import os, time\nos.mkdir(%r)\nwhile True: time.sleep(1)" % flag)
+        os.execl(sys.executable, sys.executable, '-c', "import os, time\nos.mkdir(%r)\nwhile True: time.sleep(1)" % flag)
     while not os.path.exists(flag):
         time.sleep(.1)
     lock.unlock()
