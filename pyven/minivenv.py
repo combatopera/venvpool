@@ -23,6 +23,7 @@ import errno, logging, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Honour XDG_CACHE_HOME.
+dotpy = '.py'
 oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
 pooldir = os.path.join(cachedir, 'pool')
 
@@ -322,6 +323,7 @@ def _launch():
     initlogging()
     scriptpath = os.path.abspath(sys.argv[1])
     scriptargs = sys.argv[2:]
+    assert scriptpath.endswith(dotpy)
     projectdir = os.path.dirname(scriptpath)
     while True:
         requirementspath = os.path.join(projectdir, 'requirements.txt')
@@ -333,7 +335,7 @@ def _launch():
         projectdir = parent
     with open(requirementspath) as f:
         installdeps = SimpleInstallDeps(f.read().splitlines())
-    module = os.path.relpath(scriptpath[:-len('.py')], projectdir).replace(os.sep, '.')
+    module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
         argv = [os.path.join(venv.venvpath, 'bin', 'python'), '-m', module] + scriptargs
         os.execve(argv[0], argv, dict(
