@@ -16,7 +16,6 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from contextlib import contextmanager
-from fcntl import fcntl, FD_CLOEXEC, F_GETFD, F_SETFD
 from pkg_resources import parse_requirements, safe_name, to_filename
 from tempfile import mkdtemp, mkstemp
 import errno, logging, os, re, shutil, subprocess, sys
@@ -26,6 +25,13 @@ cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Hono
 dotpy = '.py'
 oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
 pooldir = os.path.join(cachedir, 'pool')
+try:
+    set_inheritable = os.set_inheritable
+except AttributeError:
+    from fcntl import fcntl, FD_CLOEXEC, F_GETFD, F_SETFD
+    def set_inheritable(h, inherit):
+        assert inherit
+        fcntl(h, F_SETFD, fcntl(h, F_GETFD) & ~FD_CLOEXEC)
 
 def _osop(f, *args, **kwargs):
     try:
@@ -130,12 +136,7 @@ class SharedDir:
     def tryreadlock(self):
         try:
             h = _osop(mkstemp, dir = self.readlocks, prefix = 'lock')[0]
-            try:
-                set_inheritable = os.set_inheritable
-            except AttributeError:
-                fcntl(h, F_SETFD, fcntl(h, F_GETFD) & ~FD_CLOEXEC)
-            else:
-                set_inheritable(h, True)
+            set_inheritable(h, True)
             return ReadLock(h)
         except oserrors[errno.ENOENT]:
             pass
