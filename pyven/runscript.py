@@ -130,7 +130,12 @@ class SharedDir:
     def tryreadlock(self):
         try:
             h = _osop(mkstemp, dir = self.readlocks, prefix = 'lock')[0]
-            fcntl(h, F_SETFD, fcntl(h, F_GETFD) & ~FD_CLOEXEC)
+            try:
+                set_inheritable = os.set_inheritable
+            except AttributeError:
+                fcntl(h, F_SETFD, fcntl(h, F_GETFD) & ~FD_CLOEXEC)
+            else:
+                set_inheritable(h, True)
             return ReadLock(h)
         except oserrors[errno.ENOENT]:
             pass
