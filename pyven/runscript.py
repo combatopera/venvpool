@@ -112,7 +112,7 @@ else:
 class SharedDir:
 
     def __init__(self, dirpath):
-        self.readlocks = os.path.join(dirpath, 'token')
+        self.readlocks = os.path.join(dirpath, 'readlocks')
 
     def _sweep(self):
         for readlock in _listorempty(self.readlocks):
