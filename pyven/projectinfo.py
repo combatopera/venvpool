@@ -17,7 +17,7 @@
 
 from . import mainfunctions
 from .files import Files
-from .minivenv import BaseReq, initlogging
+from .runscript import BaseReq, initlogging
 from .setuproot import setuptoolsinfo
 from .util import Path
 from aridity.config import ConfigCtrl

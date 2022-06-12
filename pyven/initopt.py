@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import compactvenvs, initlogging, Pip
 from .pipify import pipify
 from .projectinfo import ProjectInfo
+from .runscript import compactvenvs, initlogging, Pip
 from .setuproot import setuptoolsinfo
 from .util import ThreadPoolExecutor
 from argparse import ArgumentParser

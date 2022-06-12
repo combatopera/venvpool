@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import initlogging, Pool
 from .pipify import InstallDeps
 from .projectinfo import ProjectInfo
+from .runscript import initlogging, Pool
 from argparse import ArgumentParser
 import subprocess, sys
 

@@ -16,9 +16,9 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .files import Files
-from .minivenv import initlogging, Pool
 from .pipify import InstallDeps, SimpleInstallDeps
 from .projectinfo import ProjectInfo
+from .runscript import initlogging, Pool
 from .util import bgcontainer, Excludes, pyversiontags, stderr
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl

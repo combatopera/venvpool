@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .minivenv import _listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from .runscript import _listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
 from tempfile import mkstemp
 from unittest import TestCase
 import errno, inspect, os, subprocess, sys
 
 def _inherithandle(tempdir):
-    from pyven.minivenv import SharedDir
+    from pyven.runscript import SharedDir
     from signal import SIGINT
     import os, sys, time
     flag = os.path.join(tempdir, 'flag')

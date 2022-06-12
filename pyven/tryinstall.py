@@ -16,9 +16,9 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .checks import EveryVersion
-from .minivenv import initlogging
 from .pipify import pipify
 from .projectinfo import ProjectInfo
+from .runscript import initlogging
 from .util import bgcontainer, pyversiontags
 from lagoon import git
 from lagoon.program import partial

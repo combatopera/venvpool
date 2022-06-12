@@ -17,9 +17,9 @@
 
 from . import targetremote
 from .checks import EveryVersion
-from .minivenv import initlogging, Pip, TemporaryDirectory
 from .pipify import pipify
 from .projectinfo import ProjectInfo
+from .runscript import initlogging, Pip, TemporaryDirectory
 from .sourceinfo import SourceInfo
 from .util import bgcontainer
 from argparse import ArgumentParser
