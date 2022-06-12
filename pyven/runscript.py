@@ -342,10 +342,12 @@ def _launch():
         installdeps = SimpleInstallDeps(f.read().splitlines())
     module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
-        argv = [os.path.join(venv.venvpath, 'bin', 'python'), '-c', """import runpy, sys
+        bindir = os.path.join(venv.venvpath, 'bin')
+        argv = [os.path.join(bindir, 'python'), '-c', """import runpy, sys
 assert not sys.path[0]
 sys.path[0] = %r
-runpy.run_module(%r, run_name = '__main__')""" % (projectdir, module)] + scriptargs
+sys.path.append(%r)
+runpy.run_module(%r, run_name = '__main__')""" % (bindir, projectdir, module)] + scriptargs
         os.execv(argv[0], argv)
 
 if '__main__' == __name__:
