@@ -342,7 +342,7 @@ def _launch():
             pythonpath += os.pathsep + os.environ['PYTHONPATH']
         except KeyError:
             pass
-        os.execve(argv[0], argv, dict(os.environ, PYTHONPATH = pythonpath))
+        os.execve(argv[0], argv, dict(os.environ, PYTHONPATH = pythonpath)) # XXX: Can we use runpy instead of PYTHONPATH?
 
 if '__main__' == __name__:
     _launch()
