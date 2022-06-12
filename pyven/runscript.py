@@ -109,7 +109,7 @@ else:
         except oserrors[errno.EACCES]:
             pass
 
-class SharedDir:
+class SharedDir(object):
 
     def __init__(self, dirpath):
         self.readlocks = os.path.join(dirpath, 'readlocks')
