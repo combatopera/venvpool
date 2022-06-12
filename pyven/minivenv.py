@@ -338,10 +338,12 @@ def _launch():
     module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
         argv = [os.path.join(venv.venvpath, 'bin', 'python'), '-m', module] + scriptargs
-        os.execve(argv[0], argv, dict(
-            os.environ,
-            PYTHONPATH = projectdir, # XXX: What if there already is one?
-        ))
+        pythonpath = projectdir
+        try:
+            pythonpath += os.pathsep + os.environ['PYTHONPATH']
+        except KeyError:
+            pass
+        os.execve(argv[0], argv, dict(os.environ, PYTHONPATH = pythonpath))
 
 if '__main__' == __name__:
     _launch()
