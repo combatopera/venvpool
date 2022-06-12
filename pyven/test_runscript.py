@@ -82,4 +82,4 @@ class TestMiniVenv(TestCase):
                 sys.executable,
                 '-c',
                 "%s%s(%r)" % (inspect.getsource(_inherithandle), _inherithandle.__name__, tempdir),
-            ], env = dict(os.environ, PYTHONPATH = os.pathsep.join(sys.path)))
+            ])
