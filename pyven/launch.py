@@ -21,7 +21,7 @@ from .runscript import initlogging, Pool
 from argparse import ArgumentParser
 import subprocess, sys
 
-def main_launch():
+def main_launch(): # TODO: Retire in favour of runscript.
     'Run project using a suitable venv from the pool.'
     initlogging()
     parser = ArgumentParser()
