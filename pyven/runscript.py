@@ -96,18 +96,22 @@ def _idempotentunlink(path):
         pass
 
 if '/' == os.sep:
-    def _sweepone(readlock):
-        # TODO: Run lsof fewer times.
-        # Check stderr instead of returncode for errors:
-        stdout, stderr = subprocess.Popen(['lsof', '-t', readlock], stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
-        if not stderr and not stdout:
-            return _idempotentunlink(readlock)
+    def _swept(readlocks):
+        if readlocks:
+            # Check stderr instead of returncode for errors:
+            stdout, stderr = subprocess.Popen(['lsof', '-t'] + readlocks, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+            if not stderr and not stdout:
+                for readlock in readlocks:
+                    if _idempotentunlink(readlock):
+                        yield readlock
 else:
-    def _sweepone(readlock): # TODO: Untested!
-        try:
-            return _idempotentunlink(readlock)
-        except oserrors[errno.EACCES]:
-            pass
+    def _swept(readlocks): # TODO: Untested!
+        for readlock in readlocks:
+            try:
+                if _idempotentunlink(readlock):
+                    yield readlock
+            except oserrors[errno.EACCES]:
+                pass
 
 class SharedDir(object):
 
@@ -115,9 +119,8 @@ class SharedDir(object):
         self.readlocks = os.path.join(dirpath, 'readlocks')
 
     def _sweep(self):
-        for readlock in _listorempty(self.readlocks):
-            if _sweepone(readlock):
-                log.debug("Swept: %s", readlock)
+        for readlock in _swept(_listorempty(self.readlocks)):
+            log.debug("Swept: %s", readlock)
 
     def trywritelock(self):
         self._sweep()
