@@ -342,13 +342,11 @@ def _launch():
         installdeps = SimpleInstallDeps(f.read().splitlines())
     module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
-        argv = [os.path.join(venv.venvpath, 'bin', 'python'), '-m', module] + scriptargs
-        pythonpath = projectdir
-        try:
-            pythonpath += os.pathsep + os.environ['PYTHONPATH']
-        except KeyError:
-            pass
-        os.execve(argv[0], argv, dict(os.environ, PYTHONPATH = pythonpath)) # XXX: Can we use runpy instead of PYTHONPATH?
+        argv = [os.path.join(venv.venvpath, 'bin', 'python'), '-c', """import runpy, sys
+assert not sys.path[0]
+sys.path[0] = %r
+runpy.run_module(%r, run_name = '__main__')""" % (projectdir, module)] + scriptargs
+        os.execv(argv[0], argv)
 
 if '__main__' == __name__:
     _launch()
