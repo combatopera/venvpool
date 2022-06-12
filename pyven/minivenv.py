@@ -340,7 +340,6 @@ def _launch():
         argv = [os.path.join(venv.venvpath, 'bin', 'python'), '-m', module] + scriptargs
         os.execve(argv[0], argv, dict(
             os.environ,
-            PYTHONHOME = venv.venvpath,
             PYTHONPATH = projectdir, # XXX: What if there already is one?
         ))
 
