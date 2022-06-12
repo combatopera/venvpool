@@ -210,6 +210,10 @@ class Pool:
             False: self.readonly,
             True: self._transient,
         }
+        self.readonlyorreadwrite = {
+            False: self.readonly,
+            True: self.readwrite,
+        }
         self.pyversion = pyversion
 
     def _newvenv(self, installdeps):

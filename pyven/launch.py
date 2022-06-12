@@ -30,9 +30,8 @@ def main_launch(): # TODO: Retire in favour of runscript.
     info = ProjectInfo.seekany('.')
     _, objref = next(iter(info.console_scripts())).split('=') # XXX: Support more than just the first?
     modulename, qname = objref.split(':')
-    with InstallDeps(info, False, None) as installdeps, Pool(sys.version_info.major).readonly(installdeps) as venv:
+    with InstallDeps(info, False, None) as installdeps, Pool(sys.version_info.major).readonlyorreadwrite[args.build](installdeps) as venv:
         if args.build:
-            # FIXME: This requires a writable venv.
-            venv.install(['--no-deps', '-e', info.projectdir])
+            venv.install(['--no-deps', '-e', info.projectdir]) # XXX: Can this be done without venv install?
         status = subprocess.call([venv.programpath('python'), '-c', "from %s import %s; %s()" % (modulename, qname.split('.')[0], qname)])
     sys.exit(status)
