@@ -129,7 +129,7 @@ class SharedDir:
 
     def tryreadlock(self):
         try:
-            h = _osop(mkstemp, dir = self.readlocks)[0]
+            h = _osop(mkstemp, dir = self.readlocks, prefix = 'lock')[0]
             fcntl(h, F_SETFD, fcntl(h, F_GETFD) & ~FD_CLOEXEC)
             return ReadLock(h)
         except oserrors[errno.ENOENT]:
