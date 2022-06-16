@@ -16,12 +16,12 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .projectinfo import ProjectInfo, Req
-from .runscript import initlogging, Pool, SimpleInstallDeps
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
 from itertools import chain
 from pkg_resources import resource_filename
 from tempfile import mkdtemp
+from venvpool import initlogging, Pool, SimpleInstallDeps
 import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)

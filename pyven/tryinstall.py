@@ -18,11 +18,11 @@
 from .checks import EveryVersion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from .runscript import initlogging
 from .util import bgcontainer, pyversiontags
 from lagoon import git
 from lagoon.program import partial
 from urllib.request import urlopen
+from venvpool import initlogging
 import logging, xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)

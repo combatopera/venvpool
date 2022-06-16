@@ -17,12 +17,12 @@
 
 from . import mainfunctions
 from .files import Files
-from .runscript import BaseReq, initlogging
 from .setuproot import setuptoolsinfo
 from .util import Path
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
 from pkg_resources.extern.packaging.markers import UndefinedEnvironmentName
+from venvpool import BaseReq, initlogging
 import logging, os, re, stat, subprocess
 
 log = logging.getLogger(__name__)

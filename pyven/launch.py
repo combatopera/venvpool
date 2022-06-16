@@ -17,11 +17,11 @@
 
 from .pipify import InstallDeps
 from .projectinfo import ProjectInfo
-from .runscript import initlogging, Pool
 from argparse import ArgumentParser
+from venvpool import initlogging, Pool
 import subprocess, sys
 
-def main_launch(): # TODO: Retire in favour of runscript.
+def main_launch(): # TODO: Retire in favour of venvpool module.
     'Run project using a suitable venv from the pool.'
     initlogging()
     parser = ArgumentParser()

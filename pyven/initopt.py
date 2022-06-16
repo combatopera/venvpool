@@ -17,12 +17,12 @@
 
 from .pipify import pipify
 from .projectinfo import ProjectInfo
-from .runscript import compactvenvs, initlogging, Pip
 from .setuproot import setuptoolsinfo
 from .util import ThreadPoolExecutor
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
 from collections import defaultdict
+from venvpool import compactvenvs, initlogging, Pip
 import logging, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
