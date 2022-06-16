@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .files import Files
-from .pipify import InstallDeps, SimpleInstallDeps
+from .pipify import InstallDeps
 from .projectinfo import ProjectInfo
 from .util import bgcontainer, Excludes, pyversiontags, stderr
 from argparse import ArgumentParser
@@ -27,7 +27,7 @@ from itertools import chain
 from lagoon import diff
 from setuptools import find_packages
 from tempfile import NamedTemporaryFile
-from venvpool import initlogging, Pool
+from venvpool import initlogging, Pool, SimpleInstallDeps
 import logging, os, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
