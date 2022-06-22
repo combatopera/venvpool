@@ -18,7 +18,7 @@
 from tempfile import mkstemp
 from unittest import TestCase
 from venvpool import _listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
-import errno, inspect, os, subprocess, sys
+import errno, inspect, os, subprocess, sys, venvpool
 
 def _inherithandle(tempdir):
     from signal import SIGINT
@@ -83,3 +83,11 @@ class TestMiniVenv(TestCase):
                 '-c',
                 "%s%s(%r)" % (inspect.getsource(_inherithandle), _inherithandle.__name__, tempdir),
             ])
+
+    def test_fileglobal(self):
+        with TemporaryDirectory() as tempdir:
+            open(os.path.join(tempdir, 'requirements.txt'), 'w').close()
+            scriptpath = os.path.join(tempdir, 'module.py')
+            with open(scriptpath, 'w') as f:
+                f.write('import sys\nprint(sys.modules[__name__].__file__)')
+            self.assertEqual(scriptpath + '\n', subprocess.check_output([sys.executable, venvpool.__file__, scriptpath], universal_newlines = True))

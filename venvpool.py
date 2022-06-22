@@ -354,7 +354,7 @@ def _launch():
 assert not sys.path[0]
 sys.path[0] = %r
 sys.path.append(%r)
-runpy.run_module(%r, run_name = '__main__')""" % (bindir, projectdir, module)] + scriptargs
+runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, projectdir, module)] + scriptargs
         os.execv(argv[0], argv)
 
 if '__main__' == __name__:
