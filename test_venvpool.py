@@ -90,4 +90,4 @@ class TestMiniVenv(TestCase):
             scriptpath = os.path.join(tempdir, 'module.py')
             with open(scriptpath, 'w') as f:
                 f.write('import sys\nprint(sys.modules[__name__].__file__)')
-            self.assertEqual(scriptpath + '\n', subprocess.check_output([sys.executable, venvpool.__file__, scriptpath], universal_newlines = True))
+            self.assertEqual(scriptpath + '\n', subprocess.check_output(["python%s" % sys.version_info.major, venvpool.__file__, scriptpath], universal_newlines = True))
