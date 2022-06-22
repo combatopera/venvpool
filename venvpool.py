@@ -217,7 +217,10 @@ class Pool:
         self.pyversion = pyversion
 
     def _newvenv(self, installdeps):
-        os.makedirs(self.versiondir, exist_ok = True)
+        try:
+            _osop(os.makedirs, self.versiondir)
+        except oserrors[errno.EEXIST]:
+            pass
         venv = Venv(mkdtemp(dir = self.versiondir, prefix = 'venv'))
         with _onerror(venv.delete):
             venv.create(self.pyversion)
