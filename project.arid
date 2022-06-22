@@ -36,4 +36,6 @@ pyversions +=
     2
 executable = true
 buildbot enabled = true
-upstream devel packages += lsof
+upstream devel packages +=
+    lsof
+    virtualenv
