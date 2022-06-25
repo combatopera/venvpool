@@ -156,9 +156,17 @@ class Venv(SharedDir):
         super(Venv, self).__init__(venvpath)
         self.venvpath = venvpath
 
-    def create(self, pyversion): # TODO: Use venv module when possible.
+    def create(self, pyversion):
+        def isolated(*command):
+            subprocess.check_call(command, cwd = tempdir, stdout = sys.stderr)
+        executable = "python%s" % pyversion
+        absvenvpath = os.path.abspath(self.venvpath)
         with TemporaryDirectory() as tempdir:
-            subprocess.check_call(['virtualenv', '-p', "python%s" % pyversion, os.path.abspath(self.venvpath)], cwd = tempdir, stdout = sys.stderr)
+            if pyversion < 3:
+                isolated('virtualenv', '-p', executable, absvenvpath)
+            else:
+                isolated(executable, '-m', 'venv', absvenvpath)
+                isolated(os.path.join(absvenvpath, 'bin', 'pip'), 'install', '--upgrade', 'pip', 'setuptools', 'wheel')
 
     def delete(self):
         log.debug("Delete transient venv: %s", self.venvpath)
