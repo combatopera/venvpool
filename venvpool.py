@@ -130,6 +130,13 @@ class SharedDir(object):
         except (oserrors[errno.ENOENT], oserrors[errno.ENOTEMPTY]):
             pass
 
+    def createortrywritelock(self):
+        try:
+            _osop(os.mkdir, os.path.dirname(self.readlocks))
+            return True
+        except oserrors[errno.EEXIST]:
+            return self.trywritelock()
+
     def writeunlock(self):
         try:
             _osop(os.mkdir, self.readlocks)
