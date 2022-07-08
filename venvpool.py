@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from argparse import ArgumentParser
 from contextlib import contextmanager
 from pkg_resources import parse_requirements, safe_name, to_filename
 from tempfile import mkdtemp, mkstemp
@@ -351,8 +352,11 @@ class SimpleInstallDeps:
 
 def _launch():
     initlogging()
-    scriptpath = os.path.abspath(sys.argv[1])
-    scriptargs = sys.argv[2:]
+    parser = ArgumentParser()
+    parser.add_argument('--pip')
+    parser.add_argument('scriptpath', type = os.path.abspath)
+    args, scriptargs = parser.parse_known_args()
+    scriptpath = args.scriptpath
     assert scriptpath.endswith(dotpy)
     projectdir = os.path.dirname(scriptpath)
     while True:
