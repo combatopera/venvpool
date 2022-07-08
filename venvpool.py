@@ -183,10 +183,13 @@ class Venv(SharedDir):
     def programpath(self, name):
         return os.path.join(self.venvpath, 'bin', name)
 
-    def install(self, args):
+    def install(self, args, pip = None):
         log.debug("Install: %s", ' '.join(args))
         if args:
-            Pip(self.programpath('pip')).pipinstall(args)
+            if pip is None:
+                Pip(self.programpath('pip')).pipinstall(args)
+            else:
+                Pip(pip).pipinstall(args + ['--prefix', self.venvpath])
 
     def compatible(self, installdeps):
         if installdeps.volatileprojects: # TODO: Support this.
@@ -344,11 +347,12 @@ class SimpleInstallDeps:
 
     editableprojects = volatileprojects = ()
 
-    def __init__(self, requires):
+    def __init__(self, requires, pip = None):
         self.pypireqs = BaseReq.parselines(requires)
+        self.pip = pip
 
     def invoke(self, venv):
-        venv.install([r.reqstr for r in self.pypireqs])
+        venv.install([r.reqstr for r in self.pypireqs], self.pip)
 
 def _launch():
     initlogging()
@@ -368,7 +372,7 @@ def _launch():
         assert parent != projectdir
         projectdir = parent
     with open(requirementspath) as f:
-        installdeps = SimpleInstallDeps(f.read().splitlines())
+        installdeps = SimpleInstallDeps(f.read().splitlines(), args.pip)
     module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
         bindir = os.path.join(venv.venvpath, 'bin')
