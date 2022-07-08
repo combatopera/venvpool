@@ -247,7 +247,7 @@ class Pool:
             installdeps.invoke(venv)
             return venv
 
-    def _lockcompatiblevenv(self, trylock, installdeps, newvenvpath):
+    def _lockcompatiblevenv(self, trylock, installdeps):
         for venv in _listorempty(self.versiondir, Venv):
             lock = trylock(venv)
             if lock is not None:
@@ -255,8 +255,6 @@ class Pool:
                     if venv.compatible(installdeps):
                         return venv, lock
                 lock.unlock()
-                if newvenvpath == venv.venvpath:
-                    raise AssertionError("New venv unexpectedly incompatible: %s" % newvenvpath)
 
     @contextmanager
     def _transient(self, installdeps):
@@ -268,15 +266,20 @@ class Pool:
 
     @contextmanager
     def readonly(self, installdeps):
-        newvenvpath = None
         while True:
-            t = self._lockcompatiblevenv(Venv.tryreadlock, installdeps, newvenvpath)
+            t = self._lockcompatiblevenv(Venv.tryreadlock, installdeps)
             if t is not None:
                 venv, readlock = t
                 break
-            newvenv = self._newvenv(installdeps)
-            newvenv.writeunlock()
-            newvenvpath = newvenv.venvpath
+            venv = self._newvenv(installdeps)
+            with _onerror(venv.writeunlock):
+                if not venv.compatible(installdeps):
+                    raise AssertionError("New venv unexpectedly incompatible: %s" % venv.venvpath)
+            # XXX: Would it be possible to atomically convert write lock to read lock?
+            venv.writeunlock()
+            readlock = venv.tryreadlock()
+            if readlock is not None:
+                break
         try:
             yield venv
         finally:
@@ -290,7 +293,7 @@ class Pool:
                     def unlock(self):
                         venv.writeunlock()
                 return WriteLock()
-        t = self._lockcompatiblevenv(trywritelock, installdeps, None)
+        t = self._lockcompatiblevenv(trywritelock, installdeps)
         if t is None:
             venv = self._newvenv(installdeps)
         else:
