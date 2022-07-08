@@ -247,7 +247,7 @@ class Pool:
             installdeps.invoke(venv)
             return venv
 
-    def _compatiblevenv(self, trylock, installdeps, newvenvpath):
+    def _lockcompatiblevenv(self, trylock, installdeps, newvenvpath):
         for venv in _listorempty(self.versiondir, Venv):
             lock = trylock(venv)
             if lock is not None:
@@ -270,7 +270,7 @@ class Pool:
     def readonly(self, installdeps):
         newvenvpath = None
         while True:
-            t = self._compatiblevenv(Venv.tryreadlock, installdeps, newvenvpath)
+            t = self._lockcompatiblevenv(Venv.tryreadlock, installdeps, newvenvpath)
             if t is not None:
                 venv, readlock = t
                 break
@@ -290,7 +290,7 @@ class Pool:
                     def unlock(self):
                         venv.writeunlock()
                 return WriteLock()
-        t = self._compatiblevenv(trywritelock, installdeps, None)
+        t = self._lockcompatiblevenv(trywritelock, installdeps, None)
         if t is None:
             venv = self._newvenv(installdeps)
         else:
