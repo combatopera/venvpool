@@ -256,7 +256,7 @@ class Pool:
                         return venv, lock
                 lock.unlock()
                 if newvenvpath == venv.venvpath:
-                    raise Exception("New venv unexpectedly incompatible: %s" % newvenvpath)
+                    raise AssertionError("New venv unexpectedly incompatible: %s" % newvenvpath)
 
     @contextmanager
     def _transient(self, installdeps):
