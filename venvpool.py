@@ -212,10 +212,9 @@ class Venv(SharedDir):
                 return os.path.abspath(info.projectdir) == f.read().splitlines()[0]
 
     def _reqversionornone(self, name):
-        # FIXME: Does not work properly when upper-case involved.
-        pattern = re.compile("^%s-(.+)[.](?:dist|egg)-info$" % re.escape(to_filename(safe_name(name))))
+        pattern = re.compile("^%s-(.+)[.](?:dist|egg)-info$" % re.escape(to_filename(safe_name(name))).lower())
         for name in os.listdir(self.site_packages):
-            m = pattern.search(name)
+            m = pattern.search(name.lower())
             if m is not None:
                 return m.group(1)
 
