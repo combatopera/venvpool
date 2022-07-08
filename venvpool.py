@@ -244,6 +244,7 @@ class Pool:
         with _onerror(venv.delete):
             venv.create(self.pyversion)
             installdeps.invoke(venv)
+            assert venv.compatible(installdeps) # Bug if not.
             return venv
 
     def _lockcompatiblevenv(self, trylock, installdeps):
@@ -271,9 +272,6 @@ class Pool:
                 venv, readlock = t
                 break
             venv = self._newvenv(installdeps)
-            with _onerror(venv.writeunlock):
-                if not venv.compatible(installdeps):
-                    raise AssertionError("New venv unexpectedly incompatible: %s" % venv.venvpath)
             # XXX: Would it be possible to atomically convert write lock to read lock?
             venv.writeunlock()
             readlock = venv.tryreadlock()
