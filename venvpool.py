@@ -246,7 +246,7 @@ class Pool:
             installdeps.invoke(venv)
             return venv
 
-    def _compatiblevenv(self, trylock, installdeps):
+    def _compatiblevenv(self, trylock, installdeps, newvenvpath):
         for venv in _listorempty(self.versiondir, Venv):
             lock = trylock(venv)
             if lock is not None:
@@ -254,6 +254,8 @@ class Pool:
                     if venv.compatible(installdeps):
                         return venv, lock
                 lock.unlock()
+                if newvenvpath == venv.venvpath:
+                    raise Exception("New venv unexpectedly incompatible: %s" % newvenvpath)
 
     @contextmanager
     def _transient(self, installdeps):
@@ -265,12 +267,15 @@ class Pool:
 
     @contextmanager
     def readonly(self, installdeps):
+        newvenvpath = None
         while True:
-            t = self._compatiblevenv(Venv.tryreadlock, installdeps)
+            t = self._compatiblevenv(Venv.tryreadlock, installdeps, newvenvpath)
             if t is not None:
                 venv, readlock = t
                 break
-            self._newvenv(installdeps).writeunlock() # TODO: Infinite loop if compatibility check fails.
+            newvenv = self._newvenv(installdeps)
+            newvenv.writeunlock()
+            newvenvpath = newvenv.venvpath
         try:
             yield venv
         finally:
@@ -284,7 +289,7 @@ class Pool:
                     def unlock(self):
                         venv.writeunlock()
                 return WriteLock()
-        t = self._compatiblevenv(trywritelock, installdeps)
+        t = self._compatiblevenv(trywritelock, installdeps, None)
         if t is None:
             venv = self._newvenv(installdeps)
         else:
