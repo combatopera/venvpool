@@ -192,10 +192,9 @@ class Venv(SharedDir):
                 Pip(pip).pipinstall(args + ['--prefix', self.venvpath])
 
     def compatible(self, installdeps):
-        if installdeps.volatileprojects: # TODO: Support this.
-            print([i.projectdir for i in installdeps.volatileprojects])
-            print(os.listdir(self.site_packages))
-            return
+        for i in installdeps.volatileprojects:
+            if not self._hasvolatileproject(i):
+                return
         for i in installdeps.editableprojects:
             if not self._haseditableproject(i): # FIXME LATER: It may have new requirements.
                 return
@@ -205,6 +204,9 @@ class Venv(SharedDir):
                 return
         log.debug("Found compatible venv: %s", self.venvpath)
         return True
+
+    def _hasvolatileproject(self, info):
+        return os.path.exists(os.path.join(self.site_packages, "%s-%s.dist-info" % (to_filename(safe_name(info.config.name)), info.devversion())))
 
     def _haseditableproject(self, info):
         path = os.path.join(self.site_packages, "%s.egg-link" % safe_name(info.config.name))
