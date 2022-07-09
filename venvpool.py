@@ -157,7 +157,7 @@ class Venv(SharedDir):
     @property
     def site_packages(self):
         libpath = os.path.join(self.venvpath, 'lib')
-        pyname, = os.listdir(libpath)
+        pyname, = (n for n in os.listdir(libpath) if n.startswith('python'))
         return os.path.join(libpath, pyname, 'site-packages')
 
     def __init__(self, venvpath):
