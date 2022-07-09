@@ -216,11 +216,14 @@ class Venv(SharedDir):
                 return os.path.abspath(info.projectdir) == f.read().splitlines()[0]
 
     def _reqversionornone(self, name):
-        pattern = re.compile("^%s-(.+)[.](?:dist|egg)-info$" % re.escape(to_filename(safe_name(name)).lower()))
-        for name in os.listdir(self.site_packages):
-            m = pattern.search(name.lower())
-            if m is not None:
-                return m.group(1)
+        patterns = [re.compile(format % nameregex) for nameregex in [re.escape(to_filename(safe_name(name)).lower())] for format in [
+            "^%s-(.+)[.]dist-info$",
+            "^%s-([^-]+).*[.]egg-info$"]]
+        for name in (n.lower() for n in os.listdir(self.site_packages)):
+            for p in patterns:
+                m = p.search(name)
+                if m is not None:
+                    return m.group(1)
 
 class Pool:
 
