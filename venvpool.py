@@ -193,6 +193,8 @@ class Venv(SharedDir):
 
     def compatible(self, installdeps):
         if installdeps.volatileprojects: # TODO: Support this.
+            print([i.projectdir for i in installdeps.volatileprojects])
+            print(os.listdir(self.site_packages))
             return
         for i in installdeps.editableprojects:
             if not self._haseditableproject(i): # FIXME LATER: It may have new requirements.
