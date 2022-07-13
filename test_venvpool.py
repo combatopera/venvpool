@@ -41,7 +41,7 @@ def _inherithandle(tempdir):
     os.waitpid(childpid, 0)
     assert d.trywritelock()
 
-class TestMiniVenv(TestCase):
+class TestVenvPool(TestCase):
 
     def test_oserrors(self):
         with TemporaryDirectory() as tempdir:
