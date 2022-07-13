@@ -369,7 +369,7 @@ class SimpleInstallDeps:
 
 def _launch():
     initlogging()
-    parser = ArgumentParser()
+    parser = ArgumentParser(add_help = False)
     parser.add_argument('--pip')
     parser.add_argument('scriptpath', type = os.path.abspath)
     args, scriptargs = parser.parse_known_args()
