@@ -219,9 +219,9 @@ class Venv(SharedDir):
         patterns = [re.compile(format % nameregex) for nameregex in [re.escape(to_filename(safe_name(name)).lower())] for format in [
             "^%s-(.+)[.]dist-info$",
             "^%s-([^-]+).*[.]egg-info$"]]
-        for name in (n.lower() for n in os.listdir(self.site_packages)):
+        for lowername in (n.lower() for n in os.listdir(self.site_packages)):
             for p in patterns:
-                m = p.search(name)
+                m = p.search(lowername)
                 if m is not None:
                     return m.group(1)
 
