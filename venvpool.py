@@ -382,7 +382,8 @@ def _launch():
             log.debug("Found requirements: %s", requirementspath)
             break
         parent = os.path.dirname(projectdir)
-        assert parent != projectdir
+        if parent == projectdir:
+            sys.exit('No requirements found.')
         projectdir = parent
     with open(requirementspath) as f:
         installdeps = SimpleInstallDeps(f.read().splitlines(), args.pip)
