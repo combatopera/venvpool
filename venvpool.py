@@ -368,6 +368,15 @@ class SimpleInstallDeps:
         venv.install([r.reqstr for r in self.pypireqs], self.pip)
 
 def _launch():
+    def requirementspathornone():
+        def requirementspaths():
+            yield os.path.join(projectdir, 'requirements.txt')
+            for name in sorted(os.listdir(projectdir)):
+                if name.endswith('.egg-info'):
+                    yield os.path.join(projectdir, name, 'requires.txt')
+        for requirementspath in requirementspaths():
+            if os.path.exists(requirementspath):
+                return requirementspath
     initlogging()
     parser = ArgumentParser(add_help = False)
     parser.add_argument('--pip')
@@ -377,8 +386,8 @@ def _launch():
     assert scriptpath.endswith(dotpy)
     projectdir = os.path.dirname(scriptpath)
     while True:
-        requirementspath = os.path.join(projectdir, 'requirements.txt')
-        if os.path.exists(requirementspath):
+        requirementspath = requirementspathornone()
+        if requirementspath is not None:
             log.debug("Found requirements: %s", requirementspath)
             break
         parent = os.path.dirname(projectdir)
