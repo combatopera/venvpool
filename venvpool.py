@@ -17,7 +17,6 @@
 
 from argparse import ArgumentParser
 from contextlib import contextmanager
-from pkg_resources import safe_name, to_filename
 from tempfile import mkdtemp, mkstemp
 import errno, logging, operator, os, re, shutil, subprocess, sys
 
@@ -33,6 +32,13 @@ except AttributeError:
     def set_inheritable(h, inherit):
         assert inherit
         fcntl(h, F_SETFD, fcntl(h, F_GETFD) & ~FD_CLOEXEC)
+unsafe = re.compile('[^A-Za-z0-9.]+')
+
+def safe_name(name):
+    return unsafe.sub('-', name)
+
+def to_filename(name):
+    return name.replace('-', '_')
 
 def _osop(f, *args, **kwargs):
     try:
