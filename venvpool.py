@@ -19,7 +19,7 @@ from argparse import ArgumentParser
 from contextlib import contextmanager
 from pkg_resources import safe_name, to_filename
 from tempfile import mkdtemp, mkstemp
-import errno, logging, os, re, shutil, subprocess, sys
+import errno, logging, operator, os, re, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Honour XDG_CACHE_HOME.
@@ -357,12 +357,48 @@ class BaseReq:
     def __init__(self, parsed):
         self.parsed = parsed
 
+class FastReq:
+
+    @staticmethod
+    def _splitversion(versionstr):
+        return [int(k) for k in versionstr.split('.')]
+
+    getmatch = re.compile(r'^\s*([A-Za-z0-9._-]+)\s*(?:(<|<=|!=|==|>=|>)([0-9.]+)\s*)?$').search
+    operators = {
+        '<': operator.lt,
+        '<=': operator.le,
+        '!=': operator.ne,
+        '==': operator.eq,
+        '>=': operator.ge,
+        '>': operator.gt,
+    }
+
+    @classmethod
+    def parselines(cls, lines):
+        return [cls(*cls.getmatch(line).groups()) for line in lines]
+
+    @property
+    def parsed(self):
+        return self
+
+    def __init__(self, namepart, operatorstr, versionstr):
+        self.namepart = namepart
+        self.operator = self.operators[operatorstr]
+        self.version = self._splitversion(versionstr)
+
+    def __contains__(self, versionstr):
+        def pad(v):
+            return v + [0] * (n - len(v))
+        versions = [self._splitversion(versionstr), self.version]
+        n = max(map(len, versions))
+        return self.operator(*map(pad, versions))
+
 class SimpleInstallDeps:
 
     editableprojects = volatileprojects = ()
 
-    def __init__(self, requires, pip = None):
-        self.pypireqs = BaseReq.parselines(requires)
+    def __init__(self, requires, pip = None, reqcls = BaseReq):
+        self.pypireqs = reqcls.parselines(requires)
         self.pip = pip
 
     def invoke(self, venv):
@@ -396,7 +432,7 @@ def _launch():
             sys.exit('No requirements found.')
         projectdir = parent
     with open(requirementspath) as f:
-        installdeps = SimpleInstallDeps(f.read().splitlines(), args.pip)
+        installdeps = SimpleInstallDeps(f.read().splitlines(), args.pip, FastReq)
     module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
         bindir = os.path.join(venv.venvpath, 'bin')
