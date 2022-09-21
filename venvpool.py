@@ -389,6 +389,7 @@ class FastReq:
         self.namepart = namepart
         self.operator = self.operators[operatorstr]
         self.version = [] if versionstr is None else self._splitversion(versionstr)
+        self.reqstr = "%s%s%s" % (namepart, '' if operatorstr is None else operatorstr, '' if versionstr is None else versionstr)
 
     def __contains__(self, versionstr):
         def pad(v):
