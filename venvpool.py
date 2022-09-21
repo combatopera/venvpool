@@ -17,7 +17,7 @@
 
 from argparse import ArgumentParser
 from contextlib import contextmanager
-from pkg_resources import parse_requirements, safe_name, to_filename
+from pkg_resources import safe_name, to_filename
 from tempfile import mkdtemp, mkstemp
 import errno, logging, os, re, shutil, subprocess, sys
 
@@ -343,6 +343,7 @@ class BaseReq:
 
     @classmethod
     def parselines(cls, lines):
+        from pkg_resources import parse_requirements
         return [cls(parsed) for parsed in parse_requirements(lines)]
 
     @property
