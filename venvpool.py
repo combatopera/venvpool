@@ -357,6 +357,9 @@ class BaseReq:
     def __init__(self, parsed):
         self.parsed = parsed
 
+def _acceptany(u, v):
+    return True
+
 class FastReq:
 
     @staticmethod
@@ -371,6 +374,7 @@ class FastReq:
         '==': operator.eq,
         '>=': operator.ge,
         '>': operator.gt,
+        None: _acceptany,
     }
 
     @classmethod
@@ -384,7 +388,7 @@ class FastReq:
     def __init__(self, namepart, operatorstr, versionstr):
         self.namepart = namepart
         self.operator = self.operators[operatorstr]
-        self.version = self._splitversion(versionstr)
+        self.version = [] if versionstr is None else self._splitversion(versionstr)
 
     def __contains__(self, versionstr):
         def pad(v):
