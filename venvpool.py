@@ -369,7 +369,7 @@ def _acceptany(u, v):
 def _reqregex():
     s = r'\s*'
     name = '([A-Za-z0-9._-]+)'
-    version = "(<|<=|!=|==|>=|>)([0-9.]+)".format(**locals())
+    version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals())
     return "^{s}{name}{s}(?:{version}{s})?$".format(**locals())
 
 class FastReq:
