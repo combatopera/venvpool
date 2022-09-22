@@ -117,6 +117,13 @@ class ReqCase:
             self.assertTrue('5' in r.parsed)
             self.assertTrue('5.0' in r.parsed)
             self.assertTrue('5.00' in r.parsed)
+        for r in self.reqcls.parselines([' yay >= 2 , < 3 ', 'yay>=2,<3']):
+            self.assertEqual('yay', r.namepart)
+            self.assertEqual('yay<3,>=2', r.reqstr)
+            self.assertFalse('1.9' in r.parsed)
+            self.assertTrue('2' in r.parsed)
+            self.assertTrue('2.9' in r.parsed)
+            self.assertFalse('3' in r.parsed)
 
 class TestFastReq(TestCase, ReqCase):
 
