@@ -349,7 +349,7 @@ class BaseReq:
 
     @classmethod
     def parselines(cls, lines):
-        from pkg_resources import parse_requirements
+        from pkg_resources import parse_requirements # Expensive module!
         return [cls(parsed) for parsed in parse_requirements(lines)]
 
     @property
