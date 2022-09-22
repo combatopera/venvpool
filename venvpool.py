@@ -366,13 +366,19 @@ class BaseReq:
 def _acceptany(u, v):
     return True
 
+def _reqregex():
+    s = r'\s*'
+    name = '([A-Za-z0-9._-]+)'
+    version = "(<|<=|!=|==|>=|>)([0-9.]+)".format(**locals())
+    return "^{s}{name}{s}(?:{version}{s})?$".format(**locals())
+
 class FastReq:
 
     @staticmethod
     def _splitversion(versionstr):
         return [int(k) for k in versionstr.split('.')]
 
-    getmatch = re.compile(r'^\s*([A-Za-z0-9._-]+)\s*(?:(<|<=|!=|==|>=|>)([0-9.]+)\s*)?$').search
+    getmatch = re.compile(_reqregex()).search
     operators = {
         '<': operator.lt,
         '<=': operator.le,
