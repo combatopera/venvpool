@@ -17,7 +17,7 @@
 
 from tempfile import mkstemp
 from unittest import TestCase
-from venvpool import _listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from venvpool import FastReq, _listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
 import errno, inspect, os, subprocess, sys, venvpool
 
 def _inherithandle(tempdir):
@@ -91,3 +91,23 @@ class TestVenvPool(TestCase):
             with open(scriptpath, 'w') as f:
                 f.write('import sys\nprint(sys.modules[__name__].__file__)')
             self.assertEqual(scriptpath + '\n', subprocess.check_output([sys.executable, venvpool.__file__, scriptpath], universal_newlines = True))
+
+class TestFastReq(TestCase):
+
+    def test_parse(self):
+        for r in FastReq.parselines([' woo ', 'woo']):
+            self.assertEqual('woo', r.namepart)
+            self.assertEqual('woo', r.reqstr)
+            self.assertTrue('1.2.3' in r.parsed)
+            self.assertTrue('2.0' in r.parsed)
+            self.assertTrue('500' in r.parsed)
+        for r in FastReq.parselines([' woo == 5 ', 'woo==5']):
+            self.assertEqual('woo', r.namepart)
+            self.assertEqual('woo==5', r.reqstr)
+            self.assertFalse('1.2.3' in r.parsed)
+            self.assertFalse('2.0' in r.parsed)
+            self.assertTrue('5' in r.parsed)
+            self.assertTrue('5.0' in r.parsed)
+            self.assertTrue('5.00' in r.parsed)
+        for r in FastReq.parselines([' woo == 5.00 ', 'woo==5.00']):
+            self.assertEqual('woo==5.00', r.reqstr)
