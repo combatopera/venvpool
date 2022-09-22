@@ -383,8 +383,8 @@ class FastReq:
         return [int(k) for k in versionstr.split('.')]
 
     s = r'\s*'
-    name = '([A-Za-z0-9._-]+)'
-    version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals())
+    name = '([A-Za-z0-9._-]+)' # Slightly more lenient than PEP 508.
+    version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals()) # Subset of features.
     versionmatch = re.compile("^{s}{version}{s}$".format(**locals())).search
     getmatch = re.compile("^{s}{name}{s}({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())).search
     del s, name, version
