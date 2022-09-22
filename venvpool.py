@@ -363,9 +363,6 @@ class BaseReq:
     def __init__(self, parsed):
         self.parsed = parsed
 
-def _acceptany(u, v):
-    return True
-
 def _reqregex():
     s = r'\s*'
     name = '([A-Za-z0-9._-]+)'
@@ -373,6 +370,19 @@ def _reqregex():
     return "^{s}{name}{s}(?:{version}{s})?$".format(**locals())
 
 class FastReq:
+
+    class Version:
+
+        def __init__(self, operator, splitversion):
+            self.operator = operator
+            self.splitversion = splitversion
+
+        def accept(self, splitversion):
+            def pad(v):
+                return v + [0] * (n - len(v))
+            versions = [splitversion, self.splitversion]
+            n = max(map(len, versions))
+            return self.operator(*map(pad, versions))
 
     @staticmethod
     def _splitversion(versionstr):
@@ -386,7 +396,6 @@ class FastReq:
         '==': operator.eq,
         '>=': operator.ge,
         '>': operator.gt,
-        None: _acceptany,
     }
 
     @classmethod
@@ -399,16 +408,14 @@ class FastReq:
 
     def __init__(self, namepart, operatorstr, versionstr):
         self.namepart = namepart
-        self.operator = self.operators[operatorstr]
-        self.version = [] if versionstr is None else self._splitversion(versionstr)
+        self.versions = []
+        if not (operatorstr is None and versionstr is None):
+            self.versions.append(self.Version(self.operators[operatorstr], self._splitversion(versionstr)))
         self.reqstr = "%s%s%s" % (namepart, '' if operatorstr is None else operatorstr, '' if versionstr is None else versionstr)
 
     def __contains__(self, versionstr):
-        def pad(v):
-            return v + [0] * (n - len(v))
-        versions = [self._splitversion(versionstr), self.version]
-        n = max(map(len, versions))
-        return self.operator(*map(pad, versions))
+        splitversion = self._splitversion(versionstr)
+        return all(v.accept(splitversion) for v in self.versions)
 
 class SimpleInstallDeps:
 
