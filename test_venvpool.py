@@ -101,9 +101,9 @@ class ReqCase:
             self.assertTrue('1.2.3' in r.parsed)
             self.assertTrue('2.0' in r.parsed)
             self.assertTrue('500' in r.parsed)
-        for r in self.reqcls.parselines([' woo == 5 ', 'woo==5']):
-            self.assertEqual('woo', r.namepart)
-            self.assertEqual('woo==5', r.reqstr)
+        for r in self.reqcls.parselines([' W--..__o == 5 ', 'W--..__o==5']):
+            self.assertEqual('W--..__o', r.namepart)
+            self.assertEqual('W--..__o==5', r.reqstr)
             self.assertFalse('1.2.3' in r.parsed)
             self.assertFalse('2.0' in r.parsed)
             self.assertTrue('5' in r.parsed)
