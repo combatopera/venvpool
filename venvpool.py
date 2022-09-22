@@ -32,10 +32,10 @@ except AttributeError:
     def set_inheritable(h, inherit):
         assert inherit
         fcntl(h, F_SETFD, fcntl(h, F_GETFD) & ~FD_CLOEXEC)
-unsafe = re.compile('[^A-Za-z0-9.]+')
+unsafeseq = re.compile('[^A-Za-z0-9.]+')
 
 def safe_name(name):
-    return unsafe.sub('-', name)
+    return unsafeseq.sub('-', name)
 
 def to_filename(name):
     return name.replace('-', '_')
