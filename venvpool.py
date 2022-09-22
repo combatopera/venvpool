@@ -363,12 +363,6 @@ class BaseReq:
     def __init__(self, parsed):
         self.parsed = parsed
 
-def _reqregex():
-    s = r'\s*'
-    name = '([A-Za-z0-9._-]+)'
-    version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals())
-    return "^{s}{name}{s}(?:{version}{s})?$".format(**locals())
-
 class FastReq:
 
     class Version:
@@ -389,7 +383,12 @@ class FastReq:
     def _splitversion(versionstr):
         return [int(k) for k in versionstr.split('.')]
 
-    getmatch = re.compile(_reqregex()).search
+    s = r'\s*'
+    name = '([A-Za-z0-9._-]+)'
+    version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals())
+    versionmatch = re.compile("^{s}{version}{s}$".format(**locals())).search
+    getmatch = re.compile("^{s}{name}{s}({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())).search
+    del s, name, version
     operators = {
         '<': operator.lt,
         '<=': operator.le,
@@ -403,10 +402,12 @@ class FastReq:
     def parselines(cls, lines):
         def g():
             for line in lines:
-                name, operatorstr, versionstr = cls.getmatch(line).groups()
+                name, versionstrs = cls.getmatch(line).groups()[:2]
                 versions = []
-                if not (operatorstr is None and versionstr is None):
-                    versions.append(cls.Version(cls.operators[operatorstr], cls._splitversion(versionstr), operatorstr + versionstr))
+                if versionstrs is not None:
+                    for s in versionstrs.split(','):
+                        operatorstr, versionstr = cls.versionmatch(s).groups()
+                        versions.append(cls.Version(cls.operators[operatorstr], cls._splitversion(versionstr), operatorstr + versionstr))
                 yield cls(name, versions)
         return list(g())
 
@@ -417,7 +418,7 @@ class FastReq:
     def __init__(self, namepart, versions):
         self.namepart = namepart
         self.versions = versions
-        self.reqstr = "%s%s" % (namepart, ','.join(v.reqstr for v in versions))
+        self.reqstr = "%s%s" % (namepart, ','.join(sorted(v.reqstr for v in versions)))
 
     def __contains__(self, versionstr):
         splitversion = self._splitversion(versionstr)
