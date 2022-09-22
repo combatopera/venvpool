@@ -367,10 +367,9 @@ class FastReq:
 
     class Version:
 
-        def __init__(self, operator, splitversion, reqstr):
+        def __init__(self, operator, splitversion):
             self.operator = operator
             self.splitversion = splitversion
-            self.reqstr = reqstr
 
         def accept(self, splitversion):
             def pad(v):
@@ -402,23 +401,25 @@ class FastReq:
     def parselines(cls, lines):
         def g():
             for line in lines:
-                name, versionstrs = cls.getmatch(line).groups()[:2]
+                namepart, versionspec = cls.getmatch(line).groups()[:2]
                 versions = []
-                if versionstrs is not None:
-                    for s in versionstrs.split(','):
-                        operatorstr, versionstr = cls.versionmatch(s).groups()
-                        versions.append(cls.Version(cls.operators[operatorstr], cls._splitversion(versionstr), operatorstr + versionstr))
-                yield cls(name, versions)
+                reqstrversions = []
+                if versionspec is not None:
+                    for onestr in versionspec.split(','):
+                        operatorstr, versionstr = cls.versionmatch(onestr).groups()
+                        versions.append(cls.Version(cls.operators[operatorstr], cls._splitversion(versionstr)))
+                        reqstrversions.append(operatorstr + versionstr)
+                yield cls(namepart, versions, namepart + ','.join(sorted(reqstrversions)))
         return list(g())
 
     @property
     def parsed(self):
         return self
 
-    def __init__(self, namepart, versions):
+    def __init__(self, namepart, versions, reqstr):
         self.namepart = namepart
         self.versions = versions
-        self.reqstr = "%s%s" % (namepart, ','.join(sorted(v.reqstr for v in versions)))
+        self.reqstr = reqstr
 
     def __contains__(self, versionstr):
         splitversion = self._splitversion(versionstr)
