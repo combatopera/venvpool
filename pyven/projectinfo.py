@@ -190,7 +190,10 @@ class ProjectInfo:
 
     def mainfunctions(self):
         paths = list(Files.relpaths(self.projectdir, [mainfunctions.extension], []))
-        for line in subprocess.check_output(["python%s" % next(iter(self.config.pyversions)), mainfunctions.__file__, self.projectdir] + paths).splitlines():
+        scriptpath = mainfunctions.__file__
+        if 'c' == scriptpath[-1]:
+            scriptpath = scriptpath[:-1]
+        for line in subprocess.check_output(["python%s" % next(iter(self.config.pyversions)), scriptpath, self.projectdir] + paths).splitlines():
             yield MainFunction(eval(line))
 
     def console_scripts(self):
