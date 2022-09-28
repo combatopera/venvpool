@@ -467,10 +467,14 @@ def _launch():
     module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
         bindir = os.path.join(venv.venvpath, 'bin')
-        argv = [os.path.join(bindir, 'python'), '-c', """import runpy, sys
+        argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
 assert not sys.path[0]
 sys.path[0] = %r
-sys.path.insert(1, %r)
+i = len(sys.path)
+suffix = os.sep + 'site-packages'
+while sys.path[i - 1].endswith(suffix):
+    i -= 1
+sys.path.insert(i, %r)
 runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, projectdir, module)] + scriptargs
         os.execv(argv[0], argv)
 
