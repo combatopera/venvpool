@@ -10,19 +10,15 @@ virtualenv $bootvenv
 
 $bootvenv/bin/pip install pyven
 
-(
+pyvendir="$(dirname "$0")"
 
-    cd "$(dirname "$0")"
+# TODO: Inspect project.arid to get these names.
+for p in ../aridity ../diapyr ../lagoon .; do
 
-    # TODO: Inspect project.arid to get these names.
-    for p in ../aridity ../diapyr ../lagoon .; do
+    $bootvenv/bin/pipify "$pyvendir"/$p
 
-        (cd $p; $bootvenv/bin/pipify)
+    $bootvenv/bin/pip install -e "$pyvendir"/$p
 
-        $bootvenv/bin/pip install -e $p
-
-    done
-
-)
+done
 
 $bootvenv/bin/initopt "$@" "$USER_OPT"
