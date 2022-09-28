@@ -8,14 +8,12 @@ trap 'rm -r $bootvenv' EXIT
 
 virtualenv $bootvenv
 
-$bootvenv/bin/pip install pyven
-
 pyvendir="$(dirname "$0")"
 
 # TODO: Inspect project.arid to get these names.
 for p in ../aridity ../diapyr ../lagoon .; do
 
-    $bootvenv/bin/pipify "$pyvendir"/$p
+    python "$pyvendir"/venvpool.py "$pyvendir"/boot/pipify.py "$pyvendir"/$p
 
     $bootvenv/bin/pip install -e "$pyvendir"/$p
 
