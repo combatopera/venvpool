@@ -470,7 +470,7 @@ def _launch():
         argv = [os.path.join(bindir, 'python'), '-c', """import runpy, sys
 assert not sys.path[0]
 sys.path[0] = %r
-sys.path.insert(0, %r)
+sys.path.insert(1, %r)
 runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, projectdir, module)] + scriptargs
         os.execv(argv[0], argv)
 
