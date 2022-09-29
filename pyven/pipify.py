@@ -38,7 +38,7 @@ def pipify(info, version = None):
     if not release:
         config.put('author', scalar = None)
     config.put('py_modules', scalar = info.py_modules())
-    config.put('install_requires', scalar = info.allrequires() if release else info.remoterequires())
+    config.put('install_requires', scalar = info.allrequires())
     config.put('scripts', scalar = info.scripts())
     config.put('console_scripts', scalar = info.console_scripts())
     config.put('universal', number = int({2, 3} <= set(info.config.pyversions)))
