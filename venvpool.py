@@ -441,10 +441,12 @@ def _launch():
     parser.add_argument('--pip')
     parser.add_argument('scriptpath', type = os.path.abspath)
     args, scriptargs = parser.parse_known_args()
-    _launchimpl(args.pip, args.scriptpath, scriptargs, True)
+    Launch(args.pip).launch(True, args.scriptpath, scriptargs)
 
-def _launchimpl(pipornone, scriptpath, scriptargs, execflag):
-    def requirementspathornone():
+class Launch:
+
+    @staticmethod
+    def _requirementspathornone(projectdir):
         def requirementspaths():
             yield os.path.join(projectdir, 'requirements.txt')
             for name in sorted(os.listdir(projectdir)):
@@ -453,27 +455,32 @@ def _launchimpl(pipornone, scriptpath, scriptargs, execflag):
         for requirementspath in requirementspaths():
             if os.path.exists(requirementspath):
                 return requirementspath
-    assert scriptpath.endswith(dotpy)
-    projectdir = os.path.dirname(scriptpath)
-    while True:
-        requirementspath = requirementspathornone()
-        if requirementspath is not None:
-            break
-        if os.path.exists(os.path.join(projectdir, 'project.arid')):
-            _launchimpl(pipornone, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir], False)
-            requirementspath = requirementspathornone()
-            break
-        parent = os.path.dirname(projectdir)
-        if parent == projectdir:
-            sys.exit('No requirements found.')
-        projectdir = parent
-    log.debug("Found requirements: %s", requirementspath)
-    with open(requirementspath) as f:
-        installdeps = SimpleInstallDeps(f.read().splitlines(), pipornone, FastReq)
-    module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
-    with Pool(sys.version_info.major).readonly(installdeps) as venv:
-        bindir = os.path.join(venv.venvpath, 'bin')
-        argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
+
+    def __init__(self, pipornone):
+        self.pipornone = pipornone
+
+    def launch(self, execflag, scriptpath, scriptargs):
+        assert scriptpath.endswith(dotpy)
+        projectdir = os.path.dirname(scriptpath)
+        while True:
+            requirementspath = self._requirementspathornone(projectdir)
+            if requirementspath is not None:
+                break
+            if os.path.exists(os.path.join(projectdir, 'project.arid')):
+                self.launch(False, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir])
+                requirementspath = self._requirementspathornone(projectdir)
+                break
+            parent = os.path.dirname(projectdir)
+            if parent == projectdir:
+                sys.exit('No requirements found.')
+            projectdir = parent
+        log.debug("Found requirements: %s", requirementspath)
+        with open(requirementspath) as f:
+            installdeps = SimpleInstallDeps(f.read().splitlines(), self.pipornone, FastReq)
+        module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
+        with Pool(sys.version_info.major).readonly(installdeps) as venv:
+            bindir = os.path.join(venv.venvpath, 'bin')
+            argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
 assert not sys.path[0]
 sys.path[0] = %r
 i = len(sys.path)
@@ -482,9 +489,9 @@ while sys.path[i - 1].endswith(suffix):
     i -= 1
 sys.path.insert(i, %r)
 runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, projectdir, module)] + scriptargs
-        if execflag:
-            os.execv(argv[0], argv)
-        subprocess.check_call(argv)
+            if execflag:
+                os.execv(argv[0], argv)
+            subprocess.check_call(argv)
 
 if '__main__' == __name__:
     _launch()
