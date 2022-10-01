@@ -436,6 +436,14 @@ class SimpleInstallDeps:
         venv.install([r.reqstr for r in self.pypireqs], self.pip)
 
 def _launch():
+    initlogging()
+    parser = ArgumentParser(add_help = False)
+    parser.add_argument('--pip')
+    parser.add_argument('scriptpath', type = os.path.abspath)
+    args, scriptargs = parser.parse_known_args()
+    _launchimpl(args.pip, args.scriptpath, scriptargs, True)
+
+def _launchimpl(pipornone, scriptpath, scriptargs, execflag):
     def requirementspathornone():
         def requirementspaths():
             yield os.path.join(projectdir, 'requirements.txt')
@@ -445,12 +453,6 @@ def _launch():
         for requirementspath in requirementspaths():
             if os.path.exists(requirementspath):
                 return requirementspath
-    initlogging()
-    parser = ArgumentParser(add_help = False)
-    parser.add_argument('--pip')
-    parser.add_argument('scriptpath', type = os.path.abspath)
-    args, scriptargs = parser.parse_known_args()
-    scriptpath = args.scriptpath
     assert scriptpath.endswith(dotpy)
     projectdir = os.path.dirname(scriptpath)
     while True:
@@ -458,8 +460,7 @@ def _launch():
         if requirementspath is not None:
             break
         if os.path.exists(os.path.join(projectdir, 'project.arid')):
-            # XXX: Do we really need a new process?
-            subprocess.check_call([sys.executable, __file__, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), projectdir])
+            _launchimpl(pipornone, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir], False)
             requirementspath = requirementspathornone()
             break
         parent = os.path.dirname(projectdir)
@@ -468,7 +469,7 @@ def _launch():
         projectdir = parent
     log.debug("Found requirements: %s", requirementspath)
     with open(requirementspath) as f:
-        installdeps = SimpleInstallDeps(f.read().splitlines(), args.pip, FastReq)
+        installdeps = SimpleInstallDeps(f.read().splitlines(), pipornone, FastReq)
     module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
     with Pool(sys.version_info.major).readonly(installdeps) as venv:
         bindir = os.path.join(venv.venvpath, 'bin')
@@ -481,7 +482,9 @@ while sys.path[i - 1].endswith(suffix):
     i -= 1
 sys.path.insert(i, %r)
 runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, projectdir, module)] + scriptargs
-        os.execv(argv[0], argv)
+        if execflag:
+            os.execv(argv[0], argv)
+        subprocess.check_call(argv)
 
 if '__main__' == __name__:
     _launch()
