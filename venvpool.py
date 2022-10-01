@@ -456,12 +456,17 @@ def _launch():
     while True:
         requirementspath = requirementspathornone()
         if requirementspath is not None:
-            log.debug("Found requirements: %s", requirementspath)
+            break
+        if os.path.exists(os.path.join(projectdir, 'project.arid')):
+            # XXX: Do we really need a new process?
+            subprocess.check_call([sys.executable, __file__, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), projectdir])
+            requirementspath = requirementspathornone()
             break
         parent = os.path.dirname(projectdir)
         if parent == projectdir:
             sys.exit('No requirements found.')
         projectdir = parent
+    log.debug("Found requirements: %s", requirementspath)
     with open(requirementspath) as f:
         installdeps = SimpleInstallDeps(f.read().splitlines(), args.pip, FastReq)
     module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
