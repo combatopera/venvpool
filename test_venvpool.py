@@ -36,7 +36,7 @@ def _inherithandle(tempdir):
     while not os.path.exists(flag):
         time.sleep(.1)
     lock.unlock()
-    assert not d.trywritelock()
+    assert not d.trywritelock() # FIXME: Investigate lsof hang.
     os.kill(childpid, SIGINT)
     os.waitpid(childpid, 0)
     assert d.trywritelock()
