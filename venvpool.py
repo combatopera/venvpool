@@ -445,7 +445,7 @@ class SimpleInstallDeps:
             for req in reqs:
                 projectdir = os.path.join(workspace, req.namepart)
                 if os.path.exists(projectdir):
-                    local.append(req)
+                    local.append(projectdir)
                     nextreqs.extend(self.reqcls.parselines(makerequirementslines(projectdir)))
                 else:
                     self.pypireqs.append(req)
@@ -507,7 +507,7 @@ class Launch:
             projectdir = parent
         installdeps = SimpleInstallDeps(requirementslines, self.pipornone, FastReq)
         localreqs = installdeps.poplocalreqs(os.path.join(projectdir, '..'), self._makerequirementslinesornone)
-        assert not localreqs # FIXME: Implement.
+        localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
             bindir = os.path.join(venv.venvpath, 'bin')
@@ -519,8 +519,8 @@ i = len(sys.path)
 suffix = os.sep + 'site-packages'
 while sys.path[i - 1].endswith(suffix):
     i -= 1
-sys.path.insert(i, %r)
-runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, projectdir, module)] + scriptargs
+sys.path[i:i] = %r
+runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, localreqs, module)] + scriptargs
             if execflag:
                 os.execv(argv[0], argv)
             subprocess.check_call(argv)
