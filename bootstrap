@@ -4,4 +4,6 @@ set -eux
 
 pyvendir="$(dirname "$0")"
 
-exec python "$pyvendir"/venvpool.py "$pyvendir"/pyven/initopt.py "$@" "$USER_OPT"
+python="$(which python3 || which python)"
+
+exec "$python" "$pyvendir"/venvpool.py "$pyvendir"/pyven/initopt.py "$@" "$USER_OPT"
