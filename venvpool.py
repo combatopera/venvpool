@@ -443,18 +443,25 @@ def _launch():
     args, scriptargs = parser.parse_known_args()
     Launch(args.pip).launch(True, args.scriptpath, scriptargs)
 
-class Launch:
+def _requirementslinesornone(projectdir):
+    def linesornone(acceptnull, *names):
+        path = os.path.join(projectdir, *names)
+        if os.path.exists(path):
+            log.debug("Found requirements: %s", path)
+            with open(path) as f:
+                return f.read().splitlines()
+        if acceptnull:
+            log.debug("Null requirements: %s", path)
+            return []
+    v = linesornone(False, 'requirements.txt')
+    if v is not None:
+        return v
+    names = [name for name in os.listdir(projectdir) if name.endswith('.egg-info')]
+    if names:
+        name, = names # XXX: Could there legitimately be multiple?
+        return linesornone(True, name, 'requires.txt')
 
-    @staticmethod
-    def _requirementspathornone(projectdir):
-        def requirementspaths():
-            yield os.path.join(projectdir, 'requirements.txt')
-            for name in sorted(os.listdir(projectdir)):
-                if name.endswith('.egg-info'):
-                    yield os.path.join(projectdir, name, 'requires.txt') # FIXME: No such file if there are no requirements.
-        for requirementspath in requirementspaths():
-            if os.path.exists(requirementspath):
-                return requirementspath
+class Launch:
 
     def __init__(self, pipornone):
         self.pipornone = pipornone
@@ -463,20 +470,19 @@ class Launch:
         assert scriptpath.endswith(dotpy)
         projectdir = os.path.dirname(scriptpath)
         while True:
-            requirementspath = self._requirementspathornone(projectdir)
-            if requirementspath is not None:
+            requirementslines = _requirementslinesornone(projectdir)
+            if requirementslines is not None:
                 break
             if os.path.exists(os.path.join(projectdir, 'project.arid')):
+                # XXX: Achieve this without additional files?
                 self.launch(False, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir])
-                requirementspath = self._requirementspathornone(projectdir)
+                requirementslines = _requirementslinesornone(projectdir)
                 break
             parent = os.path.dirname(projectdir)
             if parent == projectdir:
                 sys.exit('No requirements found.')
             projectdir = parent
-        log.debug("Found requirements: %s", requirementspath)
-        with open(requirementspath) as f:
-            installdeps = SimpleInstallDeps(f.read().splitlines(), self.pipornone, FastReq)
+        installdeps = SimpleInstallDeps(requirementslines, self.pipornone, FastReq)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
             bindir = os.path.join(venv.venvpath, 'bin')
