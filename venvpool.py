@@ -443,7 +443,7 @@ def _launch():
     args, scriptargs = parser.parse_known_args()
     Launch(args.pip).launch(True, args.scriptpath, scriptargs)
 
-def _requirementslinesornone(projectdir):
+def _getrequirementslinesornone(projectdir):
     def linesornone(acceptnull, *names):
         path = os.path.join(projectdir, *names)
         if os.path.exists(path):
@@ -470,13 +470,13 @@ class Launch:
         assert scriptpath.endswith(dotpy)
         projectdir = os.path.dirname(scriptpath)
         while True:
-            requirementslines = _requirementslinesornone(projectdir)
+            requirementslines = _getrequirementslinesornone(projectdir)
             if requirementslines is not None:
                 break
             if os.path.exists(os.path.join(projectdir, 'project.arid')):
                 # XXX: Achieve this without additional files?
                 self.launch(False, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir])
-                requirementslines = _requirementslinesornone(projectdir)
+                requirementslines = _getrequirementslinesornone(projectdir)
                 break
             parent = os.path.dirname(projectdir)
             if parent == projectdir:
