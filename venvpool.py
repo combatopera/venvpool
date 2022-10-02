@@ -451,7 +451,7 @@ class Launch:
             yield os.path.join(projectdir, 'requirements.txt')
             for name in sorted(os.listdir(projectdir)):
                 if name.endswith('.egg-info'):
-                    yield os.path.join(projectdir, name, 'requires.txt')
+                    yield os.path.join(projectdir, name, 'requires.txt') # FIXME: No such file if there are no requirements.
         for requirementspath in requirementspaths():
             if os.path.exists(requirementspath):
                 return requirementspath
