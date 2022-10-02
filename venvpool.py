@@ -483,6 +483,7 @@ class Launch:
             argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
 assert not sys.path[0]
 sys.path[0] = %r
+# TODO: Test insertion logic.
 i = len(sys.path)
 suffix = os.sep + 'site-packages'
 while sys.path[i - 1].endswith(suffix):
