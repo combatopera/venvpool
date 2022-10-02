@@ -431,9 +431,26 @@ class SimpleInstallDeps:
     def __init__(self, requires, pip = None, reqcls = BaseReq):
         self.pypireqs = reqcls.parselines(requires)
         self.pip = pip
+        self.reqcls = reqcls
 
     def invoke(self, venv):
         venv.install([r.reqstr for r in self.pypireqs], self.pip)
+
+    def poplocalreqs(self, workspace, makerequirementslines):
+        local = []
+        reqs = list(self.pypireqs)
+        del self.pypireqs[:]
+        while reqs:
+            nextreqs = []
+            for req in reqs:
+                projectdir = os.path.join(workspace, req.namepart)
+                if os.path.exists(projectdir):
+                    local.append(req)
+                    nextreqs.extend(self.reqcls.parselines(makerequirementslines(projectdir)))
+                else:
+                    self.pypireqs.append(req)
+            reqs = nextreqs
+        return local
 
 def _launch():
     initlogging()
@@ -489,6 +506,8 @@ class Launch:
                 sys.exit('No requirements found.')
             projectdir = parent
         installdeps = SimpleInstallDeps(requirementslines, self.pipornone, FastReq)
+        localreqs = installdeps.poplocalreqs(os.path.join(projectdir, '..'), self._makerequirementslinesornone)
+        assert not localreqs # FIXME: Implement.
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
             bindir = os.path.join(venv.venvpath, 'bin')
