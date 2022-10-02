@@ -466,17 +466,23 @@ class Launch:
     def __init__(self, pipornone):
         self.pipornone = pipornone
 
+    def _makerequirementslinesornone(self, projectdir):
+        lines = _getrequirementslinesornone(projectdir)
+        if lines is not None:
+            return lines
+        if os.path.exists(os.path.join(projectdir, 'project.arid')):
+            # XXX: Achieve this without additional files?
+            self.launch(False, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir])
+            lines = _getrequirementslinesornone(projectdir)
+            assert lines is not None
+            return lines
+
     def launch(self, execflag, scriptpath, scriptargs):
         assert scriptpath.endswith(dotpy)
         projectdir = os.path.dirname(scriptpath)
         while True:
-            requirementslines = _getrequirementslinesornone(projectdir)
+            requirementslines = self._makerequirementslinesornone(projectdir)
             if requirementslines is not None:
-                break
-            if os.path.exists(os.path.join(projectdir, 'project.arid')):
-                # XXX: Achieve this without additional files?
-                self.launch(False, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir])
-                requirementslines = _getrequirementslinesornone(projectdir)
                 break
             parent = os.path.dirname(projectdir)
             if parent == projectdir:
