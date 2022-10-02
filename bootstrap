@@ -2,21 +2,6 @@
 
 set -eux
 
-bootvenv=$(mktemp -d)
-
-trap 'rm -r $bootvenv' EXIT
-
-virtualenv $bootvenv
-
 pyvendir="$(dirname "$0")"
 
-# TODO: Inspect project.arid to get these names.
-for p in ../aridity ../diapyr ../lagoon .; do
-
-    python "$pyvendir"/venvpool.py "$pyvendir"/boot/pipify.py "$pyvendir"/$p
-
-    $bootvenv/bin/pip install -e "$pyvendir"/$p
-
-done
-
-$bootvenv/bin/initopt "$@" "$USER_OPT"
+python "$pyvendir"/venvpool.py "$pyvendir"/pyven/initopt.py "$@" "$USER_OPT"

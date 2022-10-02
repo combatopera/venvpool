@@ -121,7 +121,7 @@ class ExecutableInfo:
         for name in sorted(os.listdir(bindir)):
             yield os.path.join(bindir, name)
 
-def main_initopt():
+def main():
     'Furnish the venv with editable projects and their dependencies.'
     initlogging()
     parser = ArgumentParser()
@@ -156,3 +156,6 @@ def main_initopt():
     for k, info in enumerate(leafinfos):
         info.install(allinfos)
         compactvenvs([i.venvpath for i in leafinfos[:k + 1]])
+
+if '__main__' == __name__:
+    main()
