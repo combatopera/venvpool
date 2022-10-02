@@ -16,6 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from argparse import ArgumentParser
+from collections import OrderedDict
 from contextlib import contextmanager
 from tempfile import mkdtemp, mkstemp
 import errno, logging, operator, os, re, shutil, subprocess, sys
@@ -437,20 +438,22 @@ class SimpleInstallDeps:
         venv.install([r.reqstr for r in self.pypireqs], self.pip)
 
     def poplocalreqs(self, workspace, makerequirementslines):
-        local = []
+        local = OrderedDict()
         reqs = list(self.pypireqs)
         del self.pypireqs[:]
         while reqs:
             nextreqs = []
             for req in reqs:
                 projectdir = os.path.join(workspace, req.namepart)
+                if projectdir in local:
+                    continue
                 if os.path.exists(projectdir):
-                    local.append(projectdir)
+                    local[projectdir] = None
                     nextreqs.extend(self.reqcls.parselines(makerequirementslines(projectdir)))
                 else:
                     self.pypireqs.append(req)
             reqs = nextreqs
-        return local
+        return list(local)
 
 def _launch():
     initlogging()
