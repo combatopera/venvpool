@@ -46,7 +46,8 @@ def main():
             ag = subprocess.Popen(['ag', '-l', '-G', re.escape(dotpy) + '$', scriptregex, info.projectdir], stdout = subprocess.PIPE, universal_newlines = True)
             for line in ag.stdout:
                 path, = line.splitlines()
-                name = os.path.basename(path)[:-len(dotpy)]
+                name = os.path.basename(path)
+                name = os.path.basename(os.path.dirname(path)) if '__init__.py' == name else name[:-len(dotpy)]
                 if _checkname(name):
                     pyversion = max(info.config.pyversions)
                     f.write("""{name}() {{
