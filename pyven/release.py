@@ -161,3 +161,6 @@ def release(config, srcgit, info):
     else:
         log.warning("Upload skipped, use --upload to upload: %s", ' '.join(uploadableartifacts(artifactrelpaths)))
     return artifactrelpaths
+
+if '__main__' == __name__:
+    main_release()

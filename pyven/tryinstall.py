@@ -53,3 +53,6 @@ def main_tryinstall():
     info = ProjectInfo.seek('.')
     pipify(info)
     EveryVersion(info, False, False, [], False, True).nose()
+
+if '__main__' == __name__:
+    main_tryinstall()

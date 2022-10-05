@@ -150,3 +150,6 @@ class InstallDeps:
 
     def __exit__(self, *exc_info):
         shutil.rmtree(self.workspace)
+
+if '__main__' == __name__:
+    main_pipify()

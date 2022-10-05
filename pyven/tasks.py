@@ -31,3 +31,6 @@ def main_tasks():
     for tag in ['XX''X', 'TO''DO', 'FIX''ME'][config.q:]:
         subprocess.call(agcommand + [tag + ' LATER'] + paths, cwd = root)
         subprocess.call(agcommand + [tag + '(?! LATER)'] + paths, cwd = root)
+
+if '__main__' == __name__:
+    main_tasks()

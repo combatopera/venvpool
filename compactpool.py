@@ -15,14 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .projectinfo import ProjectInfo
-import os
-
-def main_drmake():
-    'Build a Docker image with automatic tag.'
-    info = ProjectInfo.seek('.')
-    command = 'docker', 'build', '-t', info.config.docker.tag, info.projectdir
-    os.execvp(command[0], command)
+from venvpool import main_compactpool
 
 if '__main__' == __name__:
-    main_drmake()
+    main_compactpool()

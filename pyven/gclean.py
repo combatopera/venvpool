@@ -112,3 +112,6 @@ def main_gclean():
                 tryremovepath(os.path.join(dirpath, name), True)
             for name in sorted(filenames):
                 tryremovepath(os.path.join(dirpath, name), False)
+
+if '__main__' == __name__:
+    main_gclean()
