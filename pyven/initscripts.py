@@ -31,6 +31,14 @@ def scriptregex():
 def _checkname(name):
     return not subprocess.call([os.environ['SHELL'], '-c', "%s(){\n:;}" % name])
 
+def _checkpath(projectdir, path):
+    while True:
+        path = os.path.dirname(path)
+        if path == projectdir:
+            return True
+        if not os.path.exists(os.path.join(path, '__init__.py')):
+            break
+
 def main():
     venvpool.initlogging()
     if not os.path.exists(scriptsparent):
@@ -46,6 +54,9 @@ def main():
             ag = subprocess.Popen(['ag', '-l', '-G', re.escape(dotpy) + '$', scriptregex, info.projectdir], stdout = subprocess.PIPE, universal_newlines = True)
             for line in ag.stdout:
                 path, = line.splitlines()
+                if not _checkpath(info.projectdir, path):
+                    log.debug("Not a project source file: %s", path)
+                    continue
                 name = os.path.basename(path)
                 name = (os.path.basename(os.path.dirname(path)) if '__init__.py' == name else name[:-len(dotpy)]).replace('_', '-')
                 if _checkname(name):
