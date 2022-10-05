@@ -30,5 +30,5 @@ def main():
         if hasdiv == (re.search('^from __future__ import division(?: # .+)?$', text, flags = re.MULTILINE) is None):
             raise Exception(path)
 
-if '__main__' == __name__:
+if ('__main__' == __name__):
     main()

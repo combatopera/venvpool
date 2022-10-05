@@ -56,5 +56,5 @@ def main():
         setupkwargs, = stack
         sys.stdout.write(repr({k: v for k, v in setupkwargs.items() if k in fields}))
 
-if '__main__' == __name__:
+if ('__main__' == __name__):
     main()

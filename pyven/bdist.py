@@ -44,5 +44,5 @@ def main():
                 shutil.copy2(wheelpath, distdir)
             os.remove(wheelpath)
 
-if '__main__' == __name__:
+if ('__main__' == __name__):
     main()
