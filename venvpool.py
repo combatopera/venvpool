@@ -459,8 +459,11 @@ def _launch():
     initlogging()
     parser = ArgumentParser(add_help = False)
     parser.add_argument('--pip')
+    parser.add_argument('-v', action = 'store_true')
     parser.add_argument('scriptpath', type = os.path.abspath)
     args, scriptargs = parser.parse_known_args()
+    if not args.v:
+        logging.getLogger().setLevel(logging.INFO)
     Launch(args.pip).launch(True, args.scriptpath, scriptargs)
 
 def _getrequirementslinesornone(projectdir):
