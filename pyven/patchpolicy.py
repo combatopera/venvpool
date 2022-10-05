@@ -30,5 +30,5 @@ def main():
     with open(policypath, 'w') as f:
         json.dump(policy, f)
 
-if '__main__' == __name__:
+if ('__main__' == __name__):
     main()

@@ -532,5 +532,5 @@ runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, loca
                 os.execv(argv[0], argv)
             subprocess.check_call(argv)
 
-if '__main__' == __name__:
+if ('__main__' == __name__):
     _launch()

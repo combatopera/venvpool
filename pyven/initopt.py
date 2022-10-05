@@ -157,5 +157,5 @@ def main():
         info.install(allinfos)
         compactvenvs([i.venvpath for i in leafinfos[:k + 1]])
 
-if '__main__' == __name__:
+if ('__main__' == __name__):
     main()

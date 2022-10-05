@@ -41,5 +41,5 @@ def main():
                     doc = ast.get_docstring(obj),
                 ))
 
-if '__main__' == __name__:
+if ('__main__' == __name__):
     main()

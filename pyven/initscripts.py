@@ -67,5 +67,5 @@ def main():
 """.format(**dict(globals(), **locals())))
             assert ag.wait() in {0, 1}
 
-if '__main__' == __name__:
+if ('__main__' == __name__):
     main()
