@@ -29,7 +29,7 @@ def scriptregex():
     return r"^if\s+(?:__name__\s*==\s*{main}|{main}\s*==\s*__name__)\s*:\s*$".format(**locals())
 
 def _checkname(name):
-    return not subprocess.call(['sh', '-c', "%s(){\n:;}" % name])
+    return not subprocess.call([os.environ['SHELL'], '-c', "%s(){\n:;}" % name])
 
 def main():
     venvpool.initlogging()
@@ -47,7 +47,7 @@ def main():
             for line in ag.stdout:
                 path, = line.splitlines()
                 name = os.path.basename(path)
-                name = os.path.basename(os.path.dirname(path)) if '__init__.py' == name else name[:-len(dotpy)]
+                name = (os.path.basename(os.path.dirname(path)) if '__init__.py' == name else name[:-len(dotpy)]).replace('_', '-')
                 if _checkname(name):
                     pyversion = max(info.config.pyversions)
                     f.write("""{name}() {{
