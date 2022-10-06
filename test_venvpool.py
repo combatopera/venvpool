@@ -22,7 +22,7 @@ import errno, inspect, os, subprocess, sys, venvpool
 
 def _inherithandle(tempdir):
     from signal import SIGINT
-    from venvpool import SharedDir
+    from venvpool import SharedDir # FIXME LATER: This only works when running tests at the top level.
     import os, sys, time
     flag = os.path.join(tempdir, 'flag')
     p = os.path.join(tempdir, 'shared')
