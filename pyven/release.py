@@ -16,10 +16,10 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import targetremote
-from .checks import EveryVersion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
+from .tests import EveryVersion
 from .util import bgcontainer
 from argparse import ArgumentParser
 from aridity.config import ConfigCtrl
