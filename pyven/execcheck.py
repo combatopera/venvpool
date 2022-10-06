@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from . import tests
 import os
 
 execmask = 0x49
@@ -26,7 +27,7 @@ def execcheck(paths):
         executable = bool(os.stat(path).st_mode & execmask)
         with open(path) as f:
             hasmagic = f.readline().startswith(magic)
-        if basename.lower().startswith('test'):
+        if basename.lower().startswith('test') and os.path.abspath(path) != tests.__file__:
             if not basename.startswith('test_'):
                 raise Exception("Inconsistent name: %s" % path) # Note pyflakes already checks for duplicate method names.
             if executable:
