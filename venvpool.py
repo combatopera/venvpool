@@ -520,7 +520,14 @@ class Launch:
             bindir = os.path.join(venv.venvpath, 'bin')
             argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
 assert not sys.path[0]
-sys.path[0] = %r
+sys.path[0] = bindir = %r
+try:
+    envpath = os.environ['PATH']
+except KeyError:
+    envpath = bindir
+else:
+    envpath = bindir + os.pathsep + envpath
+os.environ['PATH'] = envpath
 # TODO: Test insertion logic.
 i = len(sys.path)
 suffix = os.sep + 'site-packages'
