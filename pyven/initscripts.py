@@ -64,6 +64,9 @@ def main():
                     f.write("""{name}() {{
     python{pyversion} '{venvpool.__file__}' '{path}' "$@"
 }}
+exec-{name}() {{
+    exec python{pyversion} '{venvpool.__file__}' '{path}' "$@"
+}}
 """.format(**dict(globals(), **locals())))
             assert ag.wait() in {0, 1}
 
