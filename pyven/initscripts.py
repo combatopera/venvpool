@@ -62,10 +62,10 @@ def main():
                 if _checkname(name):
                     pyversion = max(info.config.pyversions)
                     f.write("""{name}() {{
-    python{pyversion} '{venvpool.__file__}' '{path}' "$@"
+    python{pyversion} '{venvpool.__file__}' '{path}' -- "$@"
 }}
 exec-{name}() {{
-    exec python{pyversion} '{venvpool.__file__}' '{path}' "$@"
+    exec python{pyversion} '{venvpool.__file__}' '{path}' -- "$@"
 }}
 """.format(**dict(globals(), **locals())))
             assert ag.wait() in {0, 1}
