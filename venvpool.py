@@ -518,6 +518,7 @@ class Launch:
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
             bindir = os.path.join(venv.venvpath, 'bin')
+            # TODO: Find a way to minify this command line in ps output.
             argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
 assert not sys.path[0]
 sys.path[0] = bindir = %r
