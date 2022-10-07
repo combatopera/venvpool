@@ -61,13 +61,17 @@ def main():
                 name = (os.path.basename(os.path.dirname(path)) if '__init__.py' == name else name[:-len(dotpy)]).replace('_', '-')
                 if _checkname(name):
                     pyversion = max(info.config.pyversions)
+                    commandline = '''python{pyversion} '{venvpool.__file__}' '{path}' -- "$@"'''.format(**dict(globals(), **locals()))
                     f.write("""{name}() {{
-    python{pyversion} '{venvpool.__file__}' '{path}' -- "$@"
+    {commandline}
+}}
+bg-{name}() {{
+    {commandline} &
 }}
 exec-{name}() {{
-    exec python{pyversion} '{venvpool.__file__}' '{path}' -- "$@"
+    exec {commandline}
 }}
-""".format(**dict(globals(), **locals())))
+""".format(**locals()))
             assert ag.wait() in {0, 1}
 
 if ('__main__' == __name__):
