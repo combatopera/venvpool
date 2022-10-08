@@ -363,7 +363,7 @@ class BaseReq:
     def __init__(self, parsed):
         self.parsed = parsed
 
-class FastReq:
+class FastReq: # TODO: Support pip-tools compiled requirements.
 
     class Version:
 
