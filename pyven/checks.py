@@ -198,6 +198,3 @@ def main_tests():
     parser.add_argument('--transient', action = 'store_true')
     args, noseargs = parser.parse_known_args()
     EveryVersion(ProjectInfo.seekany('.'), args.siblings, args.repo, noseargs, args.docker, args.transient).allchecks()
-
-if '__main__' == __name__:
-    main_tests()
