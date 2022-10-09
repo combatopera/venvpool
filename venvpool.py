@@ -400,7 +400,7 @@ class FastReq: # TODO: Support pip-tools compiled requirements.
     @classmethod
     def parselines(cls, lines):
         def g():
-            for line in lines:
+            for line in lines: # FIXME: Investigate why lines is None in combatopera project.
                 namepart, versionspec = cls.getmatch(line).groups()[:2]
                 versions = []
                 reqstrversions = []
