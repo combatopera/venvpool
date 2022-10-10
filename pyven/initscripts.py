@@ -16,12 +16,12 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from .initopt import _hasname, _projectinfos
+from aridity.util import dotpy
 from diapyr.util import singleton
 import logging, os, re, subprocess, venvpool
 
 log = logging.getLogger(__name__)
 scriptsparent = os.path.join(os.path.expanduser('~'), '.config', 'pyven')
-dotpy = '.py'
 
 @singleton
 def scriptregex():
