@@ -18,18 +18,17 @@
 from .initopt import _hasname, _projectinfos
 from aridity.util import dotpy
 from diapyr.util import singleton
+from stat import S_IXUSR, S_IXGRP, S_IXOTH
 import logging, os, re, subprocess, venvpool
 
 log = logging.getLogger(__name__)
-scriptsparent = os.path.join(os.path.expanduser('~'), '.config', 'pyven')
+executable = S_IXUSR | S_IXGRP | S_IXOTH
+userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
 @singleton
 def scriptregex():
     main = '''(?:'__main__'|"__main__")'''
     return r"^if\s+(?:__name__\s*==\s*{main}|{main}\s*==\s*__name__)\s*:\s*$".format(**locals())
-
-def _checkname(name):
-    return not subprocess.call([os.environ['SHELL'], '-c', "%s(){\n:;}" % name])
 
 def _checkpath(projectdir, path):
     while True:
@@ -41,38 +40,34 @@ def _checkpath(projectdir, path):
 
 def main():
     venvpool.initlogging()
-    if not os.path.exists(scriptsparent):
-        os.makedirs(scriptsparent)
-    with open(os.path.join(scriptsparent, 'scripts'), 'w') as f:
-        for info in _projectinfos():
-            if not _hasname(info):
+    for info in _projectinfos():
+        if not _hasname(info):
+            continue
+        if not info.config.executable:
+            log.debug("Not executable: %s", info.projectdir)
+            continue
+        log.info("Scan: %s", info.projectdir)
+        ag = subprocess.Popen(['ag', '-l', '-G', re.escape(dotpy) + '$', scriptregex, info.projectdir], stdout = subprocess.PIPE, universal_newlines = True)
+        for line in ag.stdout:
+            path, = line.splitlines()
+            if not _checkpath(info.projectdir, path):
+                log.debug("Not a project source file: %s", path)
                 continue
-            if not info.config.executable:
-                log.debug("Not executable: %s", info.projectdir)
-                continue
-            log.info("Scan: %s", info.projectdir)
-            ag = subprocess.Popen(['ag', '-l', '-G', re.escape(dotpy) + '$', scriptregex, info.projectdir], stdout = subprocess.PIPE, universal_newlines = True)
-            for line in ag.stdout:
-                path, = line.splitlines()
-                if not _checkpath(info.projectdir, path):
-                    log.debug("Not a project source file: %s", path)
-                    continue
-                name = os.path.basename(path)
-                name = (os.path.basename(os.path.dirname(path)) if '__init__.py' == name else name[:-len(dotpy)]).replace('_', '-')
-                if _checkname(name):
-                    pyversion = max(info.config.pyversions)
-                    commandline = '''python{pyversion} '{venvpool.__file__}' '{path}' -- "$@"'''.format(**dict(globals(), **locals()))
-                    f.write("""{name}() {{
-    {commandline}
-}}
-bg-{name}() {{
-    {commandline} &
-}}
-exec-{name}() {{
-    exec {commandline}
-}}
-""".format(**locals()))
-            assert ag.wait() in {0, 1}
+            name = os.path.basename(path)
+            name = (os.path.basename(os.path.dirname(path)) if '__init__.py' == name else name[:-len(dotpy)]).replace('_', '-')
+            pyversion = max(info.config.pyversions)
+            binpath = os.path.join(userbin, name)
+            with open(binpath, 'w') as f:
+                f.write("""#!/usr/bin/env python{pyversion}
+import sys
+sys.argv[1:1] = {path!r}, '--'
+with open({venvpool.__file__!r}) as f: text = f.read()
+del sys, f
+exec('''del text
+''' + text)
+""".format(**dict(globals(), **locals())))
+            os.chmod(binpath, os.stat(binpath).st_mode | executable)
+        assert ag.wait() in {0, 1}
 
 if ('__main__' == __name__):
     main()
