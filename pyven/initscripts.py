@@ -38,7 +38,7 @@ def _checkpath(projectdir, path):
         if not os.path.exists(os.path.join(path, '__init__.py')):
             break
 
-def _commandornone(srcpath):
+def _binpathornone(srcpath):
     name = os.path.basename(srcpath)
     name = os.path.basename(os.path.dirname(srcpath)) if '__init__.py' == name else name[:-len(dotpy)]
     if '-' not in name:
