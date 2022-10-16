@@ -75,7 +75,7 @@ def main():
                 continue
             binpath = _binpathornone(srcpath)
             if binpath is None:
-                log.debug("Bad source file name: %s", srcpath)
+                log.debug("Bad source name: %s", srcpath)
                 continue
             pyversion = max(info.config.pyversions)
             with open(binpath, 'w') as f:
