@@ -30,13 +30,6 @@ userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 def _ispyvenproject(projectdir):
     return os.path.exists(os.path.join(projectdir, ProjectInfo.projectaridname))
 
-def _hasname(info):
-    try:
-        info.config.name
-        return True
-    except AttributeError:
-        log.debug("Skip: %s", info.projectdir)
-
 def _projectinfos():
     config = ConfigCtrl()
     config.loadsettings()
@@ -75,7 +68,8 @@ def _binpathornone(srcpath):
 def main():
     venvpool.initlogging()
     for info in _projectinfos():
-        if not _hasname(info):
+        if not hasattr(info.config, 'name'):
+            log.debug("Skip: %s", info.projectdir)
             continue
         if not info.config.executable:
             log.debug("Not executable: %s", info.projectdir)
