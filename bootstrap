@@ -6,4 +6,4 @@ pyvendir="$(dirname "$0")"
 
 python="$(which python3 || which python)"
 
-exec "$python" "$pyvendir"/venvpool.py "$pyvendir"/pyven/initopt.py -- "$@" "$USER_OPT"
+exec "$python" "$pyvendir"/venvpool.py "$pyvendir"/pyven/initscripts.py -- "$@"
