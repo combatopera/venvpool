@@ -42,7 +42,7 @@ def _commandornone(srcpath):
     name = os.path.basename(srcpath)
     name = os.path.basename(os.path.dirname(srcpath)) if '__init__.py' == name else name[:-len(dotpy)]
     if '-' not in name:
-        return name.replace('_', '-')
+        return os.path.join(userbin, name.replace('_', '-'))
 
 def main():
     venvpool.initlogging()
@@ -59,12 +59,11 @@ def main():
             if not _checkpath(info.projectdir, srcpath):
                 log.debug("Not a project source file: %s", srcpath)
                 continue
-            command = _commandornone(srcpath)
-            if command is None:
+            binpath = _binpathornone(srcpath)
+            if binpath is None:
                 log.debug("Bad source file name: %s", srcpath)
                 continue
             pyversion = max(info.config.pyversions)
-            binpath = os.path.join(userbin, command)
             with open(binpath, 'w') as f:
                 f.write("""#!/usr/bin/env python{pyversion}
 import sys
