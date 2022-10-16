@@ -22,7 +22,7 @@ from stat import S_IXUSR, S_IXGRP, S_IXOTH
 import logging, os, re, subprocess, venvpool
 
 log = logging.getLogger(__name__)
-executable = S_IXUSR | S_IXGRP | S_IXOTH
+executablebits = S_IXUSR | S_IXGRP | S_IXOTH
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
 @singleton
@@ -49,24 +49,26 @@ def main():
         log.info("Scan: %s", info.projectdir)
         ag = subprocess.Popen(['ag', '-l', '-G', re.escape(dotpy) + '$', scriptregex, info.projectdir], stdout = subprocess.PIPE, universal_newlines = True)
         for line in ag.stdout:
-            path, = line.splitlines()
-            if not _checkpath(info.projectdir, path):
-                log.debug("Not a project source file: %s", path)
+            srcpath, = line.splitlines()
+            if not _checkpath(info.projectdir, srcpath):
+                log.debug("Not a project source file: %s", srcpath)
                 continue
-            name = os.path.basename(path)
-            name = (os.path.basename(os.path.dirname(path)) if '__init__.py' == name else name[:-len(dotpy)]).replace('_', '-')
+            name = os.path.basename(srcpath)
+            name = os.path.basename(os.path.dirname(srcpath)) if '__init__.py' == name else name[:-len(dotpy)]
+            assert '-' not in name
+            command = name.replace('_', '-')
             pyversion = max(info.config.pyversions)
-            binpath = os.path.join(userbin, name)
+            binpath = os.path.join(userbin, command)
             with open(binpath, 'w') as f:
                 f.write("""#!/usr/bin/env python{pyversion}
 import sys
-sys.argv[1:1] = {path!r}, '--'
+sys.argv[1:1] = {srcpath!r}, '--'
 with open({venvpool.__file__!r}) as f: text = f.read()
 del sys, f
 exec('''del text
 ''' + text)
 """.format(**dict(globals(), **locals())))
-            os.chmod(binpath, os.stat(binpath).st_mode | executable)
+            os.chmod(binpath, os.stat(binpath).st_mode | executablebits)
         assert ag.wait() in {0, 1}
 
 if ('__main__' == __name__):
