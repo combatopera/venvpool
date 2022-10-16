@@ -15,15 +15,43 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .initopt import _hasname, _projectinfos
+from .projectinfo import ProjectInfo
+from .setuproot import setuptoolsinfo
+from aridity.config import ConfigCtrl
 from aridity.util import dotpy
 from diapyr.util import singleton
 from stat import S_IXUSR, S_IXGRP, S_IXOTH
-import logging, os, re, subprocess, venvpool
+import logging, os, re, subprocess, sys, venvpool
 
 log = logging.getLogger(__name__)
 executablebits = S_IXUSR | S_IXGRP | S_IXOTH
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
+
+def _ispyvenproject(projectdir):
+    return os.path.exists(os.path.join(projectdir, ProjectInfo.projectaridname))
+
+def _hasname(info):
+    try:
+        info.config.name
+        return True
+    except AttributeError:
+        log.debug("Skip: %s", info.projectdir)
+
+def _projectinfos():
+    config = ConfigCtrl()
+    config.loadsettings()
+    projectsdir = config.node.projectsdir
+    for p in sorted(os.listdir(projectsdir)):
+        projectdir = os.path.join(projectsdir, p)
+        if _ispyvenproject(projectdir):
+            yield ProjectInfo.seek(projectdir)
+        else:
+            setuppath = os.path.join(projectdir, 'setup.py')
+            if os.path.exists(setuppath):
+                if sys.version_info.major < 3:
+                    log.debug("Ignore: %s", projectdir)
+                else:
+                    yield setuptoolsinfo(setuppath)
 
 @singleton
 def scriptregex():
