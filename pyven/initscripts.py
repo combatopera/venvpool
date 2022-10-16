@@ -27,16 +27,13 @@ log = logging.getLogger(__name__)
 executablebits = S_IXUSR | S_IXGRP | S_IXOTH
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
-def _ispyvenproject(projectdir):
-    return os.path.exists(os.path.join(projectdir, ProjectInfo.projectaridname))
-
 def _projectinfos():
     config = ConfigCtrl()
     config.loadsettings()
     projectsdir = config.node.projectsdir
     for p in sorted(os.listdir(projectsdir)):
         projectdir = os.path.join(projectsdir, p)
-        if _ispyvenproject(projectdir):
+        if os.path.exists(os.path.join(projectdir, ProjectInfo.projectaridname)):
             yield ProjectInfo.seek(projectdir)
         else:
             setuppath = os.path.join(projectdir, 'setup.py')
