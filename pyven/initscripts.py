@@ -19,12 +19,12 @@ from .projectinfo import ProjectInfo
 from .setuproot import setuptoolsinfo
 from aridity.config import ConfigCtrl
 from aridity.util import dotpy
-from diapyr.util import singleton
 from stat import S_IXUSR, S_IXGRP, S_IXOTH
 import logging, os, re, subprocess, sys, venvpool
 
 log = logging.getLogger(__name__)
 executablebits = S_IXUSR | S_IXGRP | S_IXOTH
+scriptregex, = (r"^if\s+(?:__name__\s*==\s*{main}|{main}\s*==\s*__name__)\s*:\s*$".format(**locals()) for main in ['''(?:'__main__'|"__main__")'''])
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
 def _projectinfos():
@@ -42,11 +42,6 @@ def _projectinfos():
                     log.debug("Ignore: %s", projectdir)
                 else:
                     yield setuptoolsinfo(setuppath)
-
-@singleton
-def scriptregex():
-    main = '''(?:'__main__'|"__main__")'''
-    return r"^if\s+(?:__name__\s*==\s*{main}|{main}\s*==\s*__name__)\s*:\s*$".format(**locals())
 
 def _checkpath(projectdir, path):
     while True:
