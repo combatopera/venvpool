@@ -41,7 +41,10 @@ def main():
     paths = sys.argv[1:]
     projectdir = paths.pop(0)
     for relpath in paths:
-        with open(os.path.join(projectdir, relpath)) as f:
+        fullpath = os.path.join(projectdir, relpath)
+        if not checkpath(projectdir, fullpath):
+            continue
+        with open(fullpath) as f:
             try:
                 m = ast.parse(f.read())
             except SyntaxError:
