@@ -18,8 +18,9 @@
 import ast, logging, os, sys
 
 log = logging.getLogger(__name__)
-prefix = 'main_'
 extension = '.py'
+prefix = 'main_'
+scriptregex, = (r"^if\s+(?:__name__\s*==\s*{main}|{main}\s*==\s*__name__)\s*:\s*$".format(**locals()) for main in ['''(?:'__main__'|"__main__")'''])
 
 def checkpath(projectdir, path):
     while True:

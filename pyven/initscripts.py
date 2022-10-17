@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from .mainmodules import checkpath, commandornone
+from .mainmodules import checkpath, commandornone, scriptregex
 from .projectinfo import ProjectInfo
 from .setuproot import setuptoolsinfo
 from aridity.config import ConfigCtrl
@@ -25,7 +25,6 @@ import logging, os, re, subprocess, sys, venvpool
 
 log = logging.getLogger(__name__)
 executablebits = S_IXUSR | S_IXGRP | S_IXOTH
-scriptregex, = (r"^if\s+(?:__name__\s*==\s*{main}|{main}\s*==\s*__name__)\s*:\s*$".format(**locals()) for main in ['''(?:'__main__'|"__main__")'''])
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
 def _projectinfos():
