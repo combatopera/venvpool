@@ -40,19 +40,19 @@ def main():
     logging.basicConfig()
     paths = sys.argv[1:]
     projectdir = paths.pop(0)
-    for path in paths:
-        with open(os.path.join(projectdir, path)) as f:
+    for relpath in paths:
+        with open(os.path.join(projectdir, relpath)) as f:
             try:
                 m = ast.parse(f.read())
             except SyntaxError:
-                log.warning("Skip: %s" % path, exc_info = True)
+                log.warning("Skip: %s" % relpath, exc_info = True)
                 continue
         for obj in m.body:
             if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
                 command = obj.name[len(prefix):].replace('_', '-')
                 print(dict(
                     command = command,
-                    console_script = "%s=%s:%s" % (command, path[:-len(extension)].replace(os.sep, '.'), obj.name),
+                    console_script = "%s=%s:%s" % (command, relpath[:-len(extension)].replace(os.sep, '.'), obj.name),
                     doc = ast.get_docstring(obj),
                 ))
 
