@@ -151,8 +151,10 @@ class EveryVersion:
             config.first = first
             config.tagline, _ = self.info.descriptionandurl()
             (-config).execute('commands * name = $label()')
-            for mm in sorted(self.info.mainmodules(), key = lambda mm: mm.name):
-                assert mm.doc is not None
+            mainmodules = sorted(self.info.mainmodules(), key = lambda mm: mm.name)
+            if any(mm.doc is None for mm in mainmodules):
+                raise Exception("Undocumented: %s" % [mm.name for mm in mainmodules if mm.doc is None])
+            for mm in mainmodules:
                 (-config).printf("commands %s doc = %s", mm.name, mm.doc)
             with NamedTemporaryFile('w') as g:
                 with openresource(__name__, 'README.md.aridt') as f:
