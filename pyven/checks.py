@@ -155,7 +155,7 @@ class EveryVersion:
             if any(mm.doc is None for mm in mainmodules):
                 raise Exception("Undocumented: %s" % [mm.name for mm in mainmodules if mm.doc is None])
             for mm in mainmodules:
-                (-config).printf("commands %s doc = %s", mm.name, mm.doc)
+                (-config).printf("commands %s doc = %s", mm.command, mm.doc)
             with NamedTemporaryFile('w') as g:
                 with openresource(__name__, 'README.md.aridt') as f:
                     (-config).processtemplate(f, g)

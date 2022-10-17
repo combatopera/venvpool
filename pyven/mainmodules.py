@@ -34,10 +34,10 @@ def main():
                 continue
         for obj in m.body:
             if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
-                name = obj.name[len(prefix):].replace('_', '-')
+                command = obj.name[len(prefix):].replace('_', '-')
                 print(dict(
-                    name = name,
-                    console_script = "%s=%s:%s" % (name, path[:-len(extension)].replace(os.sep, '.'), obj.name),
+                    command = command,
+                    console_script = "%s=%s:%s" % (command, path[:-len(extension)].replace(os.sep, '.'), obj.name),
                     doc = ast.get_docstring(obj),
                 ))
 
