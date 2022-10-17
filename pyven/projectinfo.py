@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import mainfunctions
+from . import mainmodules
 from .files import Files
 from .setuproot import setuptoolsinfo
 from .util import Path
@@ -182,22 +182,22 @@ class ProjectInfo:
             return os.stat(path).st_mode & xmask and not os.path.isdir(path)
         return [name for name in os.listdir(self.projectdir) if isscript(os.path.join(self.projectdir, name))]
 
-    def mainfunctions(self):
-        paths = list(Files.relpaths(self.projectdir, [mainfunctions.extension], []))
-        scriptpath = mainfunctions.__file__
+    def mainmodules(self):
+        paths = list(Files.relpaths(self.projectdir, [mainmodules.extension], []))
+        scriptpath = mainmodules.__file__
         if 'c' == scriptpath[-1]:
             scriptpath = scriptpath[:-1]
         for line in subprocess.check_output(["python%s" % next(iter(self.config.pyversions)), scriptpath, self.projectdir] + paths).splitlines():
-            yield MainFunction(eval(line))
+            yield MainModule(eval(line))
 
     def console_scripts(self):
-        return [mf.console_script for mf in self.mainfunctions()]
+        return [mm.console_script for mm in self.mainmodules()]
 
     def devversion(self):
         releases = [int(t[1:]) for t in subprocess.check_output(['git', 'tag'], cwd = self.projectdir, universal_newlines = True).splitlines() if 'v' == t[0]]
         return "%s.dev0" % ((max(releases) if releases else 0) + 1)
 
-class MainFunction:
+class MainModule:
 
     def __init__(self, d):
         for k, v in d.items():
