@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+from .mainmodules import checkpath, commandornone
 from .projectinfo import ProjectInfo
 from .setuproot import setuptoolsinfo
 from aridity.config import ConfigCtrl
@@ -43,20 +44,6 @@ def _projectinfos():
                 else:
                     yield setuptoolsinfo(setuppath)
 
-def _checkpath(projectdir, path):
-    while True:
-        path = os.path.dirname(path)
-        if path == projectdir:
-            return True
-        if not os.path.exists(os.path.join(path, '__init__.py')):
-            break
-
-def _binpathornone(srcpath):
-    name = os.path.basename(srcpath)
-    name = os.path.basename(os.path.dirname(srcpath)) if '__init__.py' == name else name[:-len(dotpy)]
-    if '-' not in name:
-        return os.path.join(userbin, name.replace('_', '-'))
-
 def main():
     venvpool.initlogging()
     for info in _projectinfos():
@@ -70,13 +57,14 @@ def main():
         ag = subprocess.Popen(['ag', '-l', '-G', re.escape(dotpy) + '$', scriptregex, info.projectdir], stdout = subprocess.PIPE, universal_newlines = True)
         for line in ag.stdout:
             srcpath, = line.splitlines()
-            if not _checkpath(info.projectdir, srcpath):
+            if not checkpath(info.projectdir, srcpath):
                 log.debug("Not a project source file: %s", srcpath)
                 continue
-            binpath = _binpathornone(srcpath)
-            if binpath is None:
+            command = commandornone(srcpath)
+            if command is None:
                 log.debug("Bad source name: %s", srcpath)
                 continue
+            binpath = os.path.join(userbin, command)
             pyversion = max(info.config.pyversions)
             with open(binpath, 'w') as f:
                 f.write("""#!/usr/bin/env python{pyversion}
