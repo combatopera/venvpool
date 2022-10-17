@@ -45,11 +45,14 @@ def main():
         if not checkpath(projectdir, fullpath):
             continue
         with open(fullpath) as f:
-            try:
-                m = ast.parse(f.read())
-            except SyntaxError:
-                log.warning("Skip: %s" % relpath, exc_info = True)
-                continue
+            text = f.read()
+        if all(re.search(scriptregex, l) is None for l in text.splitlines()):
+            continue
+        try:
+            m = ast.parse(text)
+        except SyntaxError:
+            log.warning("Skip: %s" % relpath, exc_info = True)
+            continue
         for obj in m.body:
             if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
                 command = obj.name[len(prefix):].replace('_', '-')
