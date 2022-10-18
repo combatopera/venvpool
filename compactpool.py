@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Use jdupes to combine identical files in the venv pool.'
 from venvpool import main_compactpool
 
 if '__main__' == __name__:

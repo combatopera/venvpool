@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Print project.arid snippet pinning requires to their minimum allowed versions.'
 from .projectinfo import main_minreqs
 
 if '__main__' == __name__:

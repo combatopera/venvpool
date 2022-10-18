@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Generate setuptools files for a project.arid project.'
 from .projectinfo import ProjectInfo, Req
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
@@ -70,7 +71,6 @@ def pyvenbuildrequires(info):
         yield r
 
 def main_pipify():
-    'Generate setuptools files for a project.arid project.'
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--transient', action = 'store_true')

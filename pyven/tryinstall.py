@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Check last release can be installed from PyPI and its tests still pass, for use by CI.'
 from .checks import EveryVersion
 from .pipify import pipify
 from .projectinfo import ProjectInfo
@@ -28,7 +29,6 @@ import logging, xml.etree.ElementTree as ET
 log = logging.getLogger(__name__)
 
 def main_tryinstall():
-    'Check last release can be installed from PyPI and its tests still pass, for use by CI.'
     from lagoon import docker
     initlogging()
     headinfo = ProjectInfo.seek('.')

@@ -324,7 +324,6 @@ class Pool:
             venv.writeunlock()
 
 def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
-    'Use jdupes to combine identical files in the venv pool.'
     initlogging()
     locked = []
     try:

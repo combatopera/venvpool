@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Show all XX''X/TO''DO/FIX''ME comments in project.'
 from .files import Files
 from argparse import ArgumentParser
 import subprocess
 
 def main_tasks():
-    'Show all XX''X/TO''DO/FIX''ME comments in project.'
     parser = ArgumentParser()
     parser.add_argument('-q', action = 'count', default = 0)
     config = parser.parse_args()

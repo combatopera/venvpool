@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Build a Docker image with automatic tag.'
 from .projectinfo import ProjectInfo
 import os
 
 def main_drmake():
-    'Build a Docker image with automatic tag.'
     info = ProjectInfo.seek('.')
     command = 'docker', 'build', '-t', info.config.docker.tag, info.projectdir
     os.execvp(command[0], command)

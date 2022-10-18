@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Run project using a suitable venv from the pool.'
 from .pipify import InstallDeps
 from .projectinfo import ProjectInfo
 from argparse import ArgumentParser
@@ -22,7 +23,6 @@ from venvpool import initlogging, Pool
 import subprocess, sys
 
 def main_launch(): # TODO: Retire in favour of venvpool module.
-    'Run project using a suitable venv from the pool.'
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--build', action = 'store_true', help = 'rebuild native components')

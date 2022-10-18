@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Run project unit tests and more, also suitable for CI.'
 from ..checks import main_tests
 
 if '__main__' == __name__:

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Remove files matching patterns below #glean in .gitignore file.'
 from .util import stderr
 import re, os, sys, shutil
 
@@ -76,7 +77,6 @@ def styleornone():
             return style()
 
 def main_gclean():
-    'Remove files matching patterns below #glean in .gitignore file.'
     roots = sys.argv[1:]
     while True:
         style = styleornone()

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
+'Release project to PyPI, with manylinux wheels as needed.'
 from . import targetremote
 from .checks import EveryVersion
 from .pipify import pipify
@@ -86,7 +87,6 @@ class Image:
             run(['-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io'], chain([self.pythonexe, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
 
 def main_release():
-    'Release project to PyPI, with manylinux wheels as needed.'
     initlogging()
     config = ConfigCtrl().loadappconfig(main_release, 'release.arid')
     parser = ArgumentParser()
