@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-import ast, logging, os, sys
+import ast, logging, os, re, sys
 
 log = logging.getLogger(__name__)
 extension = '.py'
-prefix = 'main_'
 scriptregex, = (r"^if\s+(?:__name__\s*==\s*{main}|{main}\s*==\s*__name__)\s*:\s*$".format(**locals()) for main in ['''(?:'__main__'|"__main__")'''])
 
 def checkpath(projectdir, path):
@@ -36,6 +35,11 @@ def commandornone(srcpath):
     if '-' not in name:
         return name.replace('_', '-')
 
+def _lastiflineno(text):
+    for i, l in reversed(list(enumerate(text.splitlines()))):
+        if re.search(scriptregex, l) is not None:
+            return 1 + i
+
 def main():
     logging.basicConfig()
     paths = sys.argv[1:]
@@ -46,21 +50,25 @@ def main():
             continue
         with open(fullpath) as f:
             text = f.read()
-        if all(re.search(scriptregex, l) is None for l in text.splitlines()):
+        iflineno = _lastiflineno(text)
+        if iflineno is None:
+            continue
+        command = commandornone(fullpath)
+        if command is None:
             continue
         try:
             m = ast.parse(text)
         except SyntaxError:
             log.warning("Skip: %s" % relpath, exc_info = True)
             continue
-        for obj in m.body:
-            if isinstance(obj, ast.FunctionDef) and obj.name.startswith(prefix):
-                command = obj.name[len(prefix):].replace('_', '-')
-                print(dict(
-                    command = command,
-                    console_script = "%s=%s:%s" % (command, relpath[:-len(extension)].replace(os.sep, '.'), obj.name),
-                    doc = ast.get_docstring(obj),
-                ))
+        ifstatement, = (obj for obj in m.body if iflineno == obj.lineno)
+        expr, = ifstatement.body
+        funcpath = expr.value.func.id # TODO: Support nested.
+        print(dict(
+            command = command,
+            console_script = "%s=%s:%s" % (command, relpath[:-len(extension)].replace(os.sep, '.'), funcpath),
+            doc = ast.get_docstring(m),
+        ))
 
 if ('__main__' == __name__):
     main()
