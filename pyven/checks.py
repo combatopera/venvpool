@@ -128,6 +128,7 @@ class EveryVersion:
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + [cpath(p) for p in self.files.testpaths(xmlpath)] + self.noseargs)
                 else:
                     coveragepath = '.coverage'
+                    # TODO: Find a way to avoid installing projects editably.
                     with Pool(pyversion).readonlyortransient[self.transient](installdeps) as venv:
                         status = subprocess.call([
                             venv.programpath('nosetests'), '--exe', '-v',

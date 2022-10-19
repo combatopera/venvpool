@@ -265,7 +265,7 @@ class Pool:
             lock = trylock(venv)
             if lock is not None:
                 with _onerror(lock.unlock):
-                    if venv.compatible(installdeps):
+                    if venv.compatible(installdeps): # TODO: Upgrade venv if it has a subset.
                         return venv, lock
                 lock.unlock()
 
