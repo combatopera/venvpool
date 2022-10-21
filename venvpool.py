@@ -362,7 +362,7 @@ class BaseReq:
     def __init__(self, parsed):
         self.parsed = parsed
 
-class FastReq: # TODO: Support pip-tools compiled requirements.
+class FastReq:
 
     class Version:
 
@@ -386,6 +386,7 @@ class FastReq: # TODO: Support pip-tools compiled requirements.
     version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals()) # Subset of features.
     versionmatch = re.compile("^{s}{version}{s}$".format(**locals())).search
     getmatch = re.compile("^{s}{name}{s}({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())).search
+    skipmatch = re.compile("^{s}(?:#|$)".format(**locals())).search
     del s, name, version
     operators = {
         '<': operator.lt,
@@ -400,6 +401,8 @@ class FastReq: # TODO: Support pip-tools compiled requirements.
     def parselines(cls, lines):
         def g():
             for line in lines: # FIXME: Investigate why lines is None in combatopera project.
+                if cls.skipmatch(line) is not None:
+                    continue
                 namepart, versionspec = cls.getmatch(line).groups()[:2]
                 versions = []
                 reqstrversions = []
