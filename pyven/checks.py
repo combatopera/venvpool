@@ -191,7 +191,7 @@ class Container:
         from lagoon import docker
         return docker('exec', '-w', self.workdir, *([] if root else ['-u', "%s:%s" % (self.uid, self.gid)]) + [self.container] + args, stdout = None, check = check)
 
-def main_tests():
+def main():
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--docker', action = 'store_true')
