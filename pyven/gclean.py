@@ -76,7 +76,7 @@ def styleornone():
         if os.path.exists(style.name):
             return style()
 
-def main_gclean():
+def main():
     roots = sys.argv[1:]
     while True:
         style = styleornone()
@@ -114,4 +114,4 @@ def main_gclean():
                 tryremovepath(os.path.join(dirpath, name), False)
 
 if '__main__' == __name__:
-    main_gclean()
+    main()
