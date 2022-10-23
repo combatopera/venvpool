@@ -153,8 +153,9 @@ class EveryVersion:
             config.tagline, _ = self.info.descriptionandurl()
             (-config).execute('commands * name = $label()')
             mainmodules = sorted(self.info.mainmodules(), key = lambda mm: mm.command)
-            if any(mm.doc is None for mm in mainmodules):
-                raise Exception("Undocumented: %s" % [mm.command for mm in mainmodules if mm.doc is None])
+            undocumented = [mm.command for mm in mainmodules if mm.doc is None]
+            if undocumented:
+                raise Exception("Undocumented: %s" % undocumented)
             for mm in mainmodules:
                 (-config).printf("commands %s doc = %s", mm.command, mm.doc)
             with NamedTemporaryFile('w') as g:
