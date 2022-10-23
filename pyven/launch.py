@@ -22,7 +22,7 @@ from argparse import ArgumentParser
 from venvpool import initlogging, Pool
 import subprocess, sys
 
-def main_launch(): # TODO: Retire in favour of venvpool module.
+def main(): # TODO: Retire in favour of venvpool module.
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--build', action = 'store_true', help = 'rebuild native components')
@@ -37,4 +37,4 @@ def main_launch(): # TODO: Retire in favour of venvpool module.
     sys.exit(status)
 
 if '__main__' == __name__:
-    main_launch()
+    main()
