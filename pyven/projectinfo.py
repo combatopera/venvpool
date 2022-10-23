@@ -22,7 +22,7 @@ from .util import Path
 from aridity.config import ConfigCtrl
 from aridity.util import openresource
 from pkg_resources.extern.packaging.markers import UndefinedEnvironmentName
-from venvpool import BaseReq, initlogging
+from venvpool import BaseReq
 import logging, os, re, stat, subprocess
 
 log = logging.getLogger(__name__)
@@ -87,10 +87,6 @@ class Req(BaseReq):
     def keyversion(self):
         s, = self.specifierset
         return self.parsed.key, s.version
-
-def main_minreqs():
-    initlogging()
-    print("requires = $list(%s)" % ' '.join(r.minstr() for r in ProjectInfo.seek('.').parsedrequires()))
 
 class ProjectInfo:
 
