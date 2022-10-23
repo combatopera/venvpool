@@ -86,9 +86,9 @@ class Image:
             docker_print.cp(resource_filename(__name__, 'bdist.py'), "%s:/bdist.py" % container)
             run(['-u', "%s:%s" % (os.geteuid(), os.getegid()), '-w', '/io'], chain([self.pythonexe, '/bdist.py', '--plat', self.plat], self.prune, compatibilities))
 
-def main_release():
+def main():
     initlogging()
-    config = ConfigCtrl().loadappconfig(main_release, 'release.arid')
+    config = ConfigCtrl().loadappconfig(main, 'release.arid')
     parser = ArgumentParser()
     parser.add_argument('--upload', action = 'store_true')
     parser.add_argument('path', nargs = '?', default = '.')
@@ -163,4 +163,4 @@ def release(config, srcgit, info):
     return artifactrelpaths
 
 if '__main__' == __name__:
-    main_release()
+    main()

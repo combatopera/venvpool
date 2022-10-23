@@ -20,7 +20,7 @@ from .files import Files
 from argparse import ArgumentParser
 import subprocess
 
-def main_tasks():
+def main():
     parser = ArgumentParser()
     parser.add_argument('-q', action = 'count', default = 0)
     config = parser.parse_args()
@@ -33,4 +33,4 @@ def main_tasks():
         subprocess.call(agcommand + [tag + '(?! LATER)'] + paths, cwd = root)
 
 if '__main__' == __name__:
-    main_tasks()
+    main()

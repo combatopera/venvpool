@@ -28,7 +28,7 @@ import logging, xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)
 
-def main_tryinstall():
+def main():
     from lagoon import docker
     initlogging()
     headinfo = ProjectInfo.seek('.')
@@ -55,4 +55,4 @@ def main_tryinstall():
     EveryVersion(info, False, False, [], False, True).nose()
 
 if '__main__' == __name__:
-    main_tryinstall()
+    main()
