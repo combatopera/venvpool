@@ -201,9 +201,6 @@ class Venv(SharedDir):
         for i in installdeps.volatileprojects:
             if not self._hasvolatileproject(i):
                 return
-        for i in installdeps.editableprojects:
-            if not self._haseditableproject(i): # FIXME LATER: It may have new requirements.
-                return
         for r in installdeps.pypireqs:
             version = self._reqversionornone(r.namepart)
             if version is None or version not in r.parsed:
@@ -213,13 +210,6 @@ class Venv(SharedDir):
 
     def _hasvolatileproject(self, info):
         return os.path.exists(os.path.join(self.site_packages, "%s-%s.dist-info" % (to_filename(safe_name(info.config.name)), info.devversion())))
-
-    def _haseditableproject(self, info):
-        path = os.path.join(self.site_packages, "%s.egg-link" % safe_name(info.config.name))
-        if os.path.exists(path):
-            with open(path) as f:
-                # Assume it isn't a URI relative to site-packages:
-                return os.path.abspath(info.projectdir) == f.read().splitlines()[0]
 
     def _reqversionornone(self, name):
         patterns = [re.compile(format % nameregex) for nameregex in [re.escape(to_filename(safe_name(name)).lower())] for format in [
@@ -457,7 +447,7 @@ class FastReq:
 
 class SimpleInstallDeps:
 
-    editableprojects = volatileprojects = ()
+    volatileprojects = ()
 
     def __init__(self, requires, pip = None, reqcls = BaseReq):
         self.pypireqs = reqcls.parselines(requires)

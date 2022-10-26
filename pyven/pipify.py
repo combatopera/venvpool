@@ -146,7 +146,7 @@ class InstallDeps:
         self.pypireqs.extend(Req.parselines(requires))
 
     def invoke(self, venv):
-        venv.install(sum((['-e', i.projectdir] for i in self.editableprojects), []) + [i.projectdir for i in self.volatileprojects] + [r.reqstr for r in self.pypireqs])
+        venv.install([i.projectdir for i in self.volatileprojects] + [r.reqstr for r in self.pypireqs])
 
     def __exit__(self, *exc_info):
         shutil.rmtree(self.workspace)
