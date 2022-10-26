@@ -99,7 +99,7 @@ class EveryVersion:
         def pyflakes():
             if paths:
                 with Pool(pyversion).readonlyortransient[self.transient](SimpleInstallDeps(['pyflakes'])) as venv:
-                    subprocess.check_call([venv.programpath('pyflakes')] + paths)
+                    venv.run('check_call', [], 'pyflakes', paths)
         for pyversion in self.info.config.pyversions:
             _runcheck(pyversion, pyflakes)
 
@@ -130,7 +130,7 @@ class EveryVersion:
                     coveragepath = '.coverage'
                     # TODO: Find a way to avoid installing projects editably.
                     with Pool(pyversion).readonlyortransient[self.transient](installdeps) as venv:
-                        status = venv.run('call', [], 'nose.core', [
+                        status = venv.run('call', [], 'nose', [
                             '--exe', '-v',
                             '--with-xunit', '--xunit-file', xmlpath,
                             '--with-cov', '--cov-report', 'term-missing',
