@@ -231,6 +231,32 @@ class Venv(SharedDir):
                 if m is not None:
                     return m.group(1)
 
+    def run(self, mode, localreqs, module, scriptargs):
+        bindir = os.path.join(self.venvpath, 'bin')
+        # TODO: Find a way to minify this command line in ps output.
+        argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
+assert not sys.path[0]
+sys.path[0] = bindir = %r
+try:
+    envpath = os.environ['PATH']
+except KeyError:
+    envpath = bindir
+else:
+    envpath = bindir + os.pathsep + envpath
+os.environ['PATH'] = envpath
+# TODO: Test insertion logic.
+i = len(sys.path)
+suffix = os.sep + 'site-packages'
+while sys.path[i - 1].endswith(suffix):
+    i -= 1
+sys.path[i:i] = %r
+runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, localreqs, module)] + scriptargs
+        if 'check_call' == mode:
+            return subprocess.check_call(argv)
+        if 'exec' == mode:
+            os.execv(argv[0], argv)
+        raise ValueError(mode)
+
 class Pool:
 
     @property
@@ -467,7 +493,7 @@ def _launch():
     args = parser.parse_args()
     if not args.v:
         logging.getLogger().setLevel(logging.INFO)
-    Launch(args.pip).launch(True, args.scriptpath, args.scriptargs)
+    Launch(args.pip).launch('exec', args.scriptpath, args.scriptargs)
 
 def _getrequirementslinesornone(projectdir):
     def linesornone(acceptnull, *names):
@@ -498,12 +524,12 @@ class Launch:
             return lines
         if os.path.exists(os.path.join(projectdir, 'project.arid')):
             # XXX: Achieve this without additional files?
-            self.launch(False, os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir])
+            self.launch('check_call', os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir])
             lines = _getrequirementslinesornone(projectdir)
             assert lines is not None
             return lines
 
-    def launch(self, execflag, scriptpath, scriptargs):
+    def launch(self, mode, scriptpath, scriptargs):
         assert scriptpath.endswith(dotpy)
         projectdir = os.path.dirname(scriptpath)
         while True:
@@ -519,28 +545,7 @@ class Launch:
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
-            bindir = os.path.join(venv.venvpath, 'bin')
-            # TODO: Find a way to minify this command line in ps output.
-            argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
-assert not sys.path[0]
-sys.path[0] = bindir = %r
-try:
-    envpath = os.environ['PATH']
-except KeyError:
-    envpath = bindir
-else:
-    envpath = bindir + os.pathsep + envpath
-os.environ['PATH'] = envpath
-# TODO: Test insertion logic.
-i = len(sys.path)
-suffix = os.sep + 'site-packages'
-while sys.path[i - 1].endswith(suffix):
-    i -= 1
-sys.path[i:i] = %r
-runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, localreqs, module)] + scriptargs
-            if execflag:
-                os.execv(argv[0], argv)
-            subprocess.check_call(argv)
+            venv.run(mode, localreqs, module, scriptargs)
 
 if ('__main__' == __name__):
     _launch()
