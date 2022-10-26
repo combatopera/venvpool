@@ -137,7 +137,7 @@ class InstallDeps:
             isroot = False
         for i in volatileprojects.values(): # Assume editables already pipified.
             pipify(i)
-        self.editableprojects = editableprojects.values()
+        self.localreqs = [i.projectdir for i in editableprojects.values()]
         self.volatileprojects = volatileprojects.values()
         self.pypireqs = list(Req.published(pypireqs))
         return self

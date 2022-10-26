@@ -129,7 +129,7 @@ class EveryVersion:
                 else:
                     coveragepath = '.coverage'
                     with Pool(pyversion).readonlyortransient[self.transient](installdeps) as venv:
-                        status = venv.run('call', [i.projectdir for i in installdeps.editableprojects], 'nose', [
+                        status = venv.run('call', installdeps.localreqs, 'nose', [
                             '--exe', '-v',
                             '--with-xunit', '--xunit-file', xmlpath,
                             '--with-cov', '--cov-report', 'term-missing',
