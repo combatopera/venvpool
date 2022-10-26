@@ -251,6 +251,8 @@ while sys.path[i - 1].endswith(suffix):
     i -= 1
 sys.path[i:i] = %r
 runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, localreqs, module)] + scriptargs
+        if 'call' == mode:
+            return subprocess.call(argv)
         if 'check_call' == mode:
             return subprocess.check_call(argv)
         if 'exec' == mode:

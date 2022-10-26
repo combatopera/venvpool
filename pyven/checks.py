@@ -130,8 +130,8 @@ class EveryVersion:
                     coveragepath = '.coverage'
                     # TODO: Find a way to avoid installing projects editably.
                     with Pool(pyversion).readonlyortransient[self.transient](installdeps) as venv:
-                        status = subprocess.call([
-                            venv.programpath('nosetests'), '--exe', '-v',
+                        status = venv.run('call', [], 'nose.core', [
+                            '--exe', '-v',
                             '--with-xunit', '--xunit-file', xmlpath,
                             '--with-cov', '--cov-report', 'term-missing',
                         ] + sum((['--cov', p] for p in chain(find_packages(self.info.projectdir), self.info.py_modules())), []) + self.files.testpaths(xmlpath) + self.noseargs)
