@@ -130,7 +130,7 @@ class EveryVersion:
                     coveragepath = '.coverage'
                     # TODO: Find a way to avoid installing projects editably.
                     with Pool(pyversion).readonlyortransient[self.transient](installdeps) as venv:
-                        status = venv.run('call', [], 'nose', [
+                        status = venv.run('call', [i.projectdir for i in installdeps.editableprojects], 'nose', [
                             '--exe', '-v',
                             '--with-xunit', '--xunit-file', xmlpath,
                             '--with-cov', '--cov-report', 'term-missing',
