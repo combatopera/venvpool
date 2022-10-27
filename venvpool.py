@@ -341,27 +341,6 @@ class Pool:
         finally:
             venv.writeunlock()
 
-def main_compactpool(): # XXX: Combine venvs with orthogonal dependencies?
-    initlogging()
-    locked = []
-    try:
-        for versiondir in _listorempty(pooldir):
-            for venv in _listorempty(versiondir, Venv):
-                if venv.trywritelock():
-                    locked.append(venv)
-                else:
-                    log.debug("Busy: %s", venv.venvpath)
-        compactvenvs([l.venvpath for l in locked])
-    finally:
-        for l in reversed(locked):
-            l.writeunlock()
-
-def compactvenvs(venvpaths):
-    log.info("Compact %s venvs.", len(venvpaths))
-    if venvpaths:
-        subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
-    log.info('Compaction complete.')
-
 class BaseReq:
 
     @classmethod
