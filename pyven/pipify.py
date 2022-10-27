@@ -70,7 +70,7 @@ def pyvenbuildrequires(info):
     for r in sorted(reqs):
         yield r
 
-def main_pipify():
+def main():
     initlogging()
     parser = ArgumentParser()
     parser.add_argument('--transient', action = 'store_true')
@@ -152,4 +152,4 @@ class InstallDeps:
         shutil.rmtree(self.workspace)
 
 if '__main__' == __name__:
-    main_pipify()
+    main()
