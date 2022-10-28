@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 'Use jdupes to combine identical files in the venv pool.'
-from venvpool import initlogging, _listorempty, pooldir, Venv
+from venvpool import initlogging, listorempty, pooldir, Venv
 import logging, subprocess
 
 log = logging.getLogger(__name__)
@@ -25,8 +25,8 @@ def main(): # XXX: Combine venvs with orthogonal dependencies?
     initlogging()
     locked = []
     try:
-        for versiondir in _listorempty(pooldir):
-            for venv in _listorempty(versiondir, Venv):
+        for versiondir in listorempty(pooldir):
+            for venv in listorempty(versiondir, Venv):
                 if venv.trywritelock():
                     locked.append(venv)
                 else:

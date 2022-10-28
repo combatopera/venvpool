@@ -17,7 +17,7 @@
 
 from tempfile import mkstemp
 from unittest import TestCase
-from venvpool import BaseReq, FastReq, _listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from venvpool import BaseReq, FastReq, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
 import errno, inspect, os, subprocess, sys, venvpool
 
 def _inherithandle(tempdir):
@@ -69,12 +69,12 @@ class TestVenvPool(TestCase):
     def test_listorempty(self):
         with TemporaryDirectory() as tempdir:
             d = os.path.join(tempdir, 'woo')
-            self.assertEqual([], _listorempty(d))
+            self.assertEqual([], listorempty(d))
             os.mkdir(d)
-            self.assertEqual([], _listorempty(d))
+            self.assertEqual([], listorempty(d))
             with open(os.path.join(d, 'yay'), 'w'):
                 pass
-            self.assertEqual([os.path.join(d, 'yay')], _listorempty(d))
+            self.assertEqual([os.path.join(d, 'yay')], listorempty(d))
 
     def test_inherithandle(self):
         with TemporaryDirectory() as tempdir:

@@ -75,7 +75,7 @@ class Pip:
     def pipinstall(self, command):
         subprocess.check_call([self.pippath, 'install'] + command, env = dict(os.environ, **self.envpatch), stdout = sys.stderr)
 
-def _listorempty(d, xform = lambda p: p):
+def listorempty(d, xform = lambda p: p):
     try:
         names = _osop(os.listdir, d)
     except oserrors[errno.ENOENT]:
@@ -126,7 +126,7 @@ class SharedDir(object):
         self.readlocks = os.path.join(dirpath, 'readlocks')
 
     def _sweep(self):
-        for readlock in _swept(_listorempty(self.readlocks)):
+        for readlock in _swept(listorempty(self.readlocks)):
             log.debug("Swept: %s", readlock)
 
     def trywritelock(self):
@@ -279,7 +279,7 @@ class Pool:
             return venv
 
     def _lockcompatiblevenv(self, trylock, installdeps):
-        for venv in _listorempty(self.versiondir, Venv):
+        for venv in listorempty(self.versiondir, Venv):
             lock = trylock(venv)
             if lock is not None:
                 with _onerror(lock.unlock):
