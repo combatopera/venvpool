@@ -71,8 +71,7 @@ import sys
 sys.argv[1:1] = {srcpath!r}, '--'
 with open({venvpool.__file__!r}) as f: text = f.read()
 del sys, f
-exec('''del text
-''' + text)
+exec('del text\\n' + text)
 """.format(**dict(globals(), **locals())))
             os.chmod(binpath, os.stat(binpath).st_mode | executablebits)
         assert ag.wait() in {0, 1}
