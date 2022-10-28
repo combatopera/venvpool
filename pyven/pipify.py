@@ -112,7 +112,7 @@ class InstallDeps:
                     siblingpath = r.siblingpath(i.contextworkspace())
                     if os.path.exists(siblingpath):
                         editableprojects[name] = j = ProjectInfo.seek(siblingpath)
-                        yield j
+                        yield j, True
                         continue
                 if self.localrepo is not None:
                     repopath = os.path.join(self.localrepo, "%s.git" % name)
@@ -122,19 +122,17 @@ class InstallDeps:
                         clonepath = os.path.join(self.workspace, name)
                         subprocess.check_call(['git', 'clone', '--depth', '1', "file://%s" % repopath, clonepath])
                         volatileprojects[name] = j = ProjectInfo.seek(clonepath)
-                        yield j
+                        yield j, False
                         continue
                 if root: # Otherwise pip will handle it.
                     pypireqs.append(r.reqstr)
-        infos = [self.info]
-        isroot = True
+        infos = [(self.info, True)]
         while infos:
-            log.debug("Examine deps of: %s", ', '.join(i.config.name for i in infos))
+            log.debug("Examine deps of: %s", ', '.join(i.config.name for i, _ in infos))
             nextinfos = []
-            for i in infos:
+            for i, isroot in infos:
                 nextinfos.extend(adddeps(i, isroot))
             infos = nextinfos
-            isroot = False
         for i in volatileprojects.values(): # Assume editables already pipified.
             pipify(i)
         self.localreqs = [i.projectdir for i in editableprojects.values()]
