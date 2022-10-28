@@ -40,6 +40,16 @@ def _lastiflineno(text):
         if re.search(scriptregex, l) is not None:
             return 1 + i
 
+def _funcpath(func):
+    v = []
+    while True:
+        try:
+            v.append(func.id)
+            return '.'.join(reversed(v))
+        except AttributeError:
+            v.append(func.attr)
+            func = func.value
+
 def main():
     logging.basicConfig()
     paths = sys.argv[1:]
@@ -63,10 +73,9 @@ def main():
             continue
         ifstatement, = (obj for obj in m.body if iflineno == obj.lineno)
         expr, = ifstatement.body
-        funcpath = expr.value.func.id # TODO: Support nested.
         print(dict(
             command = command,
-            console_script = "%s=%s:%s" % (command, relpath[:-len(extension)].replace(os.sep, '.'), funcpath),
+            console_script = "%s=%s:%s" % (command, relpath[:-len(extension)].replace(os.sep, '.'), _funcpath(expr.value.func)),
             doc = ast.get_docstring(m),
         ))
 
