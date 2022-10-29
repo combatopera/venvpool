@@ -73,9 +73,13 @@ def main():
             continue
         ifstatement, = (obj for obj in m.body if iflineno == obj.lineno)
         expr, = ifstatement.body
+        call = expr.value
+        if call.args or call.keywords:
+            log.warning("Bad call: %s", command)
+            continue
         print(dict(
             command = command,
-            console_script = "%s=%s:%s" % (command, relpath[:-len(extension)].replace(os.sep, '.'), _funcpath(expr.value.func)),
+            console_script = "%s=%s:%s" % (command, relpath[:-len(extension)].replace(os.sep, '.'), _funcpath(call.func)),
             doc = ast.get_docstring(m),
         ))
 
