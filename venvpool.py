@@ -498,7 +498,7 @@ class Launch:
             return lines
         if os.path.exists(os.path.join(projectdir, 'project.arid')):
             # XXX: Achieve this without additional files?
-            self.launch('check_call', os.path.join(os.path.dirname(__file__), 'boot', 'pipify.py'), [projectdir])
+            self.launch('check_call', os.path.join(os.path.dirname(__file__), 'bootworkspace', 'bootproject', 'pipify.py'), [projectdir])
             lines = _getrequirementslinesornone(projectdir)
             assert lines is not None
             return lines
