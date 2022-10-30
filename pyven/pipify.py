@@ -121,6 +121,7 @@ class InstallDeps:
                             log.warning("Not a sibling, install from repo: %s", name)
                         clonepath = os.path.join(self.workspace, name)
                         subprocess.check_call(['git', 'clone', '--depth', '1', "file://%s" % repopath, clonepath])
+                        subprocess.check_call(['git', 'fetch', '--tags'], cwd = clonepath)
                         volatileprojects[name] = j = ProjectInfo.seek(clonepath)
                         yield j, False
                         continue
