@@ -18,6 +18,7 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from contextlib import contextmanager
+from random import shuffle
 from tempfile import mkdtemp, mkstemp
 import errno, logging, operator, os, re, shutil, subprocess, sys
 
@@ -279,7 +280,9 @@ class Pool:
             return venv
 
     def _lockcompatiblevenv(self, trylock, installdeps):
-        for venv in listorempty(self.versiondir, Venv):
+        venvs = listorempty(self.versiondir, Venv)
+        shuffle(venvs)
+        for venv in venvs:
             lock = trylock(venv)
             if lock is not None:
                 with _onerror(lock.unlock):
