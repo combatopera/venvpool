@@ -69,7 +69,8 @@ def main():
                 f.write("""#!/usr/bin/env python{pyversion}
 import sys
 sys.argv[1:1] = {srcpath!r}, '--'
-with open({venvpool.__file__!r}) as f: text = f.read()
+__file__ = {venvpool.__file__!r}
+with open(__file__) as f: text = f.read()
 del sys, f
 exec('del text\\n' + text)
 """.format(**dict(globals(), **locals())))
