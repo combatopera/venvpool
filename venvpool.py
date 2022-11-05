@@ -225,9 +225,8 @@ class Venv(SharedDir):
                     return m.group(1)
 
     def run(self, mode, localreqs, module, scriptargs):
-        bindir = os.path.join(self.venvpath, 'bin')
         script = """import os, runpy, sys
-sys.path[0] = bindir = %r
+sys.path[0] = bindir = os.path.dirname(sys.executable)
 try:
     envpath = os.environ['PATH']
 except KeyError:
@@ -243,7 +242,7 @@ while sys.path[i - 1].endswith(suffix):
 sys.path[i:i] = %r
 module = sys.argv.pop(1)
 runpy.run_module(module, run_name = '__main__', alter_sys = True)
-""" % (bindir, localreqs)
+""" % localreqs
         try:
             _osop(os.makedirs, wrapdir)
         except oserrors[errno.EEXIST]:
@@ -251,7 +250,7 @@ runpy.run_module(module, run_name = '__main__', alter_sys = True)
         scriptpath = os.path.join(wrapdir, sha1(script.encode()).hexdigest())
         with open(scriptpath, 'w') as f: # FIXME: Not atomic enough.
             f.write(script)
-        argv = [os.path.join(bindir, 'python'), scriptpath, module] + scriptargs
+        argv = [os.path.join(self.venvpath, 'bin', 'python'), scriptpath, module] + scriptargs
         if 'call' == mode:
             return subprocess.call(argv)
         if 'check_call' == mode:
