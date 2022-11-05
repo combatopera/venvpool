@@ -18,6 +18,7 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from contextlib import contextmanager
+from hashlib import sha1
 from random import shuffle
 from tempfile import mkdtemp, mkstemp
 import errno, logging, operator, os, re, shutil, subprocess, sys
@@ -27,6 +28,7 @@ cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Hono
 dotpy = '.py'
 oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
 pooldir = os.path.join(cachedir, 'pool')
+wrapdir = os.path.join(cachedir, 'wrap')
 try:
     set_inheritable = os.set_inheritable
 except AttributeError:
@@ -224,9 +226,7 @@ class Venv(SharedDir):
 
     def run(self, mode, localreqs, module, scriptargs):
         bindir = os.path.join(self.venvpath, 'bin')
-        # TODO: Find a way to minify this command line in ps output.
-        argv = [os.path.join(bindir, 'python'), '-c', """import os, runpy, sys
-assert not sys.path[0]
+        script = """import os, runpy, sys
 sys.path[0] = bindir = %r
 try:
     envpath = os.environ['PATH']
@@ -241,7 +241,17 @@ suffix = os.sep + 'site-packages'
 while sys.path[i - 1].endswith(suffix):
     i -= 1
 sys.path[i:i] = %r
-runpy.run_module(%r, run_name = '__main__', alter_sys = True)""" % (bindir, localreqs, module)] + scriptargs
+module = sys.argv.pop(1)
+runpy.run_module(module, run_name = '__main__', alter_sys = True)
+""" % (bindir, localreqs)
+        try:
+            _osop(os.makedirs, wrapdir)
+        except oserrors[errno.EEXIST]:
+            pass
+        scriptpath = os.path.join(wrapdir, sha1(script.encode()).hexdigest())
+        with open(scriptpath, 'w') as f: # FIXME: Not atomic enough.
+            f.write(script)
+        argv = [os.path.join(bindir, 'python'), scriptpath, module] + scriptargs
         if 'call' == mode:
             return subprocess.call(argv)
         if 'check_call' == mode:
