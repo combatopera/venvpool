@@ -346,6 +346,7 @@ class Pool:
                             h, q = mkstemp(dir = dirpath)
                             os.close(h)
                             shutil.copy2(p, q)
+                            # XXX: Would replace do the right thing?
                             os.remove(p) # Cross-platform.
                             os.rename(q, p)
         try:
