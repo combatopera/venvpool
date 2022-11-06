@@ -243,13 +243,16 @@ sys.path[i:i] = %r
 module = sys.argv.pop(1)
 runpy.run_module(module, run_name = '__main__', alter_sys = True)
 """ % localreqs
-        try:
-            _osop(os.makedirs, wrapdir)
-        except oserrors[errno.EEXIST]:
-            pass
         scriptpath = os.path.join(wrapdir, sha1(script.encode()).hexdigest())
-        with open(scriptpath, 'w') as f: # FIXME: Not atomic enough.
-            f.write(script)
+        if not os.path.exists(scriptpath):
+            try:
+                _osop(os.makedirs, wrapdir)
+            except oserrors[errno.EEXIST]:
+                pass
+            h, q = mkstemp(dir = wrapdir)
+            with os.fdopen(h, 'w') as f:
+                f.write(script)
+            os.replace(q, scriptpath)
         argv = [os.path.join(self.venvpath, 'bin', 'python'), scriptpath, module] + scriptargs
         if 'call' == mode:
             return subprocess.call(argv)
