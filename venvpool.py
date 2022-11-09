@@ -27,7 +27,6 @@ cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Hono
 dotpy = '.py'
 oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
 pooldir = os.path.join(cachedir, 'pool')
-wrapdir = os.path.join(cachedir, 'wrap')
 try:
     set_inheritable = os.set_inheritable
 except AttributeError:
