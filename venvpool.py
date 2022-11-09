@@ -18,10 +18,9 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from contextlib import contextmanager
-from hashlib import sha1
 from random import shuffle
 from tempfile import mkdtemp, mkstemp
-import errno, logging, operator, os, re, shutil, subprocess, sys
+import errno, json, logging, operator, os, re, runpy, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Honour XDG_CACHE_HOME.
@@ -225,35 +224,7 @@ class Venv(SharedDir):
                     return m.group(1)
 
     def run(self, mode, localreqs, module, scriptargs):
-        script = """import os, runpy, sys
-sys.path[0] = bindir = os.path.dirname(sys.executable)
-try:
-    envpath = os.environ['PATH']
-except KeyError:
-    envpath = bindir
-else:
-    envpath = bindir + os.pathsep + envpath
-os.environ['PATH'] = envpath
-# TODO: Test insertion logic.
-i = len(sys.path)
-suffix = os.sep + 'site-packages'
-while sys.path[i - 1].endswith(suffix):
-    i -= 1
-sys.path[i:i] = %r
-module = sys.argv.pop(1)
-runpy.run_module(module, run_name = '__main__', alter_sys = True)
-""" % localreqs
-        scriptpath = os.path.join(wrapdir, sha1(script.encode()).hexdigest())
-        if not os.path.exists(scriptpath):
-            try:
-                _osop(os.makedirs, wrapdir)
-            except oserrors[errno.EEXIST]:
-                pass
-            h, q = mkstemp(dir = wrapdir)
-            with os.fdopen(h, 'w') as f:
-                f.write(script)
-            os.replace(q, scriptpath)
-        argv = [os.path.join(self.venvpath, 'bin', 'python'), scriptpath, module] + scriptargs
+        argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-x', json.dumps(localreqs), module] + scriptargs
         if 'call' == mode:
             return subprocess.call(argv)
         if 'check_call' == mode:
@@ -261,6 +232,24 @@ runpy.run_module(module, run_name = '__main__', alter_sys = True)
         if 'exec' == mode:
             os.execv(argv[0], argv)
         raise ValueError(mode)
+
+def script():
+    assert '-x' == sys.argv.pop(1)
+    sys.path[0] = bindir = os.path.dirname(sys.executable)
+    try:
+        envpath = os.environ['PATH']
+    except KeyError:
+        envpath = bindir
+    else:
+        envpath = bindir + os.pathsep + envpath
+    os.environ['PATH'] = envpath
+    # TODO: Test insertion logic.
+    i = len(sys.path)
+    suffix = os.sep + 'site-packages'
+    while sys.path[i - 1].endswith(suffix):
+        i -= 1
+    sys.path[i:i] = json.loads(sys.argv.pop(1))
+    runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
 
 class Pool:
 
@@ -349,7 +338,6 @@ class Pool:
                             h, q = mkstemp(dir = dirpath)
                             os.close(h)
                             shutil.copy2(p, q)
-                            # XXX: Would replace do the right thing?
                             os.remove(p) # Cross-platform.
                             os.rename(q, p)
         try:
@@ -535,4 +523,4 @@ class Launch:
             venv.run(mode, localreqs, module, scriptargs)
 
 if ('__main__' == __name__):
-    _launch()
+    (script if '-x' == sys.argv[1] else _launch)()
