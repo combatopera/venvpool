@@ -20,7 +20,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from random import shuffle
 from tempfile import mkdtemp, mkstemp
-import errno, json, logging, operator, os, re, runpy, shutil, subprocess, sys
+import errno, logging, operator, os, re, runpy, shutil, subprocess, sys
 
 log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Honour XDG_CACHE_HOME.
@@ -223,7 +223,7 @@ class Venv(SharedDir):
                     return m.group(1)
 
     def run(self, mode, localreqs, module, scriptargs):
-        argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-x', json.dumps(localreqs), module] + scriptargs
+        argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-x', os.pathsep.join(localreqs), module] + scriptargs
         if 'call' == mode:
             return subprocess.call(argv)
         if 'check_call' == mode:
@@ -247,7 +247,7 @@ def script():
     suffix = os.sep + 'site-packages'
     while sys.path[i - 1].endswith(suffix):
         i -= 1
-    sys.path[i:i] = json.loads(sys.argv.pop(1))
+    sys.path[i:i] = sys.argv.pop(1).split(os.pathsep)
     runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
 
 class Pool:
