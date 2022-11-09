@@ -515,7 +515,7 @@ class Launch:
                 sys.exit('No requirements found.')
             projectdir = parent
         installdeps = SimpleInstallDeps(requirementslines, self.pipornone, FastReq)
-        localreqs = installdeps.poplocalreqs(os.path.join(projectdir, '..'), self._makerequirementslinesornone)
+        localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), self._makerequirementslinesornone)
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
