@@ -177,6 +177,7 @@ class Venv(SharedDir):
         executable = "python%s" % pyversion
         absvenvpath = os.path.abspath(self.venvpath)
         with TemporaryDirectory() as tempdir:
+            # FIXME: Do not symlink to executables in other venvs as they may be deleted.
             if pyversion < 3:
                 isolated('virtualenv', '-p', executable, absvenvpath)
             else:
