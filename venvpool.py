@@ -184,8 +184,8 @@ class Venv(SharedDir):
                 isolated(executable, '-m', 'venv', absvenvpath)
                 isolated(os.path.join(absvenvpath, 'bin', 'pip'), 'install', '--upgrade', 'pip', 'setuptools', 'wheel')
 
-    def delete(self):
-        log.debug("Delete transient venv: %s", self.venvpath)
+    def delete(self, label = 'transient'):
+        log.debug("Delete %s venv: %s", label, self.venvpath)
         shutil.rmtree(self.venvpath)
 
     def programpath(self, name):

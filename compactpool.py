@@ -17,24 +17,37 @@
 
 'Use jdupes to combine identical files in the venv pool.'
 from venvpool import initlogging, listorempty, pooldir, Venv
-import logging, subprocess
+import logging, os, subprocess
 
 log = logging.getLogger(__name__)
 
 def main(): # XXX: Combine venvs with orthogonal dependencies?
     initlogging()
-    locked = []
+    venvtofreeze = {}
     try:
         for versiondir in listorempty(pooldir):
             for venv in listorempty(versiondir, Venv):
                 if venv.trywritelock():
-                    locked.append(venv)
+                    venvtofreeze[venv] = set(subprocess.check_output([venv.programpath('pip'), 'freeze'], universal_newlines = True).splitlines())
                 else:
                     log.debug("Busy: %s", venv.venvpath)
-        _compactvenvs([l.venvpath for l in locked])
+        log.info('Find redundant venvs.')
+        while True:
+            venv = _redundantvenv(venvtofreeze)
+            if venv is None:
+                break
+            venv.delete('redundant')
+            venvtofreeze.pop(venv)
+        _compactvenvs([l.venvpath for l in venvtofreeze])
     finally:
-        for l in reversed(locked):
+        for l in venvtofreeze:
             l.writeunlock()
+
+def _redundantvenv(venvtofreeze):
+    for venv, freeze in venvtofreeze.items():
+        for othervenv, otherfreeze in venvtofreeze.items():
+            if venv != othervenv and os.path.dirname(venv.venvpath) == os.path.dirname(othervenv.venvpath) and freeze <= otherfreeze:
+                return venv
 
 def _compactvenvs(venvpaths):
     log.info("Compact %s venvs.", len(venvpaths))
