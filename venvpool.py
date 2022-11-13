@@ -18,6 +18,7 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from contextlib import contextmanager
+from itertools import chain
 from random import shuffle
 from tempfile import mkdtemp, mkstemp
 import errno, logging, operator, os, re, runpy, shutil, subprocess, sys
@@ -177,12 +178,21 @@ class Venv(SharedDir):
         executable = "python%s" % pyversion
         absvenvpath = os.path.abspath(self.venvpath)
         with TemporaryDirectory() as tempdir:
-            # FIXME: Do not symlink to executables in other venvs as they may be deleted.
             if pyversion < 3:
                 isolated('virtualenv', '-p', executable, absvenvpath)
             else:
                 isolated(executable, '-m', 'venv', absvenvpath)
                 isolated(os.path.join(absvenvpath, 'bin', 'pip'), 'install', '--upgrade', 'pip', 'setuptools', 'wheel')
+        for dirpath, dirnames, filenames in os.walk(self.venvpath):
+            for name in chain(dirnames, filenames):
+                path = os.path.join(dirpath, name)
+                if os.path.islink(path):
+                    target = os.readlink(path)
+                    if target.startswith(pooldir + os.sep) and not target.startswith(absvenvpath + os.sep):
+                        newtarget = os.path.realpath(target)
+                        log.debug("Resolve %s from %s to: %s", path, target, newtarget)
+                        os.remove(path)
+                        os.symlink(newtarget, path)
 
     def delete(self, label = 'transient'):
         log.debug("Delete %s venv: %s", label, self.venvpath)
