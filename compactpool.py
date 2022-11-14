@@ -31,9 +31,8 @@ def main(): # XXX: Combine venvs with orthogonal dependencies?
                     venvtofreeze[venv] = set(subprocess.check_output([venv.programpath('pip'), 'freeze'], universal_newlines = True).splitlines())
                 else:
                     log.debug("Busy: %s", venv.venvpath)
-        if 0:
-          log.info('Find redundant venvs.')
-          while True:
+        log.info('Find redundant venvs.')
+        while True:
             venv = _redundantvenv(venvtofreeze)
             if venv is None:
                 break
