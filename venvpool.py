@@ -18,7 +18,6 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from contextlib import contextmanager
-from itertools import chain
 from random import shuffle
 from tempfile import mkdtemp, mkstemp
 import errno, logging, operator, os, re, runpy, shutil, subprocess, sys
@@ -160,6 +159,16 @@ class SharedDir(object):
         except oserrors[errno.ENOENT]:
             pass
 
+def _safewhich(name):
+    poolprefix = pooldir + os.sep
+    for bindir in os.environ['PATH'].split(os.pathsep):
+        if bindir.startswith(poolprefix):
+            log.debug("Ignore bin directory: %s", bindir)
+        else:
+            path = os.path.join(bindir, name)
+            if os.path.exists(path):
+                return path
+
 class Venv(SharedDir):
 
     @property
@@ -175,7 +184,7 @@ class Venv(SharedDir):
     def create(self, pyversion):
         def isolated(*command):
             subprocess.check_call(command, cwd = tempdir, stdout = sys.stderr)
-        executable = "python%s" % pyversion
+        executable = _safewhich("python%s" % pyversion)
         absvenvpath = os.path.abspath(self.venvpath)
         with TemporaryDirectory() as tempdir:
             if pyversion < 3:
@@ -183,16 +192,6 @@ class Venv(SharedDir):
             else:
                 isolated(executable, '-m', 'venv', absvenvpath)
                 isolated(os.path.join(absvenvpath, 'bin', 'pip'), 'install', '--upgrade', 'pip', 'setuptools', 'wheel')
-        for dirpath, dirnames, filenames in os.walk(self.venvpath):
-            for name in chain(dirnames, filenames):
-                path = os.path.join(dirpath, name)
-                if os.path.islink(path):
-                    target = os.readlink(path)
-                    if target.startswith(pooldir + os.sep) and not target.startswith(absvenvpath + os.sep):
-                        newtarget = os.path.realpath(target)
-                        log.debug("Resolve %s from %s to: %s", path, target, newtarget)
-                        os.remove(path)
-                        os.symlink(newtarget, path)
 
     def delete(self, label = 'transient'):
         log.debug("Delete %s venv: %s", label, self.venvpath)
