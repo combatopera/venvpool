@@ -252,14 +252,18 @@ def script():
     else:
         envpath = bindir + os.pathsep + envpath
     os.environ['PATH'] = envpath
-    # TODO: Test insertion logic.
-    # FIXME: There may be editable projects at the end.
-    i = len(sys.path)
-    suffix = os.sep + 'site-packages'
-    while sys.path[i - 1].endswith(suffix):
-        i -= 1
-    sys.path[i:i] = sys.argv.pop(1).split(os.pathsep)
+    sys.path[slice(*[_insertionpoint(sys.path)] * 2)] = sys.argv.pop(1).split(os.pathsep)
     runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
+
+def _insertionpoint(v, suffix = os.sep + 'site-packages'):
+    i = n = len(v)
+    while not v[i - 1].endswith(suffix):
+        i -= 1
+        if not i:
+            return n
+    while i and v[i - 1].endswith(suffix):
+        i -= 1
+    return i
 
 class Pool:
 
