@@ -253,6 +253,7 @@ def script():
         envpath = bindir + os.pathsep + envpath
     os.environ['PATH'] = envpath
     # TODO: Test insertion logic.
+    # FIXME: There may be editable projects at the end.
     i = len(sys.path)
     suffix = os.sep + 'site-packages'
     while sys.path[i - 1].endswith(suffix):
