@@ -16,7 +16,7 @@
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
 from argparse import ArgumentParser
-from venvpool import TemporaryDirectory
+from tempfile import mkdtemp
 import logging, os, shutil, subprocess
 
 log = logging.getLogger(__name__)
@@ -30,7 +30,8 @@ def main():
     parser.add_argument('--prune', action = 'store_true')
     parser.add_argument('compatibilities', nargs = '+')
     args = parser.parse_args()
-    with TemporaryDirectory() as holder:
+    holder = mkdtemp()
+    try:
         for compatibility in args.compatibilities:
             pip = os.path.join(pythonroot, compatibility, 'bin', 'pip')
             if not os.path.exists(pip):
@@ -43,6 +44,8 @@ def main():
             if not args.prune:
                 shutil.copy2(wheelpath, distdir)
             os.remove(wheelpath)
+    finally:
+        shutil.rmtree(holder)
 
 if ('__main__' == __name__):
     main()
