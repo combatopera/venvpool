@@ -18,7 +18,7 @@
 'Release project to PyPI, with manylinux wheels as needed.'
 from . import targetremote
 from .checks import EveryVersion
-from .pipify import pipify
+from .pipify import InstallDeps, pipify
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from .util import bgcontainer
@@ -29,7 +29,8 @@ from itertools import chain
 from lagoon.program import partial, Program
 from pkg_resources import resource_filename
 from subprocess import CalledProcessError
-from venvpool import initlogging, Pip, TemporaryDirectory
+from tempfile import NamedTemporaryFile
+from venvpool import dotpy, initlogging, Pip, Pool, TemporaryDirectory
 import lagoon, logging, os, re, shutil, sys, sysconfig
 
 log = logging.getLogger(__name__)
@@ -126,6 +127,19 @@ def uploadableartifacts(artifactrelpaths):
         else:
             log.debug("Not uploadable: %s", p)
 
+def _warmups(info):
+    warmups = [w.split(':') for w in info.config.warmups]
+    if not warmups:
+        return
+    pyversion = next(iter(info.config.pyversions))
+    with InstallDeps(info, False, None) as installdeps, Pool(pyversion).readonlyortransient[True](installdeps) as venv:
+        localreqs = [info.projectdir] + installdeps.localreqs
+        for m, f in warmups:
+            with NamedTemporaryFile('w', suffix = dotpy, dir = info.projectdir) as script:
+                script.write("from %s import %s\n%s()" % (m, f, f))
+                script.flush()
+                venv.run('check_call', localreqs, os.path.basename(script.name)[:-len(dotpy)], [])
+
 def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi[partial](cwd = info.projectdir, input = 'c', stdout = None)
     scrub()
@@ -139,9 +153,7 @@ def release(config, srcgit, info):
                 path = os.path.join(dirpath, name)
                 log.debug("Delete: %s", path)
                 (os.remove if name.endswith('.py') else shutil.rmtree)(path)
-    python = Program.text(sys.executable)[partial](cwd = info.projectdir, stdout = None)
-    for m, f in (w.split(':') for w in info.config.warmups):
-        python._c("from %s import %s; %s()" % (m, f, f))
+    _warmups(info)
     pipify(info, version)
     shutil.rmtree(os.path.join(info.projectdir, '.git'))
     setupcommands = []
@@ -150,6 +162,7 @@ def release(config, srcgit, info):
             image.makewheels(info)
     else:
         setupcommands.append('bdist_wheel')
+    python = Program.text(sys.executable)[partial](cwd = info.projectdir, stdout = None)
     python('setup.py', *chain(setupcommands, ['sdist'])) # FIXME: Assumes release venv has Cython etc.
     artifactrelpaths = [os.path.join(distrelpath, name) for name in sorted(os.listdir(os.path.join(info.projectdir, distrelpath)))]
     if config.upload:
