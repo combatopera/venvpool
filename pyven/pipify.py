@@ -19,7 +19,6 @@
 from .projectinfo import ProjectInfo, Req
 from .sourceinfo import SourceInfo
 from argparse import ArgumentParser
-from itertools import chain
 from pkg_resources import resource_filename
 from tempfile import mkdtemp
 from venvpool import initlogging, Pool, SimpleInstallDeps
