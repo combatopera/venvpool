@@ -134,7 +134,7 @@ def _warmups(info):
         localreqs = [info.projectdir] + installdeps.localreqs
         for m, f in warmups:
             with NamedTemporaryFile('w', suffix = dotpy, dir = info.projectdir) as script:
-                script.write("from %s import %s\n%s()" % (m, f, f))
+                script.write("from %s import %s\n%s()" % (m, f.split('.')[0], f))
                 script.flush()
                 venv.run('check_call', localreqs, os.path.basename(script.name)[:-len(dotpy)], [])
 
