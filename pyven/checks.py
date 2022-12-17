@@ -141,8 +141,9 @@ class EveryVersion:
 
     def readme(self):
         def first(scope, resolvable):
-            for _, o in resolvable.resolve(scope).itero():
-                return o
+            s = resolvable.resolve(scope)
+            for _, r in s.resolvables.items():
+                return r.resolve(s)
             raise NoSuchPathException('Empty set.')
         def readme():
             if not self.info.config.github.participant:
