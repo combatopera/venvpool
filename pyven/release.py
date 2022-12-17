@@ -18,7 +18,7 @@
 'Release project to PyPI, with manylinux wheels as needed.'
 from . import targetremote
 from .checks import EveryVersion
-from .pipify import InstallDeps, pipify
+from .pipify import allbuildrequires, InstallDeps, pipify
 from .projectinfo import ProjectInfo
 from .sourceinfo import SourceInfo
 from .util import bgcontainer
@@ -30,7 +30,7 @@ from lagoon.program import partial, Program
 from pkg_resources import resource_filename
 from subprocess import CalledProcessError
 from tempfile import NamedTemporaryFile
-from venvpool import dotpy, initlogging, Pip, Pool, TemporaryDirectory
+from venvpool import dotpy, initlogging, Pip, Pool, SimpleInstallDeps, TemporaryDirectory
 import lagoon, logging, os, re, shutil, sys, sysconfig
 
 log = logging.getLogger(__name__)
@@ -128,13 +128,17 @@ def uploadableartifacts(artifactrelpaths):
 def _warmups(info):
     warmups = [w.split(':') for w in info.config.warmups]
     if warmups:
-        pyversion = next(iter(info.config.pyversions))
-        with InstallDeps(info, False, None) as installdeps, Pool(pyversion).readonlyortransient[True](installdeps) as venv:
+        # XXX: Use the same transient venv as used for running tests?
+        with InstallDeps(info, False, None) as installdeps, Pool(next(iter(info.config.pyversions))).readonlyortransient[True](installdeps) as venv:
             for m, f in warmups:
                 with NamedTemporaryFile('w', suffix = dotpy, dir = info.projectdir) as script:
                     script.write("from %s import %s\n%s()" % (m, f.split('.')[0], f))
                     script.flush()
                     venv.run('check_call', installdeps.localreqs, os.path.basename(script.name)[:-len(dotpy)], [], cwd = info.projectdir)
+
+def _runsetup(info, commands):
+    with Pool(next(iter(info.config.pyversions))).readonly(SimpleInstallDeps(allbuildrequires(info))) as venv:
+        venv.run('check_call', installdeps.localreqs, 'setup', commands, cwd = info.projectdir)
 
 def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi[partial](cwd = info.projectdir, input = 'c', stdout = None)
@@ -158,14 +162,14 @@ def release(config, srcgit, info):
             image.makewheels(info)
     else:
         setupcommands.append('bdist_wheel')
-    python = Program.text(sys.executable)[partial](cwd = info.projectdir, stdout = None)
-    python('setup.py', *chain(setupcommands, ['sdist'])) # FIXME: Assumes release venv has Cython etc.
+    _runsetup(info, setupcommands + ['sdist'])
     artifactrelpaths = [os.path.join(distrelpath, name) for name in sorted(os.listdir(os.path.join(info.projectdir, distrelpath)))]
     if config.upload:
         srcgit.tag("v%s" % version, stdout = None)
         # TODO LATER: If tag succeeded but push fails, we're left with a bogus tag.
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
         with config.token as token:
+            python = Program.text(sys.executable)[partial](cwd = info.projectdir, stdout = None)
             python._m.twine.upload('-u', '__token__', '-p', token, *uploadableartifacts(artifactrelpaths), env = Pip.envpatch)
     else:
         log.warning("Upload skipped, use --upload to upload: %s", ' '.join(uploadableartifacts(artifactrelpaths)))
