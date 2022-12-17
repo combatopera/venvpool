@@ -138,7 +138,7 @@ def _warmups(info):
 
 def _runsetup(info, commands):
     with Pool(next(iter(info.config.pyversions))).readonly(SimpleInstallDeps(allbuildrequires(info))) as venv:
-        venv.run('check_call', installdeps.localreqs, 'setup', commands, cwd = info.projectdir)
+        venv.run('check_call', [], 'setup', commands, cwd = info.projectdir)
 
 def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi[partial](cwd = info.projectdir, input = 'c', stdout = None)
@@ -169,8 +169,7 @@ def release(config, srcgit, info):
         # TODO LATER: If tag succeeded but push fails, we're left with a bogus tag.
         srcgit.push.__tags(stdout = None) # XXX: Also update other remotes?
         with config.token as token:
-            python = Program.text(sys.executable)[partial](cwd = info.projectdir, stdout = None)
-            python._m.twine.upload('-u', '__token__', '-p', token, *uploadableartifacts(artifactrelpaths), env = Pip.envpatch)
+            Program.text(sys.executable)._m.twine.upload('-u', '__token__', '-p', token, *uploadableartifacts(artifactrelpaths), cwd = info.projectdir, stdout = None, env = Pip.envpatch)
     else:
         log.warning("Upload skipped, use --upload to upload: %s", ' '.join(uploadableartifacts(artifactrelpaths)))
     return artifactrelpaths
