@@ -232,14 +232,14 @@ class Venv(SharedDir):
                 if m is not None:
                     return m.group(1)
 
-    def run(self, mode, localreqs, module, scriptargs):
+    def run(self, mode, localreqs, module, scriptargs, **kwargs):
         argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-x', os.pathsep.join(localreqs), module] + scriptargs
         if 'call' == mode:
-            return subprocess.call(argv)
+            return subprocess.call(argv, **kwargs)
         if 'check_call' == mode:
-            return subprocess.check_call(argv)
+            return subprocess.check_call(argv, **kwargs)
         if 'exec' == mode:
-            os.execv(argv[0], argv)
+            os.execv(argv[0], argv, **kwargs)
         raise ValueError(mode)
 
 def script():

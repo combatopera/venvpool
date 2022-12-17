@@ -127,16 +127,14 @@ def uploadableartifacts(artifactrelpaths):
 
 def _warmups(info):
     warmups = [w.split(':') for w in info.config.warmups]
-    if not warmups:
-        return
-    pyversion = next(iter(info.config.pyversions))
-    with InstallDeps(info, False, None) as installdeps, Pool(pyversion).readonlyortransient[True](installdeps) as venv:
-        localreqs = [info.projectdir] + installdeps.localreqs
-        for m, f in warmups:
-            with NamedTemporaryFile('w', suffix = dotpy, dir = info.projectdir) as script:
-                script.write("from %s import %s\n%s()" % (m, f.split('.')[0], f))
-                script.flush()
-                venv.run('check_call', localreqs, os.path.basename(script.name)[:-len(dotpy)], [])
+    if warmups:
+        pyversion = next(iter(info.config.pyversions))
+        with InstallDeps(info, False, None) as installdeps, Pool(pyversion).readonlyortransient[True](installdeps) as venv:
+            for m, f in warmups:
+                with NamedTemporaryFile('w', suffix = dotpy, dir = info.projectdir) as script:
+                    script.write("from %s import %s\n%s()" % (m, f.split('.')[0], f))
+                    script.flush()
+                    venv.run('check_call', installdeps.localreqs, os.path.basename(script.name)[:-len(dotpy)], [], cwd = info.projectdir)
 
 def release(config, srcgit, info):
     scrub = lagoon.git.clean._xdi[partial](cwd = info.projectdir, input = 'c', stdout = None)
