@@ -49,7 +49,7 @@ def pipify(info, version = None):
         ['setup.cfg', 'void'],
     ]
     seen = set()
-    for name in chain(pyvenbuildrequires(info), info.config.build.requires):
+    for name in allbuildrequires(info):
         if name not in seen:
             seen.add(name)
             config.printf("build requires += %s", name)
@@ -61,13 +61,15 @@ def pipify(info, version = None):
                 resource_filename(__name__, name + '.aridt'), # TODO LATER: Make aridity get the resource.
                 os.path.abspath(os.path.join(info.projectdir, name)))
 
-def pyvenbuildrequires(info):
+def allbuildrequires(info):
     yield 'setuptools'
     yield 'wheel'
     reqs = set()
     for p in SourceInfo(info.projectdir).extpaths:
         reqs.update(p.buildrequires())
     for r in sorted(reqs):
+        yield r
+    for r in info.config.build.requires:
         yield r
 
 def main():
@@ -84,7 +86,7 @@ def main():
 def setupcommand(info, pyversion, transient, *command):
     def setup(absexecutable):
         subprocess.check_call([absexecutable, 'setup.py'] + list(command), cwd = info.projectdir)
-    buildreqs = list(chain(pyvenbuildrequires(info), info.config.build.requires))
+    buildreqs = list(allbuildrequires(info))
     if {'setuptools', 'wheel'} == set(buildreqs) and sys.version_info.major == pyversion:
         setup(sys.executable)
     else:
