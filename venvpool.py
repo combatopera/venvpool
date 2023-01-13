@@ -105,11 +105,12 @@ def _idempotentunlink(path):
 
 if '/' == os.sep:
     def _swept(readlocks):
-        if readlocks:
+        maxchunksize = 1000
+        for chunk in (readlocks[i:i + maxchunksize] for i in range(0, len(readlocks), maxchunksize)):
             # Check stderr instead of returncode for errors:
-            stdout, stderr = subprocess.Popen(['lsof', '-t'] + readlocks, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
+            stdout, stderr = subprocess.Popen(['lsof', '-t'] + chunk, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
             if not stderr and not stdout:
-                for readlock in readlocks:
+                for readlock in chunk:
                     if _idempotentunlink(readlock):
                         yield readlock
 else:
