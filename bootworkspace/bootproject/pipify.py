@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with pyven.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyven.pipify import main_pipify
+from pyven.pipify import main
 
 if '__main__' == __name__:
-    main_pipify()
+    main()
