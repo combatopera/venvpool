@@ -42,9 +42,9 @@ class yesno:
         return self.d[s]
 
 def _localrepo():
-    config = ConfigCtrl()
-    config.loadsettings()
-    return config.node.buildbot.repo
+    cc = ConfigCtrl()
+    cc.loadsettings()
+    return cc.node.buildbot.repo
 
 def _runcheck(variant, check, *args):
     sys.stderr.write("%s[%s]: " % (check.__name__, variant))
