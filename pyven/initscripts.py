@@ -28,9 +28,9 @@ executablebits = S_IXUSR | S_IXGRP | S_IXOTH
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
 def _projectinfos():
-    config = ConfigCtrl()
-    config.loadsettings()
-    projectsdir = config.node.projectsdir
+    cc = ConfigCtrl()
+    cc.loadsettings()
+    projectsdir = cc.node.projectsdir
     for p in sorted(os.listdir(projectsdir)):
         projectdir = os.path.join(projectsdir, p)
         if os.path.exists(os.path.join(projectdir, ProjectInfo.projectaridname)):
