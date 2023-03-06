@@ -41,7 +41,7 @@ def activate():
         copyfileobj(f, g)
     with TemporaryDirectory() as bootdir:
         bootdir = Path(bootdir)
-        (bootdir / 'requirements.txt').write_text('pyven>=86')
+        (bootdir / 'requirements.txt').write_text('pyven>=86\n')
         initbinpath = bootdir / initbinname
         initbinpath.write_text(getsource(sys.modules[__name__]))
         venvpoolpathstr = str(venvpoolpath)
@@ -61,7 +61,6 @@ def activate():
 def initbin():
     from pyven.initscripts import executablebits
     from pyven.mainmodules import checkpath, commandornone, scriptregex
-    scriptpattern = re.compile(scriptregex, re.MULTILINE)
     parser = ArgumentParser()
     parser.add_argument('projectdir')
     parser.add_argument('bindir', type = Path)
@@ -70,14 +69,15 @@ def initbin():
     projectdirstr = args.projectdir
     bindir = args.bindir
     venvpoolpathstr = args.venvpoolpath
+    scriptpattern = re.compile(scriptregex, re.MULTILINE)
     for srcpath in Path(projectdirstr).glob('**/*.py'):
         if checkpath(projectdirstr, srcpath) and scriptpattern.search(srcpath.read_text()) is not None:
             command = commandornone(srcpath)
             if command is None:
                 continue
             scriptpath = bindir / command
-            srcpathstr = str(srcpath)
             with scriptpath.open('w') as f:
+                srcpathstr = str(srcpath)
                 f.write("""#!/usr/bin/env python3
 import sys
 sys.argv[1:1] = '--', {srcpathstr!r}
@@ -86,7 +86,7 @@ with open(__file__) as f: text = f.read()
 del sys, f
 exec('del text\\n' + text)
 """.format(**locals()))
-            os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
+            scriptpath.chmod(scriptpath.stat().st_mode | executablebits)
 
 if ('__main__' == __name__):
     (initbin if initbinname == Path(sys.argv[0]).name else activate)()
