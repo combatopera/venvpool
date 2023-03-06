@@ -32,9 +32,9 @@ initbinname = 'initbin.py'
 
 def activate():
     parser = ArgumentParser()
-    parser.add_argument('projectdir', type = Path)
-    root = parser.parse_args().projectdir.resolve()
-    bindir = root / 'bin'
+    parser.add_argument('projectdir', type = lambda s: Path(s).resolve())
+    projectdir = parser.parse_args().projectdir
+    bindir = projectdir / 'bin'
     bindir.mkdir(exist_ok = True)
     venvpool = bindir / 'venvpool.py'
     with urlopen('https://raw.githubusercontent.com/combatopera/pyven/v86/venvpool.py') as f, venvpool.open('wb') as g:
@@ -44,12 +44,12 @@ def activate():
         (bootdir / 'requirements.txt').write_text('pyven>=86')
         initbinpath = bootdir / initbinname
         initbinpath.write_text(getsource(sys.modules[__name__]))
-        check_call([sys.executable, str(venvpool), '--', str(initbinpath), str(root), str(bindir), str(venvpool)])
+        bindirstr = str(bindir)
+        check_call([sys.executable, str(venvpool), '--', str(initbinpath), str(projectdir), bindirstr, str(venvpool)])
     try:
         dirstrs = os.environ['PATH'].split(os.pathsep)
     except KeyError:
         dirstrs = []
-    bindirstr = str(bindir)
     if bindirstr in dirstrs:
         print('# Already activated.')
     else:
