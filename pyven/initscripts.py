@@ -21,10 +21,11 @@ from .setuproot import setuptoolsinfo
 from aridity.config import ConfigCtrl
 from aridity.util import dotpy
 from stat import S_IXUSR, S_IXGRP, S_IXOTH
-import logging, os, re, subprocess, sys, venvpool
+import logging, os, re, sys, venvpool
 
 log = logging.getLogger(__name__)
 executablebits = S_IXUSR | S_IXGRP | S_IXOTH
+scriptpattern = re.compile(scriptregex, re.MULTILINE)
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
 def _projectinfos():
@@ -43,6 +44,15 @@ def _projectinfos():
                 else:
                     yield setuptoolsinfo(setuppath)
 
+def _srcpaths(rootdir):
+    for dirpath, dirnames, filenames in os.walk(rootdir):
+        for name in filenames:
+            if name.endswith(dotpy):
+                path = os.path.join(dirpath, name)
+                with open(path) as f:
+                    if scriptpattern.search(f.read()) is not None:
+                        yield path
+
 def main():
     venvpool.initlogging()
     for info in _projectinfos():
@@ -53,9 +63,7 @@ def main():
             log.debug("Not executable: %s", info.projectdir)
             continue
         log.info("Scan: %s", info.projectdir)
-        ag = subprocess.Popen(['ag', '-l', '-G', re.escape(dotpy) + '$', scriptregex, info.projectdir], stdout = subprocess.PIPE, universal_newlines = True)
-        for line in ag.stdout:
-            srcpath, = line.splitlines()
+        for srcpath in _srcpaths(info.projectdir):
             if not checkpath(info.projectdir, srcpath):
                 log.debug("Not a project source file: %s", srcpath)
                 continue
@@ -75,7 +83,6 @@ del sys, f
 exec('del text\\n' + text)
 """.format(**dict(globals(), **locals())))
             os.chmod(binpath, os.stat(binpath).st_mode | executablebits)
-        assert ag.wait() in {0, 1}
 
 if ('__main__' == __name__):
     main()
