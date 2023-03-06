@@ -36,16 +36,17 @@ def activate():
     projectdir = parser.parse_args().projectdir
     bindir = projectdir / 'bin'
     bindir.mkdir(exist_ok = True)
-    venvpool = bindir / 'venvpool.py'
-    with urlopen('https://raw.githubusercontent.com/combatopera/pyven/v86/venvpool.py') as f, venvpool.open('wb') as g:
+    venvpoolpath = bindir / 'venvpool.py'
+    with urlopen('https://raw.githubusercontent.com/combatopera/pyven/v86/venvpool.py') as f, venvpoolpath.open('wb') as g:
         copyfileobj(f, g)
     with TemporaryDirectory() as bootdir:
         bootdir = Path(bootdir)
         (bootdir / 'requirements.txt').write_text('pyven>=86')
         initbinpath = bootdir / initbinname
         initbinpath.write_text(getsource(sys.modules[__name__]))
+        venvpoolpathstr = str(venvpoolpath)
         bindirstr = str(bindir)
-        check_call([sys.executable, str(venvpool), '--', str(initbinpath), str(projectdir), bindirstr, str(venvpool)])
+        check_call([sys.executable, venvpoolpathstr, '--', str(initbinpath), str(projectdir), bindirstr, venvpoolpathstr])
     try:
         dirstrs = os.environ['PATH'].split(os.pathsep)
     except KeyError:
