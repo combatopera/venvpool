@@ -10,6 +10,8 @@ from tempfile import TemporaryDirectory
 from urllib.request import urlopen
 import os, re, sys
 
+initbinname = 'initbin.py'
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('projectdir', type = Path)
@@ -22,9 +24,9 @@ def main():
     with TemporaryDirectory() as bootdir:
         bootdir = Path(bootdir)
         (bootdir / 'requirements.txt').write_text('pyven>=86')
-        initbin = bootdir / 'initbin.py'
-        initbin.write_text(getsource(sys.modules[__name__]))
-        check_call([sys.executable, str(venvpool), '--', str(initbin), str(root), str(bindir), str(venvpool)])
+        initbinpath = bootdir / initbinname
+        initbinpath.write_text(getsource(sys.modules[__name__]))
+        check_call([sys.executable, str(venvpool), '--', str(initbinpath), str(root), str(bindir), str(venvpool)])
     try:
         dirstrs = os.environ['PATH'].split(os.pathsep)
     except KeyError:
@@ -68,4 +70,4 @@ exec('del text\\n' + text)
             os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
 if '__main__' == __name__:
-    (initbin if 'initbin.py' == Path(sys.argv[0]).name else main)()
+    (initbin if initbinname == Path(sys.argv[0]).name else main)()
