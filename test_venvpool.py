@@ -17,7 +17,7 @@
 
 from tempfile import mkstemp
 from unittest import TestCase
-from venvpool import BaseReq, FastReq, _insertionpoint, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from venvpool import BaseReq, _chunkify, FastReq, _insertionpoint, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
 import errno, inspect, os, subprocess, sys, venvpool
 
 def _inherithandle(tempdir):
@@ -101,6 +101,14 @@ class TestVenvPool(TestCase):
         self.assertEqual(1, _insertionpoint(['a', 'bx', 'c'], 'x'))
         self.assertEqual(0, _insertionpoint(['ax', 'b', 'c'], 'x'))
         self.assertEqual(3, _insertionpoint(['a', 'b', 'c'], 'x'))
+
+    def test_chunkify(self):
+        self.assertEqual([], list(_chunkify(5, [])))
+        self.assertEqual([[0]], list(_chunkify(5, [0])))
+        self.assertEqual([[0, 1, 2, 3, 4]], list(_chunkify(5, [0, 1, 2, 3, 4])))
+        self.assertEqual([[0, 1, 2, 3, 4], [5]], list(_chunkify(5, [0, 1, 2, 3, 4, 5])))
+        self.assertEqual([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], list(_chunkify(5, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])))
+        self.assertEqual([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10]], list(_chunkify(5, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])))
 
 class ReqCase:
 

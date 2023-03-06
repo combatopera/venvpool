@@ -103,10 +103,23 @@ def _idempotentunlink(path):
     except oserrors[errno.ENOENT]:
         pass
 
+def _chunkify(n, v):
+    i = iter(v)
+    while True:
+        chunk = []
+        for _ in range(n):
+            try:
+                x = next(i)
+            except StopIteration:
+                if chunk:
+                    yield chunk
+                return
+            chunk.append(x)
+        yield chunk
+
 if '/' == os.sep:
     def _swept(readlocks):
-        maxchunksize = 1000
-        for chunk in (readlocks[i:i + maxchunksize] for i in range(0, len(readlocks), maxchunksize)):
+        for chunk in _chunkify(1000, readlocks):
             # Check stderr instead of returncode for errors:
             stdout, stderr = subprocess.Popen(['lsof', '-t'] + chunk, stdout = subprocess.PIPE, stderr = subprocess.PIPE).communicate()
             if not stderr and not stdout:
