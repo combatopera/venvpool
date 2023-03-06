@@ -78,7 +78,7 @@ def scan(projectdir, bindir, pyversion, venvpoolpath):
         with open(scriptpath, 'w') as f:
             f.write("""#!/usr/bin/env python{pyversion}
 import sys
-sys.argv[1:1] = {srcpath!r}, '--'
+sys.argv[1:1] = '--', {srcpath!r}
 __file__ = {venvpoolpath!r}
 with open(__file__) as f: text = f.read()
 del sys, f
