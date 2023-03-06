@@ -63,11 +63,11 @@ def main():
             log.debug("Not executable: %s", info.projectdir)
             continue
         log.info("Scan: %s", info.projectdir)
-        scan(info.projectdir)
+        scan(info.projectdir, max(info.config.pyversions))
 
-def scan(projectdir):
-    for srcpath in _srcpaths(info.projectdir):
-        if not checkpath(info.projectdir, srcpath):
+def scan(projectdir, pyversion):
+    for srcpath in _srcpaths(projectdir):
+        if not checkpath(projectdir, srcpath):
             log.debug("Not a project source file: %s", srcpath)
             continue
         command = commandornone(srcpath)
@@ -75,7 +75,6 @@ def scan(projectdir):
             log.debug("Bad source name: %s", srcpath)
             continue
         scriptpath = os.path.join(userbin, command)
-        pyversion = max(info.config.pyversions)
         with open(scriptpath, 'w') as f:
             f.write("""#!/usr/bin/env python{pyversion}
 import sys
