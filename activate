@@ -26,7 +26,7 @@ from shutil import copyfileobj
 from subprocess import check_call
 from tempfile import TemporaryDirectory
 from urllib.request import urlopen
-import os, re, sys
+import os, sys
 
 initbinname = 'initbin.py'
 
@@ -37,11 +37,11 @@ def activate():
     bindir = projectdir / 'bin'
     bindir.mkdir(exist_ok = True)
     venvpoolpath = bindir / 'venvpool.py'
-    with urlopen('https://raw.githubusercontent.com/combatopera/pyven/v86/venvpool.py') as f, venvpoolpath.open('wb') as g:
+    with urlopen('https://raw.githubusercontent.com/combatopera/pyven/v87/venvpool.py') as f, venvpoolpath.open('wb') as g:
         copyfileobj(f, g)
     with TemporaryDirectory() as bootdir:
         bootdir = Path(bootdir)
-        (bootdir / 'requirements.txt').write_text('pyven>=86\n')
+        (bootdir / 'requirements.txt').write_text('pyven>=87\n')
         initbinpath = bootdir / initbinname
         initbinpath.write_text(getsource(sys.modules[__name__]))
         venvpoolpathstr = str(venvpoolpath)
@@ -59,34 +59,13 @@ def activate():
         print('PATH=' + quote(os.pathsep.join(dirstrs)))
 
 def initbin():
-    from pyven.initscripts import executablebits
-    from pyven.mainmodules import checkpath, commandornone, scriptregex
+    from pyven.initscripts import scan
     parser = ArgumentParser()
     parser.add_argument('projectdir')
-    parser.add_argument('bindir', type = Path)
+    parser.add_argument('bindir')
     parser.add_argument('venvpoolpath')
     args = parser.parse_args()
-    projectdirstr = args.projectdir
-    bindir = args.bindir
-    venvpoolpathstr = args.venvpoolpath
-    scriptpattern = re.compile(scriptregex, re.MULTILINE)
-    for srcpath in Path(projectdirstr).glob('**/*.py'):
-        if checkpath(projectdirstr, srcpath) and scriptpattern.search(srcpath.read_text()) is not None:
-            command = commandornone(srcpath)
-            if command is None:
-                continue
-            scriptpath = bindir / command
-            with scriptpath.open('w') as f:
-                srcpathstr = str(srcpath)
-                f.write("""#!/usr/bin/env python3
-import sys
-sys.argv[1:1] = '--', {srcpathstr!r}
-__file__ = {venvpoolpathstr!r}
-with open(__file__) as f: text = f.read()
-del sys, f
-exec('del text\\n' + text)
-""".format(**locals()))
-            scriptpath.chmod(scriptpath.stat().st_mode | executablebits)
+    scan(args.projectdir, args.bindir, 3, args.venvpoolpath)
 
 if ('__main__' == __name__):
     (initbin if initbinname == Path(sys.argv[0]).name else activate)()
