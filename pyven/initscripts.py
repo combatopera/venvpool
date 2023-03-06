@@ -63,18 +63,21 @@ def main():
             log.debug("Not executable: %s", info.projectdir)
             continue
         log.info("Scan: %s", info.projectdir)
-        for srcpath in _srcpaths(info.projectdir):
-            if not checkpath(info.projectdir, srcpath):
-                log.debug("Not a project source file: %s", srcpath)
-                continue
-            command = commandornone(srcpath)
-            if command is None:
-                log.debug("Bad source name: %s", srcpath)
-                continue
-            scriptpath = os.path.join(userbin, command)
-            pyversion = max(info.config.pyversions)
-            with open(scriptpath, 'w') as f:
-                f.write("""#!/usr/bin/env python{pyversion}
+        scan(info.projectdir)
+
+def scan(projectdir):
+    for srcpath in _srcpaths(info.projectdir):
+        if not checkpath(info.projectdir, srcpath):
+            log.debug("Not a project source file: %s", srcpath)
+            continue
+        command = commandornone(srcpath)
+        if command is None:
+            log.debug("Bad source name: %s", srcpath)
+            continue
+        scriptpath = os.path.join(userbin, command)
+        pyversion = max(info.config.pyversions)
+        with open(scriptpath, 'w') as f:
+            f.write("""#!/usr/bin/env python{pyversion}
 import sys
 sys.argv[1:1] = {srcpath!r}, '--'
 __file__ = {venvpool.__file__!r}
@@ -82,7 +85,7 @@ with open(__file__) as f: text = f.read()
 del sys, f
 exec('del text\\n' + text)
 """.format(**dict(globals(), **locals())))
-            os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
+        os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
 if ('__main__' == __name__):
     main()
