@@ -71,9 +71,9 @@ def main():
             if command is None:
                 log.debug("Bad source name: %s", srcpath)
                 continue
-            binpath = os.path.join(userbin, command)
+            scriptpath = os.path.join(userbin, command)
             pyversion = max(info.config.pyversions)
-            with open(binpath, 'w') as f:
+            with open(scriptpath, 'w') as f:
                 f.write("""#!/usr/bin/env python{pyversion}
 import sys
 sys.argv[1:1] = {srcpath!r}, '--'
@@ -82,7 +82,7 @@ with open(__file__) as f: text = f.read()
 del sys, f
 exec('del text\\n' + text)
 """.format(**dict(globals(), **locals())))
-            os.chmod(binpath, os.stat(binpath).st_mode | executablebits)
+            os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
 if ('__main__' == __name__):
     main()
