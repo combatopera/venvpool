@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+from argparse import ArgumentParser
+from inspect import getsource
+from pathlib import Path
+from shlex import quote
+from shutil import copyfileobj
+from subprocess import check_call
+from tempfile import TemporaryDirectory
+from urllib.request import urlopen
+import os, re, sys
+
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('projectdir', type = Path)
+    root = parser.parse_args().projectdir.resolve()
+    bindir = root / 'bin'
+    bindir.mkdir(exist_ok = True)
+    venvpool = bindir / 'venvpool.py'
+    with urlopen('https://raw.githubusercontent.com/combatopera/pyven/v86/venvpool.py') as f, venvpool.open('wb') as g:
+        copyfileobj(f, g)
+    with TemporaryDirectory() as bootdir:
+        bootdir = Path(bootdir)
+        (bootdir / 'requirements.txt').write_text('pyven>=86')
+        initbin = bootdir / 'initbin.py'
+        initbin.write_text(getsource(sys.modules[__name__]))
+        check_call([sys.executable, str(venvpool), '--', str(initbin), str(root), str(bindir), str(venvpool)])
+    try:
+        dirstrs = os.environ['PATH'].split(os.pathsep)
+    except KeyError:
+        dirstrs = []
+    bindirstr = str(bindir)
+    if bindirstr in dirstrs:
+        print('# Already activated.')
+    else:
+        dirstrs.append(bindirstr)
+        print('# Please eval this line in your shell:')
+        print(f'PATH={quote(os.pathsep.join(dirstrs))}')
+
+def initbin():
+    from pyven.initscripts import executablebits
+    from pyven.mainmodules import checkpath, commandornone, scriptregex
+    scriptpattern = re.compile(scriptregex, re.MULTILINE)
+    parser = ArgumentParser()
+    parser.add_argument('root', type = Path)
+    parser.add_argument('bindir', type = Path)
+    parser.add_argument('venvpoolpath')
+    args = parser.parse_args()
+    root = args.root
+    bindir = args.bindir
+    venvpoolpathstr = args.venvpoolpath
+    for srcpath in root.glob('**/*.py'):
+        if checkpath(str(root), srcpath) and scriptpattern.search(srcpath.read_text()) is not None:
+            command = commandornone(srcpath)
+            if command is None:
+                continue
+            scriptpath = bindir / command
+            srcpathstr = str(srcpath)
+            with scriptpath.open('w') as f:
+                f.write("""#!/usr/bin/env python3
+import sys
+sys.argv[1:1] = '--', {srcpathstr!r}
+__file__ = {venvpoolpathstr!r}
+with open(__file__) as f: text = f.read()
+del sys, f
+exec('del text\\n' + text)
+""".format(**locals()))
+            os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
+
+if '__main__' == __name__:
+    (initbin if 'initbin.py' == Path(sys.argv[0]).name else main)()
