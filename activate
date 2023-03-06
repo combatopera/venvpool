@@ -30,7 +30,7 @@ import os, re, sys
 
 initbinname = 'initbin.py'
 
-def main():
+def activate():
     parser = ArgumentParser()
     parser.add_argument('projectdir', type = Path)
     root = parser.parse_args().projectdir.resolve()
@@ -88,4 +88,4 @@ exec('del text\\n' + text)
             os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
 if ('__main__' == __name__):
-    (initbin if initbinname == Path(sys.argv[0]).name else main)()
+    (initbin if initbinname == Path(sys.argv[0]).name else activate)()
