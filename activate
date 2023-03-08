@@ -33,7 +33,7 @@ initbinname = 'initbin.py'
 def activate():
     parser = ArgumentParser()
     parser.add_argument('projectdir', type = lambda s: Path(s).resolve())
-    projectdir = parser.parse_args().projectdir
+    projectdir = parser.parse_args().projectdir # XXX: Find root?
     bindir = projectdir / 'bin'
     bindir.mkdir(exist_ok = True)
     venvpoolpath = bindir / 'venvpool.py'
