@@ -17,21 +17,7 @@
 
 from argparse import ArgumentParser
 from pathlib import Path
-from shlex import quote
-import os, sys
-
-def activate():
-    try:
-        dirstrs = os.environ['PATH'].split(os.pathsep)
-    except KeyError:
-        dirstrs = []
-    if bindirstr in dirstrs:
-        print('# Already activated.')
-    else:
-        dirstrs.append(bindirstr)
-        print('# Please eval this line in your shell:')
-        print('PATH=' + quote(os.pathsep.join(dirstrs)))
-    # TODO: List available commands.
+import sys
 
 def initbin():
     from pyven.initscripts import scan

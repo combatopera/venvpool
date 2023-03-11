@@ -575,6 +575,18 @@ def _activate():
         with open(initbinpath, 'w') as f:
             f.write(getsource(sys.modules[__name__]))
         subprocess.check_call([sys.executable, venvpoolpath, '-l', '--', initbinpath, projectdir, bindir, venvpoolpath])
+    try:
+        dirstrs = os.environ['PATH'].split(os.pathsep)
+    except KeyError:
+        dirstrs = []
+    if bindirstr in dirstrs:
+        print('# Already activated.')
+    else:
+        dirstrs.append(bindirstr)
+        print('# Please eval this line in your shell:')
+        from shlex import quote # FIXME: Not Python 2.
+        print('PATH=' + quote(os.pathsep.join(dirstrs)))
+    # TODO: List available commands.
 
 def main():
     try:
