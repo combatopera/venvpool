@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright 2013, 2014, 2015, 2016, 2017, 2020, 2022, 2023 Andrzej Cichocki
 
 # This file is part of venvpool.
@@ -17,30 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import division
 from argparse import ArgumentParser
-from inspect import getsource
 from pathlib import Path
 from shlex import quote
-from shutil import copyfileobj
-from subprocess import check_call
-from tempfile import TemporaryDirectory
-from urllib.request import urlopen
 import os, sys
 
-initbinname = 'initbin.py'
-
 def activate():
-    with urlopen('https://raw.githubusercontent.com/combatopera/pyven/v87/venvpool.py') as f, venvpoolpath.open('wb') as g:
-        copyfileobj(f, g)
-    with TemporaryDirectory() as bootdir:
-        bootdir = Path(bootdir)
-        (bootdir / 'requirements.txt').write_text('pyven>=87\n')
-        initbinpath = bootdir / initbinname
-        initbinpath.write_text(getsource(sys.modules[__name__]))
-        venvpoolpathstr = str(venvpoolpath)
-        bindirstr = str(bindir)
-        check_call([sys.executable, venvpoolpathstr, '--', str(initbinpath), str(projectdir), bindirstr, venvpoolpathstr])
     try:
         dirstrs = os.environ['PATH'].split(os.pathsep)
     except KeyError:

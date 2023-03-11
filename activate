@@ -20,6 +20,7 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from contextlib import contextmanager
+from inspect import getsource
 from random import shuffle
 from tempfile import mkdtemp, mkstemp
 import errno, logging, operator, os, re, runpy, shutil, subprocess, sys
@@ -27,6 +28,7 @@ import errno, logging, operator, os, re, runpy, shutil, subprocess, sys
 log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Honour XDG_CACHE_HOME.
 dotpy = '.py'
+initbinname = 'initbin.py'
 oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
 pooldir = os.path.join(cachedir, 'pool')
 try:
@@ -564,6 +566,15 @@ def _activate():
     except oserrors[errno.EEXIST]:
         pass
     venvpoolpath = os.path.join(bindir, 'venvpool.py')
+    with open(__file__, 'rb') as f, venvpoolpath.open('wb') as g:
+        shutil.copyfileobj(f, g)
+    with TemporaryDirectory() as bootdir:
+        with open(os.path.join(bootdir, 'requirements.txt'), 'w') as f:
+            f.write('pyven>=87\n')
+        initbinpath = os.path.join(bootdir, initbinname)
+        with open(initbinpath, 'w') as f:
+            f.write(getsource(sys.modules[__name__]))
+        subprocess.check_call([sys.executable, venvpoolpath, '-l', '--', initbinpath, projectdir, bindir, venvpoolpath])
 
 def main():
     try:
