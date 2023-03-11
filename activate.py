@@ -31,12 +31,6 @@ import os, sys
 initbinname = 'initbin.py'
 
 def activate():
-    parser = ArgumentParser()
-    parser.add_argument('projectdir', type = lambda s: Path(s).resolve()) # TODO: Support multiple.
-    projectdir = parser.parse_args().projectdir # XXX: Find root?
-    bindir = projectdir / 'bin' # XXX: Why not ~/.local/bin?
-    bindir.mkdir(exist_ok = True)
-    venvpoolpath = bindir / 'venvpool.py'
     with urlopen('https://raw.githubusercontent.com/combatopera/pyven/v87/venvpool.py') as f, venvpoolpath.open('wb') as g:
         copyfileobj(f, g)
     with TemporaryDirectory() as bootdir:

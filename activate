@@ -555,7 +555,15 @@ class Launch:
             venv.run(mode, localreqs, module, scriptargs)
 
 def _activate():
-    raise Exception('Implement me!')
+    parser = ArgumentParser()
+    parser.add_argument('projectdir', type = os.path.realpath) # TODO: Support multiple.
+    projectdir = parser.parse_args().projectdir # XXX: Find root?
+    bindir = os.path.join(projectdir, 'bin') # XXX: Why not ~/.local/bin?
+    try:
+        _osop(os.mkdir, bindir)
+    except oserrors[errno.EEXIST]:
+        pass
+    venvpoolpath = os.path.join(bindir, 'venvpool.py')
 
 def main():
     try:
