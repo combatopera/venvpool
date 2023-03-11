@@ -1,4 +1,4 @@
-/pyven.egg-info/
+/venvpool.egg-info/
 #gclean
 *.pyc
 __pycache__/

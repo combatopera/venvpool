@@ -256,7 +256,7 @@ class Venv(SharedDir):
             os.execv(argv[0], argv, **kwargs)
         raise ValueError(mode)
 
-def script():
+def _execute():
     assert '-x' == sys.argv.pop(1)
     sys.path[0] = bindir = os.path.dirname(sys.executable)
     try:
@@ -489,11 +489,13 @@ class SimpleInstallDeps:
 def _launch():
     initlogging()
     parser = ArgumentParser(add_help = False)
+    parser.add_argument('-l', action = 'store_true')
     parser.add_argument('--pip')
     parser.add_argument('-v', action = 'store_true')
     parser.add_argument('scriptpath', type = os.path.abspath)
     parser.add_argument('scriptargs', nargs = '*')
     args = parser.parse_args()
+    assert args.l
     if not args.v:
         logging.getLogger().setLevel(logging.INFO)
     Launch(args.pip).launch('exec', args.scriptpath, args.scriptargs)
@@ -550,5 +552,20 @@ class Launch:
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
             venv.run(mode, localreqs, module, scriptargs)
 
+def _activate():
+    raise Exception('Implement me!')
+
+def main():
+    try:
+        firstarg = sys.argv[1]
+    except IndexError:
+        pass
+    else:
+        if firstarg.startswith('-x'):
+            return _execute()
+        if firstarg.startswith('-l'):
+            return _launch()
+    _activate()
+
 if ('__main__' == __name__):
-    (script if '-x' == sys.argv[1] else _launch)()
+    main()
