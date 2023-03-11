@@ -579,10 +579,10 @@ def _activate():
         dirstrs = os.environ['PATH'].split(os.pathsep)
     except KeyError:
         dirstrs = []
-    if bindirstr in dirstrs:
+    if bindir in dirstrs:
         print('# Already activated.')
     else:
-        dirstrs.append(bindirstr)
+        dirstrs.append(bindir)
         print('# Please eval this line in your shell:')
         from shlex import quote # FIXME: Not Python 2.
         print('PATH=' + quote(os.pathsep.join(dirstrs)))
