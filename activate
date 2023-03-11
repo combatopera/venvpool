@@ -588,6 +588,15 @@ def _activate():
         print('PATH=' + quote(os.pathsep.join(dirstrs)))
     # TODO: List available commands.
 
+def initbin():
+    from pyven.initscripts import scan
+    parser = ArgumentParser()
+    parser.add_argument('projectdir')
+    parser.add_argument('bindir')
+    parser.add_argument('venvpoolpath')
+    args = parser.parse_args()
+    scan(args.projectdir, args.bindir, 3, args.venvpoolpath)
+
 def main():
     try:
         firstarg = sys.argv[1]
