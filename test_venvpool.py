@@ -17,7 +17,7 @@
 
 from tempfile import mkstemp
 from unittest import TestCase
-from venvpool import BaseReq, _chunkify, _decompress, FastReq, _insertionpoint, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory, Venv
+from venvpool import BaseReq, _chunkify, _compress, _decompress, FastReq, _insertionpoint, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
 import errno, inspect, os, subprocess, sys, venvpool
 
 def _inherithandle(tempdir):
@@ -111,18 +111,18 @@ class TestVenvPool(TestCase):
         self.assertEqual([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10]], list(_chunkify(5, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])))
 
     def test_compress(self):
-        c = lambda *paths: list(Venv._compress(paths, '-'))
-        self.assertEqual([''], c())
+        c = lambda *paths: list(_compress(paths, '+'))
+        self.assertEqual(['-'], c())
         self.assertEqual(['', ''], c(''))
-        self.assertEqual(['-', ''], c('-'))
+        self.assertEqual(['+', ''], c('+'))
         self.assertEqual(['', 'a'], c('a'))
-        self.assertEqual(['-', '', ''], c('-', '-'))
-        self.assertEqual(['', '-', 'a'], c('-', 'a'))
-        self.assertEqual(['', 'a', '-'], c('a', '-'))
-        self.assertEqual(['-', 'a', 'a'], c('-a', '-a'))
-        self.assertEqual(['-', 'a', 'b'], c('-a', '-b'))
-        self.assertEqual(['a-', 'b', 'b'], c('a-b', 'a-b'))
-        self.assertEqual(['a-', 'b', 'c'], c('a-b', 'a-c'))
+        self.assertEqual(['+', '', ''], c('+', '+'))
+        self.assertEqual(['', '+', 'a'], c('+', 'a'))
+        self.assertEqual(['', 'a', '+'], c('a', '+'))
+        self.assertEqual(['+', 'a', 'a'], c('+a', '+a'))
+        self.assertEqual(['+', 'a', 'b'], c('+a', '+b'))
+        self.assertEqual(['a+', 'b', 'b'], c('a+b', 'a+b'))
+        self.assertEqual(['a+', 'b', 'c'], c('a+b', 'a+c'))
 
     def test_decompress(self):
         d = lambda *paths: list(_decompress(paths))
