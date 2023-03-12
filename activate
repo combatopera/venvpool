@@ -625,6 +625,43 @@ exec('del text\\n' + text)
 """.format(**locals()))
         os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
+def _compact(): # XXX: Combine venvs with orthogonal dependencies?
+    initlogging()
+    parser = ArgumentParser()
+    parser.add_argument('-c', action = 'store_true')
+    assert parser.parse_args().c
+    venvtofreeze = {}
+    try:
+        for versiondir in listorempty(pooldir):
+            for venv in listorempty(versiondir, Venv):
+                if venv.trywritelock():
+                    venvtofreeze[venv] = set(subprocess.check_output([venv.programpath('pip'), 'freeze'], universal_newlines = True).splitlines())
+                else:
+                    log.debug("Busy: %s", venv.venvpath)
+        log.info('Find redundant venvs.')
+        while True:
+            venv = _redundantvenv(venvtofreeze)
+            if venv is None:
+                break
+            venv.delete('redundant')
+            venvtofreeze.pop(venv)
+        _compactvenvs([l.venvpath for l in venvtofreeze])
+    finally:
+        for l in venvtofreeze:
+            l.writeunlock()
+
+def _redundantvenv(venvtofreeze):
+    for venv, freeze in venvtofreeze.items():
+        for othervenv, otherfreeze in venvtofreeze.items():
+            if venv != othervenv and os.path.dirname(venv.venvpath) == os.path.dirname(othervenv.venvpath) and freeze <= otherfreeze:
+                return venv
+
+def _compactvenvs(venvpaths):
+    log.info("Compact %s venvs.", len(venvpaths))
+    if venvpaths:
+        subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
+    log.info('Compaction complete.')
+
 def main():
     try:
         firstarg = sys.argv[1]
@@ -635,6 +672,8 @@ def main():
             return _execute()
         if firstarg.startswith('-l'):
             return _launch()
+        if firstarg.startswith('-c'):
+            return _compact()
     _activate()
 
 if ('__main__' == __name__):

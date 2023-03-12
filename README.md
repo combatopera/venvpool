@@ -34,8 +34,3 @@ python3 -m venv venvname
 venvname/bin/pip install -e venvpool
 . venvname/bin/activate
 ```
-
-## Commands
-
-### compactpool
-Use jdupes to combine identical files in the venv pool.
