@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser # TODO: About 3 hundredths.
 from collections import OrderedDict
 from contextlib import contextmanager
-from random import shuffle
+from random import shuffle # TODO: About 1 hundredth.
 from stat import S_IXUSR, S_IXGRP, S_IXOTH
-from tempfile import mkdtemp, mkstemp
-import errno, logging, operator, os, re, runpy, shutil, subprocess, sys
+from tempfile import mkdtemp, mkstemp # TODO: Over a hundredth.
+import errno, logging, operator, os, re, runpy, shutil, subprocess, sys # TODO: About 2 hundredths.
 
 log = logging.getLogger(__name__)
 cachedir = os.path.join(os.path.expanduser('~'), '.cache', 'pyven') # TODO: Honour XDG_CACHE_HOME.
