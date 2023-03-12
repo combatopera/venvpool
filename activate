@@ -642,7 +642,7 @@ with open(__file__) as f: text = f.read()
 del sys, f
 exec('del text\\n' + text)
 """.format(**locals())
-        scriptpath = os.path.join(userbin, command)
+        scriptpath = os.path.join(userbin, command) # TODO: Warn if shadowed.
         if os.path.exists(scriptpath):
             mode = os.stat(scriptpath).st_mode
             if mode | executablebits == mode:
