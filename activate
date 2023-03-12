@@ -572,21 +572,25 @@ class Launch(Command):
     def mainimpl(cls, args):
         scriptpath = args.scriptpath
         assert scriptpath.endswith(dotpy)
-        projectdir = os.path.dirname(scriptpath)
-        while True:
-            requirementslines = _getrequirementslinesornone(projectdir)
-            if requirementslines is not None:
-                break
-            parent = os.path.dirname(projectdir)
-            if parent == projectdir:
-                sys.exit('No requirements found.')
-            projectdir = parent
+        projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
         installdeps = SimpleInstallDeps(requirementslines, args.pip, FastReq)
         localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
             venv.run('exec', localreqs, module, args.scriptargs)
+
+class NoRequirementsFoundException(Exception): pass
+
+def _findrequirements(projectdir):
+    while True:
+        requirementslines = _getrequirementslinesornone(projectdir)
+        if requirementslines is not None:
+            return projectdir, requirementslines
+        parent = os.path.dirname(projectdir)
+        if parent == projectdir:
+            raise NoRequirementsFoundException
+        projectdir = parent
 
 class Activate(Command):
 
@@ -602,7 +606,10 @@ class Activate(Command):
     @classmethod
     def mainimpl(cls, args):
         for projectdir in args.projectdir: # XXX: Find project root?
-            cls._scan(projectdir, 3, args.f)
+            try:
+                cls._scan(_findrequirements(projectdir)[0], 3, args.f)
+            except NoRequirementsFoundException:
+                log.exception("Skip: %s", projectdir)
 
     @staticmethod
     def _srcpaths(rootdir):
