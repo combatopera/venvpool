@@ -477,7 +477,7 @@ class FastReq:
     @classmethod
     def parselines(cls, lines):
         def g():
-            for line in lines: # FIXME: Investigate why lines is None in combatopera project.
+            for line in lines:
                 if cls.skipmatch(line) is not None:
                     continue
                 namepart, versionspec = cls.getmatch(line).groups()[:2]
@@ -528,7 +528,7 @@ class SimpleInstallDeps:
                     continue
                 if os.path.exists(projectdir):
                     local[projectdir] = None
-                    nextreqs.extend(self.reqcls.parselines(makerequirementslines(projectdir)))
+                    nextreqs.extend(self.reqcls.parselines(makerequirementslines(projectdir))) # FIXME: Can pass None into parselines.
                 else:
                     self.pypireqs.append(req)
             reqs = nextreqs
