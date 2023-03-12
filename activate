@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
-from argparse import ArgumentParser # TODO: About 3 hundredths.
 from collections import OrderedDict
 from contextlib import contextmanager
 from random import shuffle # TODO: About 1 hundredth.
@@ -549,8 +548,9 @@ class Command:
 
     @classmethod
     def main(cls):
+        from argparse import ArgumentParser # Two or three hundredths.
         initlogging()
-        parser = cls.createparser()
+        parser = cls.createparser(ArgumentParser)
         if cls.letter is not None:
             parser.add_argument('-' + cls.letter, action = 'store_true')
         parser.add_argument('-v', action = 'store_true')
@@ -566,8 +566,8 @@ class Launch(Command):
     letter = 'l'
 
     @staticmethod
-    def createparser():
-        parser = ArgumentParser(add_help = False)
+    def createparser(parsercls):
+        parser = parsercls(add_help = False)
         parser.add_argument('--pip')
         parser.add_argument('scriptpath', type = os.path.abspath) # XXX: Safe when scriptpath has symlinks?
         parser.add_argument('scriptargs', nargs = '*')
@@ -602,8 +602,8 @@ class Activate(Command):
     letter = None
 
     @staticmethod
-    def createparser():
-        parser = ArgumentParser()
+    def createparser(parsercls):
+        parser = parsercls()
         parser.add_argument('-f', action = 'store_true')
         parser.add_argument('projectdir', nargs = '*', default = ['.'])
         return parser
@@ -682,8 +682,8 @@ class Compact(Command):
     letter = 'c'
 
     @staticmethod
-    def createparser():
-        return ArgumentParser()
+    def createparser(parsercls):
+        return parsercls()
 
     @classmethod
     def mainimpl(cls, args): # XXX: Combine venvs with orthogonal dependencies?
