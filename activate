@@ -590,7 +590,7 @@ class Launch(Command):
         localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
-        with Pool(sys.version_info.major).readonly(installdeps) as venv:
+        with Pool(sys.version_info.major).readonly(installdeps) as venv: # TODO: Likely to be major 2 when launching manually.
             venv.run('exec', localreqs, module, args.scriptargs)
 
 class NoRequirementsFoundException(Exception): pass
@@ -620,7 +620,7 @@ class Activate(Command):
     def mainimpl(cls, args):
         for projectdir in args.projectdir:
             try:
-                cls._scan(_findrequirements(os.path.realpath(projectdir))[0], 3, args.f)
+                cls._scan(_findrequirements(os.path.realpath(projectdir))[0], 3, args.f) # XXX: Always 3?
             except NoRequirementsFoundException:
                 log.exception("Skip: %s", projectdir)
 
