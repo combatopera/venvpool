@@ -19,7 +19,7 @@
 
 from collections import OrderedDict
 from contextlib import contextmanager
-from random import shuffle # TODO: About 1 hundredth.
+from random import shuffle # XXX: Expensive?
 from stat import S_IXUSR, S_IXGRP, S_IXOTH
 from tempfile import mkdtemp, mkstemp # TODO: Over a hundredth.
 import errno, logging, operator, os, re, shutil, subprocess, sys # TODO: About 15 thousandths.
