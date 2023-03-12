@@ -578,26 +578,67 @@ class Launch:
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
             venv.run(mode, localreqs, module, scriptargs)
 
-def _activate():
-    initlogging()
-    parser = ArgumentParser()
-    parser.add_argument('-f', action = 'store_true')
-    parser.add_argument('-v', action = 'store_true')
-    parser.add_argument('projectdir', type = os.path.realpath, nargs = '*')
-    args = parser.parse_args()
-    if not args.v:
-        logging.getLogger().setLevel(logging.INFO)
-    for projectdir in args.projectdir: # XXX: Find project root?
-        scan(projectdir, 3, args.f)
+class Activate:
 
-def _srcpaths(rootdir):
-    for dirpath, dirnames, filenames in os.walk(rootdir):
-        for name in filenames:
-            if name.endswith(dotpy):
-                path = os.path.join(dirpath, name)
-                with open(path) as f:
-                    if re.search(scriptregex, f.read(), re.MULTILINE) is not None:
-                        yield path
+    @classmethod
+    def main(cls):
+        initlogging()
+        parser = ArgumentParser()
+        parser.add_argument('-f', action = 'store_true')
+        parser.add_argument('-v', action = 'store_true')
+        parser.add_argument('projectdir', type = os.path.realpath, nargs = '*')
+        args = parser.parse_args()
+        if not args.v:
+            logging.getLogger().setLevel(logging.INFO)
+        for projectdir in args.projectdir: # XXX: Find project root?
+            cls._scan(projectdir, 3, args.f)
+
+    @staticmethod
+    def _srcpaths(rootdir):
+        for dirpath, dirnames, filenames in os.walk(rootdir):
+            for name in filenames:
+                if name.endswith(dotpy):
+                    path = os.path.join(dirpath, name)
+                    with open(path) as f:
+                        if re.search(scriptregex, f.read(), re.MULTILINE) is not None:
+                            yield path
+
+    @classmethod
+    def _scan(cls, projectdir, pyversion, force):
+        venvpoolpath = os.path.realpath(__file__)
+        for srcpath in cls._srcpaths(projectdir):
+            if not checkpath(projectdir, srcpath):
+                log.debug("Not a project source file: %s", srcpath)
+                continue
+            command = commandornone(srcpath)
+            if command is None:
+                log.debug("Bad source name: %s", srcpath)
+                continue
+            text = """#!/usr/bin/env python{pyversion}
+import sys
+sys.argv[1:1] = '-l', '--', {srcpath!r}
+__file__ = {venvpoolpath!r}
+with open(__file__) as f: venvpoolsrc = f.read()
+del sys, f
+exec(venvpoolsrc)
+""".format(**locals())
+            scriptpath = os.path.join(userbin, command) # TODO: Warn if shadowed.
+            if os.path.exists(scriptpath):
+                mode = os.stat(scriptpath).st_mode
+                if mode | executablebits == mode:
+                    with open(scriptpath) as f:
+                        if f.read() == text:
+                            log.debug("Identical: %s", scriptpath)
+                            continue
+                if not force:
+                    log.info("Exists: %s", scriptpath)
+                    continue
+                log.info("Overwrite: %s", scriptpath)
+            else:
+                log.info("Create: %s", scriptpath)
+            with open(scriptpath, 'w') as f:
+                f.write(text)
+            os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
 def checkpath(projectdir, path):
     while True:
@@ -612,42 +653,6 @@ def commandornone(srcpath):
     name = os.path.basename(os.path.dirname(srcpath)) if '__init__.py' == name else name[:-len(dotpy)]
     if '-' not in name:
         return name.replace('_', '-')
-
-def scan(projectdir, pyversion, force):
-    venvpoolpath = os.path.realpath(__file__)
-    for srcpath in _srcpaths(projectdir):
-        if not checkpath(projectdir, srcpath):
-            log.debug("Not a project source file: %s", srcpath)
-            continue
-        command = commandornone(srcpath)
-        if command is None:
-            log.debug("Bad source name: %s", srcpath)
-            continue
-        text = """#!/usr/bin/env python{pyversion}
-import sys
-sys.argv[1:1] = '-l', '--', {srcpath!r}
-__file__ = {venvpoolpath!r}
-with open(__file__) as f: venvpoolsrc = f.read()
-del sys, f
-exec(venvpoolsrc)
-""".format(**locals())
-        scriptpath = os.path.join(userbin, command) # TODO: Warn if shadowed.
-        if os.path.exists(scriptpath):
-            mode = os.stat(scriptpath).st_mode
-            if mode | executablebits == mode:
-                with open(scriptpath) as f:
-                    if f.read() == text:
-                        log.debug("Identical: %s", scriptpath)
-                        continue
-            if not force:
-                log.info("Exists: %s", scriptpath)
-                continue
-            log.info("Overwrite: %s", scriptpath)
-        else:
-            log.info("Create: %s", scriptpath)
-        with open(scriptpath, 'w') as f:
-            f.write(text)
-        os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
 class Compact:
 
@@ -703,7 +708,7 @@ def main():
             return _launch()
         if firstarg.startswith('-c'):
             return Compact.main()
-    _activate()
+    Activate.main()
 
 if ('__main__' == __name__):
     main()
