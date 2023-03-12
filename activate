@@ -252,8 +252,25 @@ class Venv(SharedDir):
                 if m is not None:
                     return m.group(1)
 
+    @staticmethod
+    def _compress(paths, splitchar = os.sep):
+        if not paths:
+            yield ''
+            return
+        firstdiff = -1
+        for firstdiff, chars in enumerate(zip(*paths)):
+            if 1 != len(set(chars)):
+                break
+        else:
+            firstdiff += 1
+        while firstdiff and paths[0][firstdiff - 1] != splitchar:
+            firstdiff -= 1
+        yield paths[0][:firstdiff]
+        for p in paths:
+            yield p[firstdiff:]
+
     def run(self, mode, localreqs, module, scriptargs, **kwargs):
-        argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-x', os.pathsep.join(localreqs), module] + scriptargs
+        argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-x', os.pathsep.join(self._compress(localreqs)), module] + scriptargs
         if 'call' == mode:
             return subprocess.call(argv, **kwargs)
         if 'check_call' == mode:
@@ -261,6 +278,15 @@ class Venv(SharedDir):
         if 'exec' == mode:
             os.execv(argv[0], argv, **kwargs)
         raise ValueError(mode)
+
+def _decompress(paths):
+    i = iter(paths)
+    prefix = next(i)
+    try:
+        while True:
+            yield prefix + next(i)
+    except StopIteration:
+        pass
 
 def _execute():
     assert '-x' == sys.argv.pop(1)
@@ -272,7 +298,7 @@ def _execute():
     else:
         envpath = bindir + os.pathsep + envpath
     os.environ['PATH'] = envpath
-    sys.path[slice(*[_insertionpoint(sys.path)] * 2)] = sys.argv.pop(1).split(os.pathsep)
+    sys.path[slice(*[_insertionpoint(sys.path)] * 2)] = _decompress(sys.argv.pop(1).split(os.pathsep))
     runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
 
 def _insertionpoint(v, suffix = os.sep + 'site-packages'):
