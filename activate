@@ -541,21 +541,36 @@ def _getrequirementslinesornone(projectdir):
         name, = names # XXX: Could there legitimately be multiple?
         return linesornone(True, name, 'requires.txt')
 
-class Launch:
+class Command:
 
     @classmethod
     def main(cls):
         initlogging()
-        parser = ArgumentParser(add_help = False)
-        parser.add_argument('-l', action = 'store_true')
-        parser.add_argument('--pip')
+        parser = cls.createparser()
+        if cls.letter is not None:
+            parser.add_argument('-' + cls.letter, action = 'store_true')
         parser.add_argument('-v', action = 'store_true')
-        parser.add_argument('scriptpath', type = os.path.abspath) # XXX: Safe when scriptpath has symlinks?
-        parser.add_argument('scriptargs', nargs = '*')
         args = parser.parse_args()
-        assert args.l
+        if cls.letter is not None:
+            assert getattr(args, cls.letter)
         if not args.v:
             logging.getLogger().setLevel(logging.INFO)
+        cls.mainimpl(args)
+
+class Launch(Command):
+
+    letter = 'l'
+
+    @staticmethod
+    def createparser():
+        parser = ArgumentParser(add_help = False)
+        parser.add_argument('--pip')
+        parser.add_argument('scriptpath', type = os.path.abspath) # XXX: Safe when scriptpath has symlinks?
+        parser.add_argument('scriptargs', nargs = '*')
+        return parser
+
+    @classmethod
+    def mainimpl(cls, args):
         cls(args.pip).launch('exec', args.scriptpath, args.scriptargs)
 
     def __init__(self, pipornone):
@@ -579,18 +594,19 @@ class Launch:
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
             venv.run(mode, localreqs, module, scriptargs)
 
-class Activate:
+class Activate(Command):
 
-    @classmethod
-    def main(cls):
-        initlogging()
+    letter = None
+
+    @staticmethod
+    def createparser():
         parser = ArgumentParser()
         parser.add_argument('-f', action = 'store_true')
-        parser.add_argument('-v', action = 'store_true')
         parser.add_argument('projectdir', type = os.path.realpath, nargs = '*')
-        args = parser.parse_args()
-        if not args.v:
-            logging.getLogger().setLevel(logging.INFO)
+        return parser
+
+    @classmethod
+    def mainimpl(cls, args):
         for projectdir in args.projectdir: # XXX: Find project root?
             cls._scan(projectdir, 3, args.f)
 
@@ -655,14 +671,16 @@ def commandornone(srcpath):
     if '-' not in name:
         return name.replace('_', '-')
 
-class Compact:
+class Compact(Command):
+
+    letter = 'c'
+
+    @staticmethod
+    def createparser():
+        return ArgumentParser()
 
     @classmethod
-    def main(cls): # XXX: Combine venvs with orthogonal dependencies?
-        initlogging()
-        parser = ArgumentParser()
-        parser.add_argument('-c', action = 'store_true')
-        assert parser.parse_args().c
+    def mainimpl(cls, args): # XXX: Combine venvs with orthogonal dependencies?
         venvtofreeze = {}
         try:
             for versiondir in listorempty(pooldir):
