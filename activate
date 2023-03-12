@@ -587,26 +587,26 @@ class Launch:
 def _activate():
     initlogging()
     parser = ArgumentParser()
-    parser.add_argument('projectdir', type = os.path.realpath) # TODO: Support multiple.
-    projectdir = parser.parse_args().projectdir # XXX: Find root?
-    bindir = os.path.join(projectdir, 'bin') # XXX: Why not ~/.local/bin?
-    try:
-        _osop(os.mkdir, bindir)
-    except oserrors[errno.EEXIST]:
-        pass
-    scan(projectdir, bindir, 3, __file__)
-    try:
-        dirstrs = os.environ['PATH'].split(os.pathsep)
-    except KeyError:
-        dirstrs = []
-    if bindir in dirstrs:
-        print('# Already activated.')
-    else:
-        dirstrs.append(bindir)
-        print('# Please eval this line in your shell:')
-        from shlex import quote # FIXME: Not Python 2.
-        print('PATH=' + quote(os.pathsep.join(dirstrs)))
-    # TODO: List available commands.
+    parser.add_argument('projectdir', type = os.path.realpath, nargs = '*')
+    for projectdir in parser.parse_args().projectdir: # XXX: Find root?
+        bindir = os.path.join(projectdir, 'bin') # XXX: Why not ~/.local/bin?
+        try:
+            _osop(os.mkdir, bindir)
+        except oserrors[errno.EEXIST]:
+            pass
+        scan(projectdir, bindir, 3, __file__)
+        try:
+            dirstrs = os.environ['PATH'].split(os.pathsep)
+        except KeyError:
+            dirstrs = []
+        if bindir in dirstrs:
+            print('# Already activated.')
+        else:
+            dirstrs.append(bindir)
+            print('# Please eval this line in your shell:')
+            from shlex import quote # FIXME: Not Python 2.
+            print('PATH=' + quote(os.pathsep.join(dirstrs)))
+        # TODO: List available commands.
 
 def _srcpaths(rootdir):
     for dirpath, dirnames, filenames in os.walk(rootdir):
