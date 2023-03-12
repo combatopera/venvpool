@@ -292,18 +292,23 @@ def _decompress(paths):
     except StopIteration:
         pass
 
-def _execute():
-    assert '-x' == sys.argv.pop(1)
-    sys.path[0] = bindir = os.path.dirname(sys.executable)
-    try:
-        envpath = os.environ['PATH']
-    except KeyError:
-        envpath = bindir
-    else:
-        envpath = bindir + os.pathsep + envpath
-    os.environ['PATH'] = envpath
-    sys.path[slice(*[_insertionpoint(sys.path)] * 2)] = _decompress(sys.argv.pop(1).split(os.pathsep))
-    runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
+class Execute:
+
+    letter = 'x'
+
+    @staticmethod
+    def main():
+        assert '-x' == sys.argv.pop(1)
+        sys.path[0] = bindir = os.path.dirname(sys.executable)
+        try:
+            envpath = os.environ['PATH']
+        except KeyError:
+            envpath = bindir
+        else:
+            envpath = bindir + os.pathsep + envpath
+        os.environ['PATH'] = envpath
+        sys.path[slice(*[_insertionpoint(sys.path)] * 2)] = _decompress(sys.argv.pop(1).split(os.pathsep))
+        runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
 
 def _insertionpoint(v, suffix = os.sep + 'site-packages'):
     i = n = len(v)
@@ -722,12 +727,11 @@ def main():
     except IndexError:
         pass
     else:
-        if firstarg.startswith('-x'):
-            return _execute()
-        if firstarg.startswith('-l'):
-            return Launch.main()
-        if firstarg.startswith('-c'):
-            return Compact.main()
+        if firstarg.startswith('-'):
+            letter = firstarg[1]
+            for cls in Execute, Launch, Compact:
+                if letter == cls.letter:
+                    return cls.main()
     Activate.main()
 
 if ('__main__' == __name__): # Hide from scriptregex.
