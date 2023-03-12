@@ -585,6 +585,7 @@ class Launch:
             venv.run(mode, localreqs, module, scriptargs)
 
 def _activate():
+    initlogging()
     parser = ArgumentParser()
     parser.add_argument('projectdir', type = os.path.realpath) # TODO: Support multiple.
     projectdir = parser.parse_args().projectdir # XXX: Find root?
@@ -613,7 +614,7 @@ def _srcpaths(rootdir):
             if name.endswith(dotpy):
                 path = os.path.join(dirpath, name)
                 with open(path) as f:
-                    if re.search(scriptregex, f.read()) is not None:
+                    if re.search(scriptregex, f.read(), re.MULTILINE) is not None:
                         yield path
 
 def checkpath(projectdir, path):
@@ -641,6 +642,7 @@ def scan(projectdir, bindir, pyversion, venvpoolpath):
             continue
         scriptpath = os.path.join(bindir, command)
         with open(scriptpath, 'w') as f:
+            # FIXME: The passed-in venvpoolpath may be relative.
             f.write("""#!/usr/bin/env python{pyversion}
 import sys
 sys.argv[1:1] = '-l', '--', {srcpath!r}
