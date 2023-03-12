@@ -206,7 +206,7 @@ class Venv(SharedDir):
         def isolated(*command):
             subprocess.check_call(command, cwd = tempdir, stdout = sys.stderr)
         executable = _safewhich("python%s" % pyversion)
-        absvenvpath = os.path.abspath(self.venvpath)
+        absvenvpath = os.path.abspath(self.venvpath) # XXX: Safe when venvpath has symlinks?
         with TemporaryDirectory() as tempdir:
             if pyversion < 3:
                 isolated('virtualenv', '-p', executable, absvenvpath)
@@ -525,7 +525,7 @@ def _launch():
     parser.add_argument('-l', action = 'store_true')
     parser.add_argument('--pip')
     parser.add_argument('-v', action = 'store_true')
-    parser.add_argument('scriptpath', type = os.path.abspath)
+    parser.add_argument('scriptpath', type = os.path.abspath) # XXX: Safe when scriptpath has symlinks?
     parser.add_argument('scriptargs', nargs = '*')
     args = parser.parse_args()
     assert args.l
@@ -588,26 +588,14 @@ class Launch:
 def _activate():
     initlogging()
     parser = ArgumentParser()
+    parser.add_argument('-f', action = 'store_true')
+    parser.add_argument('-v', action = 'store_true')
     parser.add_argument('projectdir', type = os.path.realpath, nargs = '*')
-    for projectdir in parser.parse_args().projectdir: # XXX: Find root?
-        bindir = os.path.join(projectdir, 'bin') # XXX: Why not ~/.local/bin?
-        try:
-            _osop(os.mkdir, bindir)
-        except oserrors[errno.EEXIST]:
-            pass
-        scan(projectdir, bindir, 3, __file__)
-        try:
-            dirstrs = os.environ['PATH'].split(os.pathsep)
-        except KeyError:
-            dirstrs = []
-        if bindir in dirstrs:
-            print('# Already activated.')
-        else:
-            dirstrs.append(bindir)
-            print('# Please eval this line in your shell:')
-            from shlex import quote # FIXME: Not Python 2.
-            print('PATH=' + quote(os.pathsep.join(dirstrs)))
-        # TODO: List available commands.
+    args = parser.parse_args()
+    if not args.v:
+        logging.getLogger().setLevel(logging.INFO)
+    for projectdir in args.projectdir: # XXX: Find project root?
+        scan(projectdir, 3, args.f)
 
 def _srcpaths(rootdir):
     for dirpath, dirnames, filenames in os.walk(rootdir):
@@ -623,7 +611,7 @@ def checkpath(projectdir, path):
         path = os.path.dirname(path)
         if path == projectdir:
             return True
-        if not os.path.exists(os.path.join(path, '__init__.py')):
+        if not os.path.exists(os.path.join(path, '__init__.py')): # XXX: What about namespace packages?
             break
 
 def commandornone(srcpath):
@@ -632,7 +620,8 @@ def commandornone(srcpath):
     if '-' not in name:
         return name.replace('_', '-')
 
-def scan(projectdir, bindir, pyversion, venvpoolpath):
+def scan(projectdir, pyversion, force):
+    venvpoolpath = os.path.realpath(__file__)
     for srcpath in _srcpaths(projectdir):
         if not checkpath(projectdir, srcpath):
             log.debug("Not a project source file: %s", srcpath)
@@ -641,17 +630,30 @@ def scan(projectdir, bindir, pyversion, venvpoolpath):
         if command is None:
             log.debug("Bad source name: %s", srcpath)
             continue
-        scriptpath = os.path.join(bindir, command)
-        with open(scriptpath, 'w') as f:
-            # FIXME: The passed-in venvpoolpath may be relative.
-            f.write("""#!/usr/bin/env python{pyversion}
+        text = """#!/usr/bin/env python{pyversion}
 import sys
 sys.argv[1:1] = '-l', '--', {srcpath!r}
 __file__ = {venvpoolpath!r}
 with open(__file__) as f: text = f.read()
 del sys, f
 exec('del text\\n' + text)
-""".format(**locals()))
+""".format(**locals())
+        scriptpath = os.path.join(userbin, command)
+        if os.path.exists(scriptpath):
+            mode = os.stat(scriptpath).st_mode
+            if mode | executablebits == mode:
+                with open(scriptpath) as f:
+                    if f.read() == text:
+                        log.debug("Identical: %s", scriptpath)
+                        continue
+            if not force:
+                log.info("Exists: %s", scriptpath)
+                continue
+            log.info("Overwrite: %s", scriptpath)
+        else:
+            log.info("Create: %s", scriptpath)
+        with open(scriptpath, 'w') as f:
+            f.write(text)
         os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
 class Compact:
