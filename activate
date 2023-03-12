@@ -571,12 +571,7 @@ class Launch(Command):
 
     @classmethod
     def mainimpl(cls, args):
-        cls(args.pip).launch('exec', args.scriptpath, args.scriptargs)
-
-    def __init__(self, pipornone):
-        self.pipornone = pipornone
-
-    def launch(self, mode, scriptpath, scriptargs):
+        scriptpath = args.scriptpath
         assert scriptpath.endswith(dotpy)
         projectdir = os.path.dirname(scriptpath)
         while True:
@@ -587,12 +582,12 @@ class Launch(Command):
             if parent == projectdir:
                 sys.exit('No requirements found.')
             projectdir = parent
-        installdeps = SimpleInstallDeps(requirementslines, self.pipornone, FastReq)
+        installdeps = SimpleInstallDeps(requirementslines, args.pip, FastReq)
         localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
-            venv.run(mode, localreqs, module, scriptargs)
+            venv.run('exec', localreqs, module, args.scriptargs)
 
 class Activate(Command):
 
