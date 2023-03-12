@@ -600,12 +600,12 @@ class Activate(Command):
     def createparser():
         parser = ArgumentParser()
         parser.add_argument('-f', action = 'store_true')
-        parser.add_argument('projectdir', nargs = '*')
+        parser.add_argument('projectdir', nargs = '*', default = ['.'])
         return parser
 
     @classmethod
     def mainimpl(cls, args):
-        for projectdir in args.projectdir: # XXX: Find project root?
+        for projectdir in args.projectdir:
             try:
                 cls._scan(_findrequirements(os.path.realpath(projectdir))[0], 3, args.f)
             except NoRequirementsFoundException:
