@@ -148,8 +148,12 @@ class SharedDir(object):
         self.readlocks = os.path.join(dirpath, 'readlocks')
 
     def _sweep(self):
-        for readlock in _swept(listorempty(self.readlocks)):
-            log.debug("Swept: %s", readlock)
+        paths = list(Venv._compress(list(_swept(listorempty(self.readlocks)))))
+        n = len(paths)
+        if 2 == n:
+            log.debug("Swept: %s", ''.join(paths))
+        elif 2 < n:
+            log.debug("Swept: %s{%s}", paths[0], ','.join(paths[1:]))
 
     def trywritelock(self):
         self._sweep()
