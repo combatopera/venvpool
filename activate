@@ -523,20 +523,6 @@ class SimpleInstallDeps:
             reqs = nextreqs
         return list(local)
 
-def _launch():
-    initlogging()
-    parser = ArgumentParser(add_help = False)
-    parser.add_argument('-l', action = 'store_true')
-    parser.add_argument('--pip')
-    parser.add_argument('-v', action = 'store_true')
-    parser.add_argument('scriptpath', type = os.path.abspath) # XXX: Safe when scriptpath has symlinks?
-    parser.add_argument('scriptargs', nargs = '*')
-    args = parser.parse_args()
-    assert args.l
-    if not args.v:
-        logging.getLogger().setLevel(logging.INFO)
-    Launch(args.pip).launch('exec', args.scriptpath, args.scriptargs)
-
 def _getrequirementslinesornone(projectdir):
     def linesornone(acceptnull, *names):
         path = os.path.join(projectdir, *names)
@@ -556,6 +542,21 @@ def _getrequirementslinesornone(projectdir):
         return linesornone(True, name, 'requires.txt')
 
 class Launch:
+
+    @classmethod
+    def main(cls):
+        initlogging()
+        parser = ArgumentParser(add_help = False)
+        parser.add_argument('-l', action = 'store_true')
+        parser.add_argument('--pip')
+        parser.add_argument('-v', action = 'store_true')
+        parser.add_argument('scriptpath', type = os.path.abspath) # XXX: Safe when scriptpath has symlinks?
+        parser.add_argument('scriptargs', nargs = '*')
+        args = parser.parse_args()
+        assert args.l
+        if not args.v:
+            logging.getLogger().setLevel(logging.INFO)
+        cls(args.pip).launch('exec', args.scriptpath, args.scriptargs)
 
     def __init__(self, pipornone):
         self.pipornone = pipornone
@@ -705,7 +706,7 @@ def main():
         if firstarg.startswith('-x'):
             return _execute()
         if firstarg.startswith('-l'):
-            return _launch()
+            return Launch.main()
         if firstarg.startswith('-c'):
             return Compact.main()
     Activate.main()
