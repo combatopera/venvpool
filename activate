@@ -560,22 +560,11 @@ class Launch:
     def __init__(self, pipornone):
         self.pipornone = pipornone
 
-    def _makerequirementslinesornone(self, projectdir):
-        lines = _getrequirementslinesornone(projectdir)
-        if lines is not None:
-            return lines
-        if os.path.exists(os.path.join(projectdir, 'project.arid')):
-            # XXX: Achieve this without additional files?
-            self.launch('check_call', os.path.join(os.path.dirname(__file__), 'bootworkspace', 'bootproject', 'pipify.py'), [projectdir])
-            lines = _getrequirementslinesornone(projectdir)
-            assert lines is not None
-            return lines
-
     def launch(self, mode, scriptpath, scriptargs):
         assert scriptpath.endswith(dotpy)
         projectdir = os.path.dirname(scriptpath)
         while True:
-            requirementslines = self._makerequirementslinesornone(projectdir)
+            requirementslines = _getrequirementslinesornone(projectdir)
             if requirementslines is not None:
                 break
             parent = os.path.dirname(projectdir)
@@ -583,7 +572,7 @@ class Launch:
                 sys.exit('No requirements found.')
             projectdir = parent
         installdeps = SimpleInstallDeps(requirementslines, self.pipornone, FastReq)
-        localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), self._makerequirementslinesornone)
+        localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv:
