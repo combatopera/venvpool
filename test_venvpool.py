@@ -90,7 +90,7 @@ class TestVenvPool(TestCase):
             scriptpath = os.path.join(tempdir, 'module.py')
             with open(scriptpath, 'w') as f:
                 f.write('import sys\nprint(sys.modules[__name__].__file__)')
-            self.assertEqual(scriptpath + '\n', subprocess.check_output([sys.executable, venvpool.__file__, '-l', scriptpath], universal_newlines = True))
+            self.assertEqual(scriptpath + '\n', subprocess.check_output([sys.executable, venvpool.__file__, '-L', scriptpath], universal_newlines = True))
 
     def test_insertionpoint(self):
         self.assertEqual(0, _insertionpoint(['ax', 'bx', 'cx'], 'x'))
