@@ -554,14 +554,16 @@ def _getrequirementslinesornone(projectdir):
 
 class Command:
 
+    help = None
+
     @classmethod
     def main(cls):
         from argparse import ArgumentParser # Two or three hundredths.
         initlogging()
         parser = cls.createparser(ArgumentParser)
         if cls.letter is not None:
-            parser.add_argument('-' + cls.letter, action = 'store_true')
-        parser.add_argument('-v', action = 'store_true')
+            parser.add_argument('-' + cls.letter, action = 'store_true', help = "subcommand to %s" % cls.help)
+        parser.add_argument('-v', action = 'store_true', help = 'show debug logging')
         args = parser.parse_args()
         if cls.letter is not None:
             assert getattr(args, cls.letter)
@@ -612,8 +614,8 @@ class Activate(Command):
     @staticmethod
     def createparser(parsercls):
         parser = parsercls()
-        parser.add_argument('-f', action = 'store_true')
-        parser.add_argument('projectdir', nargs = '*', default = ['.'])
+        parser.add_argument('-f', action = 'store_true', help = 'overwrite existing scripts')
+        parser.add_argument('projectdir', nargs = '*', default = ['.'], help = 'projects to search for runnable modules')
         return parser
 
     @classmethod
@@ -687,6 +689,7 @@ def commandornone(srcpath):
 
 class Compact(Command):
 
+    help = 'compact the pool'
     letter = 'C'
 
     @staticmethod
