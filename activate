@@ -264,7 +264,7 @@ class Venv(SharedDir):
                     return m.group(1)
 
     def run(self, mode, localreqs, module, scriptargs, **kwargs):
-        argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-x', os.pathsep.join(_compress(localreqs)), module] + scriptargs
+        argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-X', os.pathsep.join(_compress(localreqs)), module] + scriptargs
         if 'call' == mode:
             return subprocess.call(argv, **kwargs)
         if 'check_call' == mode:
@@ -300,12 +300,12 @@ def _decompress(paths):
 
 class Execute:
 
-    letter = 'x'
+    letter = 'X'
 
     @staticmethod
     def main():
         import runpy # A few thousandths.
-        assert '-x' == sys.argv.pop(1)
+        assert '-X' == sys.argv.pop(1)
         sys.path[0] = bindir = os.path.dirname(sys.executable)
         try:
             envpath = os.environ['PATH']
@@ -571,7 +571,7 @@ class Command:
 
 class Launch(Command):
 
-    letter = 'l'
+    letter = 'L'
 
     @staticmethod
     def createparser(parsercls):
@@ -647,7 +647,7 @@ class Activate(Command):
                 continue
             text = """#!/usr/bin/env python{pyversion}
 import sys
-sys.argv[1:1] = '-l', '--', {srcpath!r}
+sys.argv[1:1] = '-L', '--', {srcpath!r}
 __file__ = {venvpoolpath!r}
 with open(__file__) as f: venvpoolsrc = f.read()
 del sys, f
@@ -687,7 +687,7 @@ def commandornone(srcpath):
 
 class Compact(Command):
 
-    letter = 'c'
+    letter = 'C'
 
     @staticmethod
     def createparser(parsercls):
