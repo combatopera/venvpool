@@ -560,9 +560,10 @@ class Command:
     def main(cls):
         from argparse import ArgumentParser # Two or three hundredths.
         initlogging()
-        parser = cls.createparser(ArgumentParser)
+        parser = ArgumentParser(add_help = cls.help is not None, description = cls.help)
+        cls.initparser(parser)
         if cls.letter is not None:
-            parser.add_argument('-' + cls.letter, action = 'store_true', help = "subcommand to %s" % cls.help)
+            parser.add_argument('-' + cls.letter, action = 'store_true', help = 'select this subcommand')
         parser.add_argument('-v', action = 'store_true', help = 'show debug logging')
         args = parser.parse_args()
         if cls.letter is not None:
@@ -576,12 +577,10 @@ class Launch(Command):
     letter = 'L'
 
     @staticmethod
-    def createparser(parsercls):
-        parser = parsercls(add_help = False)
+    def initparser(parser):
         parser.add_argument('--pip')
         parser.add_argument('scriptpath', type = os.path.abspath) # XXX: Safe when scriptpath has symlinks?
         parser.add_argument('scriptargs', nargs = '*')
-        return parser
 
     @classmethod
     def mainimpl(cls, args):
@@ -609,14 +608,13 @@ def _findrequirements(projectdir):
 
 class Activate(Command):
 
+    help = 'create and maintain wrapper scripts'
     letter = None
 
     @staticmethod
-    def createparser(parsercls):
-        parser = parsercls()
+    def initparser(parser):
         parser.add_argument('-f', action = 'store_true', help = 'overwrite existing scripts')
         parser.add_argument('projectdir', nargs = '*', default = ['.'], help = 'projects to search for runnable modules')
-        return parser
 
     @classmethod
     def mainimpl(cls, args):
@@ -693,8 +691,8 @@ class Compact(Command):
     letter = 'C'
 
     @staticmethod
-    def createparser(parsercls):
-        return parsercls()
+    def initparser(parser):
+        pass
 
     @classmethod
     def mainimpl(cls, args): # XXX: Combine venvs with orthogonal dependencies?
