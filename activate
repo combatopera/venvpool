@@ -554,8 +554,6 @@ def _getrequirementslinesornone(projectdir):
 
 class Command:
 
-    help = None
-
     @classmethod
     def main(cls):
         from argparse import ArgumentParser # Two or three hundredths.
@@ -574,6 +572,7 @@ class Command:
 
 class Launch(Command):
 
+    help = None
     letter = 'L'
 
     @staticmethod
