@@ -559,7 +559,7 @@ class ParserCommand:
     def main(cls):
         from argparse import ArgumentParser # Two or three hundredths.
         initlogging()
-        parser = ArgumentParser(add_help = cls.help is not None, description = cls.help)
+        parser = ArgumentParser(description = cls.help)
         cls.initparser(parser)
         if cls.letter is not None:
             parser.add_argument('-' + cls.letter, action = 'store_true', help = 'select this subcommand')
@@ -573,7 +573,7 @@ class ParserCommand:
 
 class Launch(ParserCommand):
 
-    help = None
+    help = 'launch given script with the requirements it needs'
     letter = 'L'
 
     @staticmethod
