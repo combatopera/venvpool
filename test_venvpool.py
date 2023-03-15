@@ -22,7 +22,7 @@ import errno, inspect, os, subprocess, sys, venvpool
 
 def _inherithandle(tempdir):
     from signal import SIGINT
-    from venvpool import SharedDir # FIXME LATER: This only works when running tests at the top level.
+    from venvpool import SharedDir
     import os, sys, time
     flag = os.path.join(tempdir, 'flag')
     p = os.path.join(tempdir, 'shared')
@@ -82,7 +82,7 @@ class TestVenvPool(TestCase):
                 sys.executable,
                 '-c',
                 "%s%s(%r)" % (inspect.getsource(_inherithandle), _inherithandle.__name__, tempdir),
-            ])
+            ], env = dict(os.environ, PYTHONPATH = os.path.dirname(venvpool.__file__)))
 
     def test_fileglobal(self):
         with TemporaryDirectory() as tempdir:
