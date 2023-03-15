@@ -561,9 +561,9 @@ class ParserCommand:
         from argparse import ArgumentParser # Two or three hundredths.
         initlogging()
         parser = ArgumentParser(description = cls.help)
-        cls.initparser(parser)
         if cls.letter is not None:
             parser.add_argument('-' + cls.letter, action = 'store_true', help = 'select this subcommand')
+        cls.initparser(parser)
         parser.add_argument('-v', action = 'store_true', help = 'show debug logging')
         args = parser.parse_args()
         if cls.letter is not None:
