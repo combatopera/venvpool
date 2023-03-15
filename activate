@@ -552,7 +552,7 @@ def _getrequirementslinesornone(projectdir):
         name, = names # XXX: Could there legitimately be multiple?
         return linesornone(True, name, 'requires.txt')
 
-class Command:
+class ParserCommand:
 
     @classmethod
     def main(cls):
@@ -570,7 +570,7 @@ class Command:
             logging.getLogger().setLevel(logging.INFO)
         cls.mainimpl(args)
 
-class Launch(Command):
+class Launch(ParserCommand):
 
     help = None
     letter = 'L'
@@ -605,7 +605,7 @@ def _findrequirements(projectdir):
             raise NoRequirementsFoundException
         projectdir = parent
 
-class Activate(Command):
+class Activate(ParserCommand):
 
     help = 'create and maintain wrapper scripts'
     letter = None
@@ -684,7 +684,7 @@ def commandornone(srcpath):
     if '-' not in name:
         return name.replace('_', '-')
 
-class Compact(Command):
+class Compact(ParserCommand):
 
     help = 'compact the pool'
     letter = 'C'
