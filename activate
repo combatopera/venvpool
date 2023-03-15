@@ -300,6 +300,7 @@ def _decompress(paths):
 
 class Execute:
 
+    help = 'please ignore'
     letter = 'X'
 
     @staticmethod
@@ -573,7 +574,7 @@ class ParserCommand:
 
 class Launch(ParserCommand):
 
-    help = 'launch given script with the requirements it needs'
+    help = 'launch a script with the requirements it needs'
     letter = 'L'
 
     @staticmethod
@@ -613,6 +614,9 @@ class Activate(ParserCommand):
 
     @staticmethod
     def initparser(parser):
+        group = parser.add_mutually_exclusive_group()
+        for cls in propersubcommands:
+            group.add_argument('-' + cls.letter, action = 'store_true', help = 'subcommand to ' + cls.help)
         parser.add_argument('-f', action = 'store_true', help = 'overwrite existing scripts')
         parser.add_argument('projectdir', nargs = '*', default = ['.'], help = 'projects to search for runnable modules')
 
@@ -730,6 +734,8 @@ class Compact(ParserCommand):
             subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
         log.info('Compaction complete.')
 
+propersubcommands = Execute, Launch, Compact
+
 def main():
     try:
         firstarg = sys.argv[1]
@@ -738,7 +744,7 @@ def main():
     else:
         if firstarg.startswith('-'):
             letter = firstarg[1]
-            for cls in Execute, Launch, Compact:
+            for cls in propersubcommands:
                 if letter == cls.letter:
                     return cls.main()
     Activate.main()
