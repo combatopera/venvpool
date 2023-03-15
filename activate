@@ -703,7 +703,7 @@ class Compact(ParserCommand):
                         venvtofreeze[venv] = set(subprocess.check_output([venv.programpath('pip'), 'freeze'], universal_newlines = True).splitlines())
                     else:
                         log.debug("Busy: %s", venv.venvpath)
-            log.info('Find redundant venvs.')
+            log.debug('Find redundant venvs.')
             while True:
                 venv = cls._redundantvenv(venvtofreeze)
                 if venv is None:
