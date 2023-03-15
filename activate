@@ -581,7 +581,7 @@ class Launch(ParserCommand):
     def initparser(parser):
         parser.add_argument('--pip', help = 'alternate pip executable')
         parser.add_argument('scriptpath', type = os.path.abspath) # XXX: Safe when scriptpath has symlinks?
-        parser.add_argument('scriptargs', nargs = '*')
+        parser.add_argument('scriptarg', nargs = '*')
 
     @classmethod
     def mainimpl(cls, args):
@@ -593,7 +593,7 @@ class Launch(ParserCommand):
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv: # TODO: Likely to be major 2 when launching manually.
-            venv.run('exec', localreqs, module, args.scriptargs)
+            venv.run('exec', localreqs, module, args.scriptarg)
 
 class NoRequirementsFoundException(Exception): pass
 
