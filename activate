@@ -345,6 +345,7 @@ class Pool:
         self.pyversion = pyversion
 
     def _newvenv(self, installdeps):
+        log.info('Create new venv.')
         try:
             _osop(os.makedirs, self.versiondir)
         except oserrors[errno.EEXIST]:
