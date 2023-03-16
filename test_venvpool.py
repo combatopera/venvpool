@@ -84,7 +84,7 @@ class TestVenvPool(TestCase):
                 "%s%s(%r)" % (inspect.getsource(_inherithandle), _inherithandle.__name__, tempdir),
             ], env = dict(os.environ, PYTHONPATH = os.path.dirname(venvpool.__file__)))
 
-    def test_fileglobal(self):
+    def test_fileglobal(self): # XXX: Does this have to use the shared pool?
         with TemporaryDirectory() as tempdir:
             open(os.path.join(tempdir, 'requirements.txt'), 'w').close()
             scriptpath = os.path.join(tempdir, 'module.py')
