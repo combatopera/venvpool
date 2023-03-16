@@ -192,7 +192,7 @@ class SharedDir(object):
 def _safewhich(name):
     poolprefix = pooldir + os.sep
     for bindir in os.environ['PATH'].split(os.pathsep):
-        if bindir.startswith(poolprefix) or not os.path.isabs(bindir):
+        if bindir.startswith(poolprefix) or not os.path.isabs(bindir): # XXX: Also exclude other venvs?
             log.debug("Ignore bin directory: %s", bindir)
         else:
             path = os.path.join(bindir, name)
