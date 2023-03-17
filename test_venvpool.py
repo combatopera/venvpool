@@ -162,6 +162,15 @@ class ReqCase:
             self.assertTrue('2' in r.parsed)
             self.assertTrue('2.9' in r.parsed)
             self.assertFalse('3' in r.parsed)
+        for r in self.reqcls.parselines(['foo[bar]', ' foo [ bar ] ']):
+            self.assertEqual('foo', r.namepart)
+            self.assertEqual('foo[bar]', r.reqstr)
+        for r in self.reqcls.parselines(['foo[bar,baz]', ' foo [ bar , baz ] ']):
+            self.assertEqual('foo', r.namepart)
+            self.assertEqual('foo[bar,baz]', r.reqstr)
+        for r in self.reqcls.parselines(['foo[]', ' foo [ ] ']):
+            self.assertEqual('foo', r.namepart)
+            self.assertEqual('foo', r.reqstr)
 
 class TestFastReq(TestCase, ReqCase):
 
