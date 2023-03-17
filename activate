@@ -459,15 +459,20 @@ class FastReq:
             n = max(map(len, versions))
             return self.operator(*map(pad, versions))
 
-    @staticmethod
-    def _splitversion(versionstr):
-        return [int(k) for k in versionstr.split('.')]
+    class DevSegment:
+
+        def __init__(self, n):
+            self.n = n
+
+    @classmethod
+    def _splitversion(cls, versionstr, devprefix = 'dev'):
+        return [cls.DevSegment(int(k[len(devprefix):])) if k.startswith(devprefix) else int(k) for k in versionstr.split('.')]
 
     s = r'\s*'
     name = '[A-Za-z0-9._-]+' # Slightly more lenient than PEP 508.
     allnames = re.compile(name).findall
     extras = r"\[{s}(?:{name}{s}(?:,{s}{name}{s})*)?]".format(**locals())
-    version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals()) # Subset of features.
+    version = "(<|<=|!=|==|>=|>){s}([0-9.]+(?:[.]dev[0-9]+)?)".format(**locals()) # Subset of features.
     versionmatch = re.compile("^{s}{version}{s}$".format(**locals())).search
     getmatch = re.compile("^{s}({name}){s}({extras}{s})?({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())).search
     skipmatch = re.compile("^{s}(?:#|$)".format(**locals())).search
