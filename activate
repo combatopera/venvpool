@@ -466,7 +466,7 @@ class FastReq:
     versionmatch = re.compile("^{s}{version}{s}$".format(**locals())).search
     getmatch = re.compile("^{s}({name}){s}(?:{extras}{s})?({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())).search
     skipmatch = re.compile("^{s}(?:#|$)".format(**locals())).search
-    del s, name, version
+    del s, name, extras, version
     operators = {
         '<': operator.lt,
         '<=': operator.le,
