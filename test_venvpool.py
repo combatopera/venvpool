@@ -135,12 +135,14 @@ class ReqCase:
     def test_parse(self):
         for r in self.reqcls.parselines([' woo ', 'woo']):
             self.assertEqual('woo', r.namepart)
+            self.assertEqual((), r.extras)
             self.assertEqual('woo', r.reqstr)
             self.assertTrue('1.2.3' in r.parsed)
             self.assertTrue('2.0' in r.parsed)
             self.assertTrue('500' in r.parsed)
         for r in self.reqcls.parselines([' W--..__o == 5 ', 'W--..__o==5']):
             self.assertEqual('W--..__o', r.namepart)
+            self.assertEqual((), r.extras)
             self.assertEqual('W--..__o==5', r.reqstr)
             self.assertFalse('1.2.3' in r.parsed)
             self.assertFalse('2.0' in r.parsed)
@@ -149,6 +151,7 @@ class ReqCase:
             self.assertTrue('5.00' in r.parsed)
         for r in self.reqcls.parselines([' woo == 5.00 ', 'woo==5.00']):
             self.assertEqual('woo', r.namepart)
+            self.assertEqual((), r.extras)
             self.assertEqual('woo==5.00', r.reqstr)
             self.assertFalse('1.2.3' in r.parsed)
             self.assertFalse('2.0' in r.parsed)
@@ -157,6 +160,7 @@ class ReqCase:
             self.assertTrue('5.00' in r.parsed)
         for r in self.reqcls.parselines([' yay >= 2 , < 3 ', 'yay>=2,<3']):
             self.assertEqual('yay', r.namepart)
+            self.assertEqual((), r.extras)
             self.assertEqual('yay<3,>=2', r.reqstr)
             self.assertFalse('1.9' in r.parsed)
             self.assertTrue('2' in r.parsed)
@@ -164,12 +168,15 @@ class ReqCase:
             self.assertFalse('3' in r.parsed)
         for r in self.reqcls.parselines(['foo[bar]', ' foo [ bar ] ']):
             self.assertEqual('foo', r.namepart)
+            self.assertEqual(('bar',), r.extras)
             self.assertEqual('foo[bar]', r.reqstr)
         for r in self.reqcls.parselines(['foo[bar,baz]', ' foo [ bar , baz ] ']):
             self.assertEqual('foo', r.namepart)
+            self.assertEqual(('bar', 'baz'), r.extras)
             self.assertEqual('foo[bar,baz]', r.reqstr)
         for r in self.reqcls.parselines(['foo[]', ' foo [ ] ']):
             self.assertEqual('foo', r.namepart)
+            self.assertEqual((), r.extras)
             self.assertEqual('foo', r.reqstr)
 
 class TestFastReq(TestCase, ReqCase):

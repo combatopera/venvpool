@@ -434,6 +434,10 @@ class BaseReq:
         return self.parsed.name
 
     @property
+    def extras(self):
+        return self.parsed.extras
+
+    @property
     def reqstr(self):
         return str(self.parsed)
 
@@ -490,15 +494,16 @@ class FastReq:
                         operatorstr, versionstr = cls.versionmatch(onestr).groups()
                         versions.append(cls.Version(cls.operators[operatorstr], cls._splitversion(versionstr)))
                         reqstrversions.append(operatorstr + versionstr)
-                yield cls(namepart, versions, namepart + ','.join(sorted(reqstrversions)))
+                yield cls(namepart, (), versions, namepart + ','.join(sorted(reqstrversions)))
         return list(g())
 
     @property
     def parsed(self):
         return self
 
-    def __init__(self, namepart, versions, reqstr):
+    def __init__(self, namepart, extras, versions, reqstr):
         self.namepart = namepart
+        self.extras = extras
         self.versions = versions
         self.reqstr = reqstr
 
