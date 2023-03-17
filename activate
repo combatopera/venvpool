@@ -537,13 +537,13 @@ class SimpleInstallDeps:
                     continue
                 if os.path.exists(projectdir):
                     local[projectdir] = None
-                    nextreqs.extend(self.reqcls.parselines(makerequirementslines(projectdir))) # FIXME: Can pass None into parselines.
+                    nextreqs.extend(self.reqcls.parselines(makerequirementslines(projectdir, req.extras))) # FIXME: Can pass None into parselines.
                 else:
                     self.pypireqs.append(req)
             reqs = nextreqs
         return list(local)
 
-def _getrequirementslinesornone(projectdir):
+def _getrequirementslinesornone(projectdir, extras):
     def linesornone(acceptnull, *names):
         path = os.path.join(projectdir, *names)
         if os.path.exists(path):
@@ -553,6 +553,8 @@ def _getrequirementslinesornone(projectdir):
         if acceptnull:
             log.debug("Null requirements: %s", path)
             return []
+    if extras:
+        log.warning("Ignore extras: %s", extras) # TODO: Find extra requirements as well.
     v = linesornone(False, 'requirements.txt')
     if v is not None:
         return v
@@ -606,7 +608,7 @@ class NoRequirementsFoundException(Exception): pass
 
 def _findrequirements(projectdir):
     while True:
-        requirementslines = _getrequirementslinesornone(projectdir)
+        requirementslines = _getrequirementslinesornone(projectdir, ())
         if requirementslines is not None:
             return projectdir, requirementslines
         parent = os.path.dirname(projectdir)
