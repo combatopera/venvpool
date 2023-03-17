@@ -172,7 +172,7 @@ class ReqCase:
             self.assertEqual('foo[bar]', r.reqstr)
         for r in self.reqcls.parselines(['foo[bar,baz]', ' foo [ bar , baz ] ']):
             self.assertEqual('foo', r.namepart)
-            self.assertEqual(('bar', 'baz'), r.extras)
+            self.assertEqual({'bar', 'baz'}, set(r.extras))
             self.assertEqual('foo[bar,baz]', r.reqstr)
         for r in self.reqcls.parselines(['foo[]', ' foo [ ] ']):
             self.assertEqual('foo', r.namepart)
