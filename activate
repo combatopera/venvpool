@@ -464,7 +464,7 @@ class FastReq:
     extras = r"\[{s}(?:{name}{s}(?:,{s}{name}{s})*)?]".format(**locals())
     version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals()) # Subset of features.
     versionmatch = re.compile("^{s}{version}{s}$".format(**locals())).search
-    getmatch = re.compile("^{s}({name}){s}(?:{extras}{s})?({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())).search
+    getmatch = re.compile("^{s}({name}){s}({extras}{s})?({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())).search
     skipmatch = re.compile("^{s}(?:#|$)".format(**locals())).search
     del s, name, extras, version
     operators = {
@@ -482,7 +482,7 @@ class FastReq:
             for line in lines:
                 if cls.skipmatch(line) is not None:
                     continue
-                namepart, versionspec = cls.getmatch(line).groups()[:2]
+                namepart, extras, versionspec = cls.getmatch(line).groups()[:3]
                 versions = []
                 reqstrversions = []
                 if versionspec is not None:
