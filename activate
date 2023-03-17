@@ -465,6 +465,7 @@ class FastReq:
 
     s = r'\s*'
     name = '[A-Za-z0-9._-]+' # Slightly more lenient than PEP 508.
+    allnames = re.compile(name).findall
     extras = r"\[{s}(?:{name}{s}(?:,{s}{name}{s})*)?]".format(**locals())
     version = "(<|<=|!=|==|>=|>){s}([0-9.]+)".format(**locals()) # Subset of features.
     versionmatch = re.compile("^{s}{version}{s}$".format(**locals())).search
@@ -487,6 +488,7 @@ class FastReq:
                 if cls.skipmatch(line) is not None:
                     continue
                 namepart, extras, versionspec = cls.getmatch(line).groups()[:3]
+                extras = () if extras is None else tuple(sorted(set(cls.allnames(extras)))) # TODO LATER: Normalisation.
                 versions = []
                 reqstrversions = []
                 if versionspec is not None:
@@ -494,7 +496,7 @@ class FastReq:
                         operatorstr, versionstr = cls.versionmatch(onestr).groups()
                         versions.append(cls.Version(cls.operators[operatorstr], cls._splitversion(versionstr)))
                         reqstrversions.append(operatorstr + versionstr)
-                yield cls(namepart, (), versions, namepart + ','.join(sorted(reqstrversions)))
+                yield cls(namepart, extras, versions, namepart + ("[%s]" % ','.join(extras) if extras else '') + ','.join(sorted(reqstrversions)))
         return list(g())
 
     @property
