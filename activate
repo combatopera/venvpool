@@ -554,7 +554,7 @@ def _getrequirementslinesornone(projectdir, extras):
             log.debug("Null requirements: %s", path)
             return []
     if extras:
-        log.warning("Ignore extras: %s", extras) # TODO: Find extra requirements as well.
+        log.warning("Ignore extras %s in: %s", ','.join(extras), projectdir) # TODO: Find extra requirements as well.
     v = linesornone(False, 'requirements.txt')
     if v is not None:
         return v
