@@ -302,8 +302,8 @@ class Execute:
     help = 'please ignore'
     letter = 'X'
 
-    @staticmethod
-    def main():
+    @classmethod
+    def main(cls):
         import runpy # A few thousandths.
         assert '-X' == sys.argv.pop(1)
         sys.path[0] = bindir = os.path.dirname(sys.executable)
@@ -314,18 +314,19 @@ class Execute:
         else:
             envpath = bindir + os.pathsep + envpath
         os.environ['PATH'] = envpath
-        sys.path[slice(*[_insertionpoint(sys.path)] * 2)] = _decompress(sys.argv.pop(1).split(os.pathsep))
+        sys.path[slice(*[cls._insertionpoint(sys.path)] * 2)] = _decompress(sys.argv.pop(1).split(os.pathsep))
         runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
 
-def _insertionpoint(v, suffix = os.sep + 'site-packages'):
-    i = n = len(v)
-    while not v[i - 1].endswith(suffix):
-        i -= 1
-        if not i:
-            return n
-    while i and v[i - 1].endswith(suffix):
-        i -= 1
-    return i
+    @staticmethod
+    def _insertionpoint(v, suffix = os.sep + 'site-packages'):
+        i = n = len(v)
+        while not v[i - 1].endswith(suffix):
+            i -= 1
+            if not i:
+                return n
+        while i and v[i - 1].endswith(suffix):
+            i -= 1
+        return i
 
 class Pool:
 

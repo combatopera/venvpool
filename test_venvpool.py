@@ -17,7 +17,7 @@
 
 from tempfile import mkstemp
 from unittest import TestCase
-from venvpool import BaseReq, _chunkify, _compress, _decompress, FastReq, _insertionpoint, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from venvpool import BaseReq, _chunkify, _compress, _decompress, Execute, FastReq, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
 import errno, inspect, os, subprocess, sys, venvpool
 
 def _inherithandle(tempdir):
@@ -93,14 +93,14 @@ class TestVenvPool(TestCase):
             self.assertEqual(scriptpath + '\n', subprocess.check_output([sys.executable, venvpool.__file__, '-L', scriptpath], universal_newlines = True))
 
     def test_insertionpoint(self):
-        self.assertEqual(0, _insertionpoint(['ax', 'bx', 'cx'], 'x'))
-        self.assertEqual(1, _insertionpoint(['a', 'bx', 'cx'], 'x'))
-        self.assertEqual(2, _insertionpoint(['ax', 'b', 'cx'], 'x'))
-        self.assertEqual(2, _insertionpoint(['a', 'b', 'cx'], 'x'))
-        self.assertEqual(0, _insertionpoint(['ax', 'bx', 'c'], 'x'))
-        self.assertEqual(1, _insertionpoint(['a', 'bx', 'c'], 'x'))
-        self.assertEqual(0, _insertionpoint(['ax', 'b', 'c'], 'x'))
-        self.assertEqual(3, _insertionpoint(['a', 'b', 'c'], 'x'))
+        self.assertEqual(0, Execute._insertionpoint(['ax', 'bx', 'cx'], 'x'))
+        self.assertEqual(1, Execute._insertionpoint(['a', 'bx', 'cx'], 'x'))
+        self.assertEqual(2, Execute._insertionpoint(['ax', 'b', 'cx'], 'x'))
+        self.assertEqual(2, Execute._insertionpoint(['a', 'b', 'cx'], 'x'))
+        self.assertEqual(0, Execute._insertionpoint(['ax', 'bx', 'c'], 'x'))
+        self.assertEqual(1, Execute._insertionpoint(['a', 'bx', 'c'], 'x'))
+        self.assertEqual(0, Execute._insertionpoint(['ax', 'b', 'c'], 'x'))
+        self.assertEqual(3, Execute._insertionpoint(['a', 'b', 'c'], 'x'))
 
     def test_chunkify(self):
         self.assertEqual([], list(_chunkify(5, [])))
