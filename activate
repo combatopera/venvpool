@@ -764,9 +764,7 @@ class ConsoleScripts(ParserCommand):
         configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool')
         d = mkdtemp(dir = configdir)
         with open(os.path.join(d, 'requirements.txt'), 'w') as f:
-            f.write("""importlib-metadata
-%s
-""" % spec.reqstr)
+            f.write("importlib-metadata\n%s\n" % spec.reqstr)
         scriptpath = os.path.join(d, 'list.py')
         with open(scriptpath, 'w') as f:
             f.write("""from importlib_metadata import distribution
@@ -777,6 +775,8 @@ for ep in distribution(%r).entry_points:
         pyversion = 3
         names = subprocess.check_output(["python%s" % pyversion, __file__, '-L', scriptpath]).splitlines()
         os.remove(scriptpath)
+        with open(os.path.join(d, 'requirements.txt'), 'w') as f:
+            f.write("%s\n" % spec.reqstr)
         for name in names:
             with open(os.path.join(d, name + dotpy), 'w') as f:
                 f.write("""import os, sys
