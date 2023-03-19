@@ -639,7 +639,7 @@ class Activate(ParserCommand):
     def mainimpl(cls, args):
         for projectdir in args.projectdir:
             try:
-                cls._scan(_findrequirements(os.path.realpath(projectdir))[0], 3, args.f) # XXX: Always 3?
+                cls.scan(_findrequirements(os.path.realpath(projectdir))[0], 3, args.f) # XXX: Always 3?
             except NoRequirementsFoundException:
                 log.exception("Skip: %s", projectdir)
 
@@ -654,7 +654,7 @@ class Activate(ParserCommand):
                             yield path
 
     @classmethod
-    def _scan(cls, projectdir, pyversion, force):
+    def scan(cls, projectdir, pyversion, force):
         venvpoolpath = os.path.realpath(__file__)
         for srcpath in cls._srcpaths(projectdir):
             if not checkpath(projectdir, srcpath):
@@ -749,7 +749,46 @@ class Compact(ParserCommand):
             subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
         log.info('Compaction complete.')
 
-propersubcommands = Execute, Launch, Compact
+class ConsoleScripts(ParserCommand):
+
+    help = 'activate all console scripts of the given requirement specifier'
+    letter = 'S'
+
+    @staticmethod
+    def initparser(parser):
+        parser.add_argument('spec', help = 'a requirement specifier')
+
+    @staticmethod
+    def mainimpl(args):
+        spec, = FastReq.parselines([args.spec])
+        configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool')
+        d = mkdtemp(dir = configdir)
+        with open(os.path.join(d, 'requirements.txt'), 'w') as f:
+            f.write("""importlib-metadata
+%s
+""" % spec.reqstr)
+        scriptpath = os.path.join(d, 'list.py')
+        with open(scriptpath, 'w') as f:
+            f.write("""from importlib_metadata import distribution
+for ep in distribution(%r).entry_points:
+    if 'console_scripts' == ep.group:
+        print(ep.name)
+""" % spec.namepart)
+        pyversion = 3
+        names = subprocess.check_output(["python%s" % pyversion, __file__, '-L', scriptpath]).splitlines()
+        os.remove(scriptpath)
+        for name in names:
+            with open(os.path.join(d, name + dotpy), 'w') as f:
+                f.write("""import os, sys
+def main():
+    v = [os.path.join(os.path.dirname(sys.executable), %r)] + sys.argv[1:]
+    os.execv(v[0], v)
+if '__main__' %s __name__:
+    main()
+""" % (name, '=='))
+        Activate.scan(d, pyversion, False)
+
+propersubcommands = Execute, Launch, Compact, ConsoleScripts
 
 def main():
     try:
