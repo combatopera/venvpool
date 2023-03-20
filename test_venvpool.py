@@ -15,10 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys, time
+
+venvpoolname = 'venvpool'
+assert venvpoolname not in sys.modules
+mark = time.time()
+import venvpool
+loadtime = time.time() - mark
+assert venvpoolname in sys.modules
+
 from tempfile import mkstemp
 from unittest import TestCase
 from venvpool import BaseReq, _chunkify, _compress, _decompress, Execute, FastReq, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
-import errno, inspect, os, subprocess, sys, venvpool
+import errno, inspect, os, subprocess
 
 def _inherithandle(tempdir):
     from signal import SIGINT
@@ -42,6 +51,10 @@ def _inherithandle(tempdir):
     assert d.trywritelock()
 
 class TestVenvPool(TestCase):
+
+    def test_loadtime(self):
+        if 2 < sys.version_info.major:
+            self.assertTrue(loadtime < .01)
 
     def test_oserrors(self):
         with TemporaryDirectory() as tempdir:
