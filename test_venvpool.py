@@ -54,7 +54,9 @@ class TestVenvPool(TestCase):
 
     def test_loadtime(self):
         if 2 < sys.version_info.major:
-            self.assertTrue(loadtime < .01)
+            expression = "%s < .01" % loadtime
+            sys.stderr.write("%s ... " % expression)
+            self.assertTrue(eval(expression))
 
     def test_oserrors(self):
         with TemporaryDirectory() as tempdir:
