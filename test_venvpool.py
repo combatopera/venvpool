@@ -24,10 +24,11 @@ import venvpool
 loadtime = time.time() - mark
 assert venvpoolname in sys.modules
 
+from multiprocessing import cpu_count
 from tempfile import mkstemp
 from unittest import TestCase
 from venvpool import BaseReq, _chunkify, _compress, _decompress, Execute, FastReq, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
-import errno, inspect, os, subprocess
+import errno, inspect, operator, os, subprocess
 
 def _inherithandle(tempdir):
     from signal import SIGINT
@@ -53,10 +54,15 @@ def _inherithandle(tempdir):
 class TestVenvPool(TestCase):
 
     def test_loadtime(self):
-        if 2 < sys.version_info.major:
-            expression = "%s < .01" % loadtime
-            sys.stderr.write("%s ... " % expression)
-            self.assertTrue(eval(expression))
+        def expr(lhs, op, rhs, strs = {operator.ge: '>=', operator.lt: '<'}):
+            sys.stderr.write("%s %s %s ... " % (lhs, strs[op], rhs))
+            return op(lhs, rhs)
+        if not expr(sys.version_info.major, operator.ge, 3):
+            return
+        with open('/proc/loadavg') as f:
+            if not expr(cpu_count(), operator.ge, float(f.read().split()[0])):
+                return
+        self.assertTrue(expr(loadtime, operator.lt, .01))
 
     def test_oserrors(self):
         with TemporaryDirectory() as tempdir:
