@@ -762,6 +762,10 @@ class ConsoleScripts(ParserCommand):
     def mainimpl(args):
         spec, = FastReq.parselines([args.spec])
         configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool')
+        try:
+            _osop(os.makedirs, configdir)
+        except oserrors[errno.EEXIST]:
+            pass
         d = mkdtemp(dir = configdir)
         with open(os.path.join(d, 'requirements.txt'), 'w') as f:
             f.write("importlib-metadata\n%s\n" % spec.reqstr)
@@ -773,7 +777,7 @@ for ep in distribution(%r).entry_points:
         print(ep.name)
 """ % spec.namepart)
         pyversion = 3
-        names = subprocess.check_output(["python%s" % pyversion, __file__, '-L', scriptpath]).splitlines()
+        names = subprocess.check_output(["python%s" % pyversion, __file__, '-L', scriptpath], universal_newlines = True).splitlines()
         os.remove(scriptpath)
         with open(os.path.join(d, 'requirements.txt'), 'w') as f:
             f.write("%s\n" % spec.reqstr)
