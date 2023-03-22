@@ -268,6 +268,8 @@ class Venv(SharedDir):
             return subprocess.call(argv, **kwargs)
         if 'check_call' == mode:
             return subprocess.check_call(argv, **kwargs)
+        if 'check_output' == mode:
+            return subprocess.check_output(argv, **kwargs)
         if 'exec' == mode:
             os.execv(argv[0], argv, **kwargs)
         raise ValueError(mode)
@@ -774,13 +776,12 @@ class ConsoleScripts(ParserCommand):
         except oserrors[errno.EEXIST]:
             pass
         d = mkdtemp(dir = configdir)
-        with open(os.path.join(d, 'requirements.txt'), 'w') as f:
-            f.write("importlib-metadata\n%s\n" % spec.reqstr)
         scriptpath = os.path.join(d, 'list.py')
         with open(scriptpath, 'w') as f:
             f.write("%s%s(%r)\n" % (getsource(_commands), _commands.__name__, spec.namepart))
         pyversion = 3
-        names = subprocess.check_output(["python%s" % pyversion, __file__, '-L', scriptpath], universal_newlines = True).splitlines()
+        with Pool(pyversion).readonly(SimpleInstallDeps(['importlib-metadata', spec.reqstr])) as venv:
+            names = venv.run('check_output', [d], 'list', [], universal_newlines = True).splitlines()
         os.remove(scriptpath)
         with open(os.path.join(d, 'requirements.txt'), 'w') as f:
             f.write("%s\n" % spec.reqstr)
