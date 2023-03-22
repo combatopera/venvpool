@@ -778,7 +778,7 @@ class ConsoleScripts(ParserCommand):
                 names = venv.run('check_output', [tempdir], 'list', [], universal_newlines = True).splitlines()
         configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool')
         try:
-            _osop(os.makedirs, configdir)
+            _osop(os.mkdir, configdir)
         except oserrors[errno.EEXIST]:
             pass
         d = mkdtemp(dir = configdir)
