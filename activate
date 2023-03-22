@@ -299,7 +299,7 @@ def _decompress(paths):
 
 class Execute:
 
-    help = 'please ignore'
+    help = 'augment interpreter environment and exec module for internal use only'
     letter = 'X'
 
     @classmethod
@@ -589,7 +589,7 @@ class ParserCommand:
 
 class Launch(ParserCommand):
 
-    help = 'launch a script with the requirements it needs'
+    help = 'launch a script with the interpreter and requirements it needs'
     letter = 'L'
 
     @staticmethod
@@ -711,7 +711,7 @@ def commandornone(srcpath):
 
 class Compact(ParserCommand):
 
-    help = 'compact the pool'
+    help = 'compact the pool of venvs'
     letter = 'C'
 
     @staticmethod
