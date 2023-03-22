@@ -596,6 +596,7 @@ class Launch(ParserCommand):
 
     @staticmethod
     def initparser(parser):
+        parser.add_argument('--isolated', action = 'store_true', help = 'exclude sibling projects when satisfying requirements')
         parser.add_argument('--pip', help = 'alternate pip executable')
         parser.add_argument('scriptpath', type = os.path.abspath, help = 'should be preceded by a -- arg') # XXX: Is abspath safe when scriptpath has symlinks?
         parser.add_argument('scriptarg', nargs = '*', help = 'arguments for scriptpath')
@@ -606,7 +607,7 @@ class Launch(ParserCommand):
         assert scriptpath.endswith(dotpy)
         projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
         installdeps = SimpleInstallDeps(requirementslines, args.pip, FastReq)
-        localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
+        localreqs = [] if args.isolated else installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv: # TODO: Likely to be major 2 when launching manually.
@@ -665,20 +666,26 @@ class Activate(ParserCommand):
             if command is None:
                 log.debug("Bad source name: %s", srcpath)
                 continue
-            cls.install(force, command, pyversion, srcpath)
+            cls.install(force, command, pyversion, False, srcpath)
 
     @staticmethod
-    def install(force, command, pyversion, *words):
+    def install(force, command, pyversion, isolated, *words):
+        def allwords():
+            if isolated:
+                yield '--isolated'
+            yield '--'
+            for w in words:
+                yield w
         def identical():
             mode = os.stat(scriptpath).st_mode
             if mode | executablebits == mode:
                 with open(scriptpath) as f:
                     return f.read() == text
-        wordsrepr = ', '.join(map(repr, words))
+        wordsrepr = ', '.join(map(repr, allwords()))
         venvpoolpath = os.path.realpath(__file__)
         text = """#!/usr/bin/env python{pyversion}
 import sys
-sys.argv[1:1] = '-L', '--', {wordsrepr}
+sys.argv[1:1] = '-L', {wordsrepr}
 __file__ = {venvpoolpath!r}
 with open(__file__) as f: venvpoolsrc = f.read()
 del sys, f
@@ -687,14 +694,16 @@ exec(venvpoolsrc)
         scriptpath = os.path.join(userbin, command) # TODO: Warn if shadowed.
         if os.path.exists(scriptpath):
             if not force:
-                log.debug("%s: %s", 'Identical' if identical() else 'Exists', scriptpath)
-                return
+                ok = identical()
+                log.debug("%s: %s", 'Identical' if ok else 'Exists', scriptpath)
+                return ok
             log.info("Overwrite: %s", scriptpath)
         else:
             log.info("Create: %s", scriptpath)
         with open(scriptpath, 'w') as f:
             f.write(text)
         os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
+        return True
 
 def checkpath(projectdir, path):
     while True:
@@ -775,19 +784,27 @@ class ConsoleScripts(ParserCommand):
                 f.write("class C:\n%sC.%s(%r)\n" % (getsource(cls._commands), cls._commands.__name__, spec.namepart))
             with Pool(pyversion).readonly(SimpleInstallDeps(['importlib-metadata', spec.reqstr])) as venv:
                 names = venv.run('check_output', [tempdir], 'list', [], universal_newlines = True).splitlines()
-        configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool')
-        try:
-            _osop(os.mkdir, configdir)
-        except oserrors[errno.EEXIST]:
-            pass
-        d = mkdtemp(dir = configdir)
-        with open(os.path.join(d, 'requirements.txt'), 'w') as f:
-            f.write("%s\n" % spec.reqstr)
-        srcpath = os.path.join(d, 'chain.py')
-        with open(srcpath, 'w') as f:
-            f.write("class C:\n%sC.%s()\n" % (getsource(cls._chain), cls._chain.__name__))
+        configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool', 'console_scripts')
         for name in names:
-            Activate.install(args.f, name, pyversion, srcpath, name)
+            d = os.path.join(configdir, name)
+            srcpath = os.path.join(d, 'chain.py')
+            if not Activate.install(args.f, name, pyversion, True, srcpath, name):
+                continue
+            if os.path.exists(d):
+                if not args.f:
+                    log.debug("Exists: %s", d)
+                    continue
+                log.info("Overwrite: %s", d)
+            else:
+                log.info("Create: %s", d)
+            try:
+                _osop(os.makedirs, d)
+            except oserrors[errno.EEXIST]:
+                pass
+            with open(os.path.join(d, 'requirements.txt'), 'w') as f:
+                f.write("%s\n" % spec.reqstr)
+            with open(srcpath, 'w') as f:
+                f.write("class C:\n%sC.%s()\n" % (getsource(cls._chain), cls._chain.__name__))
 
     @staticmethod
     def _commands(distname):
