@@ -669,6 +669,11 @@ class Activate(ParserCommand):
 
     @staticmethod
     def install(force, command, pyversion, *words):
+        def identical():
+            mode = os.stat(scriptpath).st_mode
+            if mode | executablebits == mode:
+                with open(scriptpath) as f:
+                    return f.read() == text
         wordsrepr = ', '.join(map(repr, words))
         venvpoolpath = os.path.realpath(__file__)
         text = """#!/usr/bin/env python{pyversion}
@@ -681,14 +686,8 @@ exec(venvpoolsrc)
 """.format(**locals())
         scriptpath = os.path.join(userbin, command) # TODO: Warn if shadowed.
         if os.path.exists(scriptpath):
-            mode = os.stat(scriptpath).st_mode
-            if mode | executablebits == mode:
-                with open(scriptpath) as f:
-                    if f.read() == text:
-                        log.debug("Identical: %s", scriptpath)
-                        return
             if not force:
-                log.info("Exists: %s", scriptpath)
+                log.debug("%s: %s", 'Identical' if identical() else 'Exists', scriptpath)
                 return
             log.info("Overwrite: %s", scriptpath)
         else:
