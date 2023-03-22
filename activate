@@ -778,11 +778,7 @@ class ConsoleScripts(ParserCommand):
             f.write("importlib-metadata\n%s\n" % spec.reqstr)
         scriptpath = os.path.join(d, 'list.py')
         with open(scriptpath, 'w') as f:
-            f.write("""from importlib_metadata import distribution
-for ep in distribution(%r).entry_points:
-    if 'console_scripts' == ep.group:
-        print(ep.name)
-""" % spec.namepart)
+            f.write("%s%s(%r)\n" % (getsource(_commands), _commands.__name__, spec.namepart))
         pyversion = 3
         names = subprocess.check_output(["python%s" % pyversion, __file__, '-L', scriptpath], universal_newlines = True).splitlines()
         os.remove(scriptpath)
@@ -793,6 +789,12 @@ for ep in distribution(%r).entry_points:
             f.write("%s%s()\n" % (getsource(_chain), _chain.__name__))
         for name in names:
             Activate.install([srcpath, name], name, pyversion, args.f)
+
+def _commands(distname):
+    from importlib_metadata import distribution
+    for ep in distribution(distname).entry_points:
+        if 'console_scripts' == ep.group:
+            print(ep.name)
 
 def _chain():
     import os, sys
