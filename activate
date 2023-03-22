@@ -770,19 +770,18 @@ class ConsoleScripts(ParserCommand):
     def mainimpl(args):
         from inspect import getsource # About two hundredths.
         spec, = FastReq.parselines([args.spec])
+        pyversion = 3
+        with TemporaryDirectory() as tempdir:
+            with open(os.path.join(tempdir, 'list.py'), 'w') as f:
+                f.write("%s%s(%r)\n" % (getsource(_commands), _commands.__name__, spec.namepart))
+            with Pool(pyversion).readonly(SimpleInstallDeps(['importlib-metadata', spec.reqstr])) as venv:
+                names = venv.run('check_output', [tempdir], 'list', [], universal_newlines = True).splitlines()
         configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool')
         try:
             _osop(os.makedirs, configdir)
         except oserrors[errno.EEXIST]:
             pass
         d = mkdtemp(dir = configdir)
-        scriptpath = os.path.join(d, 'list.py')
-        with open(scriptpath, 'w') as f:
-            f.write("%s%s(%r)\n" % (getsource(_commands), _commands.__name__, spec.namepart))
-        pyversion = 3
-        with Pool(pyversion).readonly(SimpleInstallDeps(['importlib-metadata', spec.reqstr])) as venv:
-            names = venv.run('check_output', [d], 'list', [], universal_newlines = True).splitlines()
-        os.remove(scriptpath)
         with open(os.path.join(d, 'requirements.txt'), 'w') as f:
             f.write("%s\n" % spec.reqstr)
         srcpath = os.path.join(d, 'chain.py')
