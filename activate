@@ -639,7 +639,7 @@ class Activate(ParserCommand):
     def mainimpl(cls, args):
         for projectdir in args.projectdir:
             try:
-                cls.scan(_findrequirements(os.path.realpath(projectdir))[0], 3, args.f) # XXX: Always 3?
+                cls._scan(_findrequirements(os.path.realpath(projectdir))[0], 3, args.f) # XXX: Always 3?
             except NoRequirementsFoundException:
                 log.exception("Skip: %s", projectdir)
 
@@ -654,7 +654,7 @@ class Activate(ParserCommand):
                             yield path
 
     @classmethod
-    def scan(cls, projectdir, pyversion, force):
+    def _scan(cls, projectdir, pyversion, force):
         for srcpath in cls._srcpaths(projectdir):
             if not checkpath(projectdir, srcpath):
                 log.debug("Not a project source file: %s", srcpath)
