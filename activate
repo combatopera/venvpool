@@ -655,7 +655,6 @@ class Activate(ParserCommand):
 
     @classmethod
     def scan(cls, projectdir, pyversion, force):
-        venvpoolpath = os.path.realpath(__file__)
         for srcpath in cls._srcpaths(projectdir):
             if not checkpath(projectdir, srcpath):
                 log.debug("Not a project source file: %s", srcpath)
@@ -664,7 +663,12 @@ class Activate(ParserCommand):
             if command is None:
                 log.debug("Bad source name: %s", srcpath)
                 continue
-            text = """#!/usr/bin/env python{pyversion}
+            cls.install(srcpath, command, pyversion, force)
+
+    @staticmethod
+    def install(srcpath, command, pyversion, force):
+        venvpoolpath = os.path.realpath(__file__)
+        text = """#!/usr/bin/env python{pyversion}
 import sys
 sys.argv[1:1] = '-L', '--', {srcpath!r}
 __file__ = {venvpoolpath!r}
@@ -672,23 +676,23 @@ with open(__file__) as f: venvpoolsrc = f.read()
 del sys, f
 exec(venvpoolsrc)
 """.format(**locals())
-            scriptpath = os.path.join(userbin, command) # TODO: Warn if shadowed.
-            if os.path.exists(scriptpath):
-                mode = os.stat(scriptpath).st_mode
-                if mode | executablebits == mode:
-                    with open(scriptpath) as f:
-                        if f.read() == text:
-                            log.debug("Identical: %s", scriptpath)
-                            continue
-                if not force:
-                    log.info("Exists: %s", scriptpath)
-                    continue
-                log.info("Overwrite: %s", scriptpath)
-            else:
-                log.info("Create: %s", scriptpath)
-            with open(scriptpath, 'w') as f:
-                f.write(text)
-            os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
+        scriptpath = os.path.join(userbin, command) # TODO: Warn if shadowed.
+        if os.path.exists(scriptpath):
+            mode = os.stat(scriptpath).st_mode
+            if mode | executablebits == mode:
+                with open(scriptpath) as f:
+                    if f.read() == text:
+                        log.debug("Identical: %s", scriptpath)
+                        return
+            if not force:
+                log.info("Exists: %s", scriptpath)
+                return
+            log.info("Overwrite: %s", scriptpath)
+        else:
+            log.info("Create: %s", scriptpath)
+        with open(scriptpath, 'w') as f:
+            f.write(text)
+        os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
 
 def checkpath(projectdir, path):
     while True:
@@ -782,7 +786,8 @@ for ep in distribution(%r).entry_points:
         with open(os.path.join(d, 'requirements.txt'), 'w') as f:
             f.write("%s\n" % spec.reqstr)
         for name in names:
-            with open(os.path.join(d, name + dotpy), 'w') as f:
+            srcpath = os.path.join(d, name + dotpy)
+            with open(srcpath, 'w') as f:
                 f.write("""import os, sys
 def main():
     v = [os.path.join(os.path.dirname(sys.executable), %r)] + sys.argv[1:]
@@ -790,7 +795,7 @@ def main():
 if '__main__' %s __name__:
     main()
 """ % (name, '=='))
-        Activate.scan(d, pyversion, False)
+            Activate.install(srcpath, name, pyversion, False)
 
 propersubcommands = Execute, Launch, Compact, ConsoleScripts
 
