@@ -766,6 +766,7 @@ class ConsoleScripts(ParserCommand):
 
     @staticmethod
     def mainimpl(args):
+        from inspect import getsource # About two hundredths.
         spec, = FastReq.parselines([args.spec])
         configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool')
         try:
@@ -789,12 +790,14 @@ for ep in distribution(%r).entry_points:
             f.write("%s\n" % spec.reqstr)
         srcpath = os.path.join(d, 'chain.py')
         with open(srcpath, 'w') as f:
-            f.write('''import os, sys
-v = [os.path.join(os.path.dirname(sys.executable), sys.argv[1])] + sys.argv[2:]
-os.execv(v[0], v)
-''')
+            f.write("%s%s()\n" % (getsource(_chain), _chain.__name__))
         for name in names:
             Activate.install([srcpath, name], name, pyversion, args.f)
+
+def _chain():
+    import os, sys
+    v = [os.path.join(os.path.dirname(sys.executable), sys.argv[1])] + sys.argv[2:]
+    os.execv(v[0], v)
 
 propersubcommands = Execute, Launch, Compact, ConsoleScripts
 
