@@ -663,14 +663,15 @@ class Activate(ParserCommand):
             if command is None:
                 log.debug("Bad source name: %s", srcpath)
                 continue
-            cls.install(srcpath, command, pyversion, force)
+            cls.install([srcpath], command, pyversion, force)
 
     @staticmethod
-    def install(srcpath, command, pyversion, force):
+    def install(words, command, pyversion, force):
+        wordsrepr = ', '.join(map(repr, words))
         venvpoolpath = os.path.realpath(__file__)
         text = """#!/usr/bin/env python{pyversion}
 import sys
-sys.argv[1:1] = '-L', '--', {srcpath!r}
+sys.argv[1:1] = '-L', '--', {wordsrepr}
 __file__ = {venvpoolpath!r}
 with open(__file__) as f: venvpoolsrc = f.read()
 del sys, f
@@ -760,6 +761,7 @@ class ConsoleScripts(ParserCommand):
 
     @staticmethod
     def initparser(parser):
+        parser.add_argument('-f', action = 'store_true', help = 'overwrite existing scripts')
         parser.add_argument('spec', help = 'a requirement specifier')
 
     @staticmethod
@@ -785,17 +787,14 @@ for ep in distribution(%r).entry_points:
         os.remove(scriptpath)
         with open(os.path.join(d, 'requirements.txt'), 'w') as f:
             f.write("%s\n" % spec.reqstr)
+        srcpath = os.path.join(d, 'chain.py')
+        with open(srcpath, 'w') as f:
+            f.write('''import os, sys
+v = [os.path.join(os.path.dirname(sys.executable), sys.argv[1])] + sys.argv[2:]
+os.execv(v[0], v)
+''')
         for name in names:
-            srcpath = os.path.join(d, name + dotpy)
-            with open(srcpath, 'w') as f:
-                f.write("""import os, sys
-def main():
-    v = [os.path.join(os.path.dirname(sys.executable), %r)] + sys.argv[1:]
-    os.execv(v[0], v)
-if '__main__' %s __name__:
-    main()
-""" % (name, '=='))
-            Activate.install(srcpath, name, pyversion, False)
+            Activate.install([srcpath, name], name, pyversion, args.f)
 
 propersubcommands = Execute, Launch, Compact, ConsoleScripts
 
