@@ -665,10 +665,10 @@ class Activate(ParserCommand):
             if command is None:
                 log.debug("Bad source name: %s", srcpath)
                 continue
-            cls.install([srcpath], command, pyversion, force)
+            cls.install(force, command, pyversion, srcpath)
 
     @staticmethod
-    def install(words, command, pyversion, force):
+    def install(force, command, pyversion, *words):
         wordsrepr = ', '.join(map(repr, words))
         venvpoolpath = os.path.realpath(__file__)
         text = """#!/usr/bin/env python{pyversion}
@@ -788,7 +788,7 @@ class ConsoleScripts(ParserCommand):
         with open(srcpath, 'w') as f:
             f.write("class C:\n%sC.%s()\n" % (getsource(cls._chain), cls._chain.__name__))
         for name in names:
-            Activate.install([srcpath, name], name, pyversion, args.f)
+            Activate.install(args.f, name, pyversion, srcpath, name)
 
     @staticmethod
     def _commands(distname):
