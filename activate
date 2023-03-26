@@ -695,7 +695,10 @@ exec(venvpoolsrc)
         if os.path.exists(scriptpath):
             if not force:
                 ok = identical()
-                log.debug("%s: %s", 'Identical' if ok else 'Exists', scriptpath)
+                if ok:
+                    log.debug("Identical: %s", scriptpath)
+                else:
+                    log.info("Exists: %s", scriptpath)
                 return ok
             log.info("Overwrite: %s", scriptpath)
         else:
@@ -792,7 +795,7 @@ class ConsoleScripts(ParserCommand):
                 continue
             if os.path.exists(d):
                 if not args.f:
-                    log.debug("Exists: %s", d)
+                    log.info("Exists: %s", d)
                     continue
                 log.info("Overwrite: %s", d)
             else:
