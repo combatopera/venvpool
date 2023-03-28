@@ -693,13 +693,12 @@ exec(venvpoolsrc)
 """.format(**locals())
         scriptpath = os.path.join(userbin, command) # TODO: Warn if shadowed.
         if os.path.exists(scriptpath):
+            if identical():
+                log.debug("Identical: %s", scriptpath)
+                return True
             if not force:
-                ok = identical()
-                if ok:
-                    log.debug("Identical: %s", scriptpath)
-                else:
-                    log.info("Exists: %s", scriptpath)
-                return ok
+                log.info("Exists: %s", scriptpath)
+                return False
             log.info("Overwrite: %s", scriptpath)
         else:
             log.info("Create: %s", scriptpath)
