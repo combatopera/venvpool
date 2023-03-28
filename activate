@@ -244,7 +244,7 @@ class Venv(SharedDir):
                 return
         for r in installdeps.pypireqs:
             version = self._reqversionornone(r.namepart)
-            if version is None or version not in r.parsed:
+            if version is None or not r.acceptversion(version):
                 return
         log.debug("Found compatible venv: %s", self.venvpath)
         return True
@@ -299,7 +299,7 @@ def _decompress(paths):
     except StopIteration:
         pass
 
-class Execute:
+class Execute: # TODO: Fast path for this subcommand before most imports.
 
     help = 'augment interpreter environment and exec module for internal use only'
     letter = 'X'
@@ -447,6 +447,9 @@ class BaseReq:
     def __init__(self, parsed):
         self.parsed = parsed
 
+    def acceptversion(self, versionstr):
+        return versionstr in self.parsed
+
 class FastReq:
 
     class Version:
@@ -507,17 +510,13 @@ class FastReq:
                 yield cls(namepart, extras, versions, namepart + ("[%s]" % ','.join(extras) if extras else '') + ','.join(sorted(reqstrversions)))
         return list(g())
 
-    @property
-    def parsed(self):
-        return self
-
     def __init__(self, namepart, extras, versions, reqstr):
         self.namepart = namepart
         self.extras = extras
         self.versions = versions
         self.reqstr = reqstr
 
-    def __contains__(self, versionstr):
+    def acceptversion(self, versionstr):
         splitversion = self._splitversion(versionstr)
         return all(v.accept(splitversion) for v in self.versions)
 
