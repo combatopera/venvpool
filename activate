@@ -239,18 +239,12 @@ class Venv(SharedDir):
                 Pip(pip).pipinstall(args + ['--prefix', self.venvpath])
 
     def compatible(self, installdeps):
-        for i in installdeps.volatileprojects:
-            if not self._hasvolatileproject(i):
-                return
         for r in installdeps.pypireqs:
             version = self._reqversionornone(r.namepart)
             if version is None or not r.acceptversion(version):
                 return
         log.debug("Found compatible venv: %s", self.venvpath)
         return True
-
-    def _hasvolatileproject(self, info):
-        return os.path.exists(os.path.join(self.site_packages, "%s-%s.dist-info" % (to_filename(safe_name(info.config.name)), info.devversion())))
 
     def _reqversionornone(self, name):
         patterns = [re.compile(format % nameregex) for nameregex in [re.escape(to_filename(safe_name(name)).lower())] for format in [
@@ -521,8 +515,6 @@ class FastReq:
         return all(v.accept(splitversion) for v in self.versions)
 
 class SimpleInstallDeps:
-
-    volatileprojects = ()
 
     def __init__(self, requires, pip = None, reqcls = BaseReq):
         self.pypireqs = reqcls.parselines(requires)
