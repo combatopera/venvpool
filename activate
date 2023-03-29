@@ -17,11 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
-propersubcommands = []
-
-def _shortcut(cls):
-    propersubcommands.append(cls)
-    return cls
+if ('__main__' == __name__): # Hide from scriptregex.
+    propersubcommands = []
+    def _shortcut(cls):
+        propersubcommands.append(cls)
+        return cls
+else:
+    propersubcommands = None
+    _shortcut = lambda cls: cls
 
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -805,5 +808,5 @@ def main():
                     return cls.main()
     Activate.main()
 
-if ('__main__' == __name__): # Hide from scriptregex.
+if propersubcommands is not None:
     main()
