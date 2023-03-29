@@ -511,11 +511,12 @@ class FastReq:
         splitversion = self._splitversion(versionstr)
         return all(v.accept(splitversion) for v in self.versions)
 
-class SimpleInstallDeps:
+class ParsedRequires:
 
-    def __init__(self, requires, reqcls = BaseReq):
-        self.pypireqs = reqcls.parselines(requires)
-        self.reqcls = reqcls
+    parselines = staticmethod(FastReq.parselines)
+
+    def __init__(self, requires):
+        self.pypireqs = self.parselines(requires)
 
     def invoke(self, venv):
         venv.install([r.reqstr for r in self.pypireqs])
@@ -532,7 +533,7 @@ class SimpleInstallDeps:
                     continue
                 if os.path.exists(projectdir):
                     local[projectdir] = None
-                    nextreqs.extend(self.reqcls.parselines(makerequirementslines(projectdir, req.extras))) # FIXME: Can pass None into parselines.
+                    nextreqs.extend(self.parselines(makerequirementslines(projectdir, req.extras))) # FIXME: Can pass None into parselines.
                 else:
                     self.pypireqs.append(req)
             reqs = nextreqs
@@ -592,7 +593,7 @@ class Launch(ParserCommand):
         scriptpath = args.scriptpath
         assert scriptpath.endswith(dotpy)
         projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
-        installdeps = SimpleInstallDeps(requirementslines, FastReq)
+        installdeps = ParsedRequires(requirementslines)
         localreqs = [] if args.isolated else installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
@@ -770,7 +771,7 @@ class ConsoleScripts(ParserCommand):
         with TemporaryDirectory() as tempdir:
             with open(os.path.join(tempdir, 'list.py'), 'w') as f:
                 f.write("class C:\n%sC.%s(%r)\n" % (getsource(cls._commands), cls._commands.__name__, spec.namepart))
-            with Pool(pyversion).readonly(SimpleInstallDeps(['importlib-metadata', spec.reqstr], FastReq)) as venv:
+            with Pool(pyversion).readonly(ParsedRequires(['importlib-metadata', spec.reqstr])) as venv:
                 names = venv.run('check_output', [tempdir], 'list', [], universal_newlines = True).splitlines()
         configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool', 'console_scripts')
         for name in names:
