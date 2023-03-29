@@ -230,13 +230,10 @@ class Venv(SharedDir):
     def programpath(self, name):
         return os.path.join(self.venvpath, 'bin', name)
 
-    def install(self, args, pip = None):
+    def install(self, args):
         log.debug("Install: %s", ' '.join(args))
         if args:
-            if pip is None:
-                Pip(self.programpath('pip')).pipinstall(args)
-            else:
-                Pip(pip).pipinstall(args + ['--prefix', self.venvpath])
+            Pip(self.programpath('pip')).pipinstall(args)
 
     def compatible(self, installdeps):
         for r in installdeps.pypireqs:
@@ -516,13 +513,12 @@ class FastReq:
 
 class SimpleInstallDeps:
 
-    def __init__(self, requires, pip = None, reqcls = BaseReq):
+    def __init__(self, requires, reqcls = BaseReq):
         self.pypireqs = reqcls.parselines(requires)
-        self.pip = pip
         self.reqcls = reqcls
 
     def invoke(self, venv):
-        venv.install([r.reqstr for r in self.pypireqs], self.pip)
+        venv.install([r.reqstr for r in self.pypireqs])
 
     def poplocalreqs(self, workspace, makerequirementslines):
         local = OrderedDict()
@@ -588,7 +584,6 @@ class Launch(ParserCommand):
     @staticmethod
     def initparser(parser):
         parser.add_argument('--isolated', action = 'store_true', help = 'exclude sibling projects when satisfying requirements')
-        parser.add_argument('--pip', help = 'alternate pip executable')
         parser.add_argument('scriptpath', type = os.path.abspath, help = 'should be preceded by a -- arg') # XXX: Is abspath safe when scriptpath has symlinks?
         parser.add_argument('scriptarg', nargs = '*', help = 'arguments for scriptpath')
 
@@ -597,7 +592,7 @@ class Launch(ParserCommand):
         scriptpath = args.scriptpath
         assert scriptpath.endswith(dotpy)
         projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
-        installdeps = SimpleInstallDeps(requirementslines, args.pip, FastReq)
+        installdeps = SimpleInstallDeps(requirementslines, FastReq)
         localreqs = [] if args.isolated else installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
