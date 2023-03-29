@@ -17,9 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+
 if ('__main__' == __name__): # Hide from scriptregex.
     propersubcommands = []
     class _shortcut:
+        letter = None
+        def __init__(self):
+            args = sys.argv
+            if 1 < len(args):
+                a = args[1]
+                if 1 < len(a) and '-' == a[0]:
+                    self.letter = a[1]
         def __call__(self, cls):
             propersubcommands.append(cls)
             return cls
@@ -33,7 +42,7 @@ from contextlib import contextmanager
 from random import shuffle # XXX: Expensive?
 from stat import S_IXUSR, S_IXGRP, S_IXOTH
 from tempfile import mkdtemp, mkstemp # TODO: Over a hundredth.
-import errno, logging, operator, os, re, shutil, sys # XXX: Still expensive?
+import errno, logging, operator, os, re, shutil # XXX: Still expensive?
 
 class subprocess:
 
