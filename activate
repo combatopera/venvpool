@@ -19,9 +19,11 @@
 
 if ('__main__' == __name__): # Hide from scriptregex.
     propersubcommands = []
-    def _shortcut(cls):
-        propersubcommands.append(cls)
-        return cls
+    class _shortcut:
+        def __call__(self, cls):
+            propersubcommands.append(cls)
+            return cls
+    _shortcut = _shortcut()
 else:
     propersubcommands = None
     _shortcut = lambda cls: cls
