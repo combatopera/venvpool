@@ -33,7 +33,6 @@ class subprocess:
 log = logging.getLogger(__name__)
 dotpy = '.py'
 executablebits = S_IXUSR | S_IXGRP | S_IXOTH
-initbinname = 'initbin.py'
 oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
 pooldir = os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.join(os.path.expanduser('~'), '.cache'), 'venvpool')
 scriptregex, = (r"^if\s+(?:__name__\s*==\s*{main}|{main}\s*==\s*__name__)\s*:\s*$".format(**locals()) for main in ['''(?:'__main__'|"__main__")'''])
