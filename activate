@@ -17,6 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
+propersubcommands = []
+
+def _shortcut(cls):
+    propersubcommands.append(cls)
+    return cls
+
 from collections import OrderedDict
 from contextlib import contextmanager
 from random import shuffle # XXX: Expensive?
@@ -289,6 +295,7 @@ class Venv(SharedDir):
             os.execv(argv[0], argv, **kwargs)
         raise ValueError(mode)
 
+@_shortcut
 class Execute: # TODO: Fast path for this subcommand before most imports.
 
     help = 'augment interpreter environment and exec module for internal use only'
@@ -563,6 +570,7 @@ def _findrequirements(projectdir):
             raise NoRequirementsFoundException
         projectdir = parent
 
+@_shortcut
 class Launch(ParserCommand):
 
     help = 'launch a script with the interpreter and requirements it needs'
@@ -682,6 +690,7 @@ def commandornone(srcpath):
     if '-' not in name:
         return name.replace('_', '-')
 
+@_shortcut
 class Compact(ParserCommand):
 
     help = 'compact the pool of venvs'
@@ -727,6 +736,7 @@ class Compact(ParserCommand):
             subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
         log.info('Compaction complete.')
 
+@_shortcut
 class ConsoleScripts(ParserCommand):
 
     help = 'activate all console scripts of the given requirement specifier'
@@ -781,8 +791,6 @@ class ConsoleScripts(ParserCommand):
         import os, sys
         v = [os.path.join(os.path.dirname(sys.executable), sys.argv[1])] + sys.argv[2:]
         os.execv(v[0], v)
-
-propersubcommands = Execute, Launch, Compact, ConsoleScripts
 
 def main():
     try:
