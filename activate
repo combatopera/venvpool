@@ -146,6 +146,31 @@ else:
             except oserrors[errno.EACCES]:
                 pass
 
+def _compress(paths, splitchar = os.sep):
+    if not paths:
+        yield '-' # Avoid empty word in command line.
+        return
+    firstdiff = -1
+    for firstdiff, chars in enumerate(zip(*paths)):
+        if 1 != len(set(chars)):
+            break
+    else:
+        firstdiff += 1
+    while firstdiff and paths[0][firstdiff - 1] != splitchar:
+        firstdiff -= 1
+    yield paths[0][:firstdiff]
+    for p in paths:
+        yield p[firstdiff:]
+
+def _decompress(paths):
+    i = iter(paths)
+    prefix = next(i)
+    try:
+        while True:
+            yield prefix + next(i)
+    except StopIteration:
+        pass
+
 class SharedDir(object):
 
     def __init__(self, dirpath):
@@ -263,31 +288,6 @@ class Venv(SharedDir):
         if 'exec' == mode:
             os.execv(argv[0], argv, **kwargs)
         raise ValueError(mode)
-
-def _compress(paths, splitchar = os.sep):
-    if not paths:
-        yield '-' # Avoid empty word in command line.
-        return
-    firstdiff = -1
-    for firstdiff, chars in enumerate(zip(*paths)):
-        if 1 != len(set(chars)):
-            break
-    else:
-        firstdiff += 1
-    while firstdiff and paths[0][firstdiff - 1] != splitchar:
-        firstdiff -= 1
-    yield paths[0][:firstdiff]
-    for p in paths:
-        yield p[firstdiff:]
-
-def _decompress(paths):
-    i = iter(paths)
-    prefix = next(i)
-    try:
-        while True:
-            yield prefix + next(i)
-    except StopIteration:
-        pass
 
 class Execute: # TODO: Fast path for this subcommand before most imports.
 
@@ -551,6 +551,18 @@ class ParserCommand:
             logging.getLogger().setLevel(logging.INFO)
         cls.mainimpl(args)
 
+class NoRequirementsFoundException(Exception): pass
+
+def _findrequirements(projectdir):
+    while True:
+        requirementslines = _getrequirementslinesornone(projectdir, ())
+        if requirementslines is not None:
+            return projectdir, requirementslines
+        parent = os.path.dirname(projectdir)
+        if parent == projectdir:
+            raise NoRequirementsFoundException
+        projectdir = parent
+
 class Launch(ParserCommand):
 
     help = 'launch a script with the interpreter and requirements it needs'
@@ -573,18 +585,6 @@ class Launch(ParserCommand):
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv: # TODO: Likely to be major 2 when launching manually.
             venv.run('exec', localreqs, module, args.scriptarg)
-
-class NoRequirementsFoundException(Exception): pass
-
-def _findrequirements(projectdir):
-    while True:
-        requirementslines = _getrequirementslinesornone(projectdir, ())
-        if requirementslines is not None:
-            return projectdir, requirementslines
-        parent = os.path.dirname(projectdir)
-        if parent == projectdir:
-            raise NoRequirementsFoundException
-        projectdir = parent
 
 class Activate(ParserCommand):
 
