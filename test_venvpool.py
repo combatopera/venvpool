@@ -25,9 +25,10 @@ loadtime = time.time() - mark
 assert venvpoolname in sys.modules
 
 from multiprocessing import cpu_count
+from pkg_resources import parse_requirements # Expensive module!
 from tempfile import mkstemp
 from unittest import TestCase
-from venvpool import BaseReq, _chunkify, _compress, _decompress, Execute, FastReq, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from venvpool import _chunkify, _compress, _decompress, Execute, FastReq, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
 import errno, inspect, operator, os, subprocess
 
 def _inherithandle(tempdir):
@@ -150,6 +151,30 @@ class TestVenvPool(TestCase):
         self.assertEqual([], d('a'))
         self.assertEqual(['ab'], d('a', 'b'))
         self.assertEqual(['ab', 'ac'], d('a', 'b', 'c'))
+
+class BaseReq:
+
+    @classmethod
+    def parselines(cls, lines):
+        return [cls(parsed) for parsed in parse_requirements(lines)]
+
+    @property
+    def namepart(self):
+        return self.parsed.name
+
+    @property
+    def extras(self):
+        return self.parsed.extras
+
+    @property
+    def reqstr(self):
+        return str(self.parsed)
+
+    def __init__(self, parsed):
+        self.parsed = parsed
+
+    def acceptversion(self, versionstr):
+        return versionstr in self.parsed
 
 class ReqCase:
 

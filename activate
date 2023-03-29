@@ -416,31 +416,6 @@ class Pool:
         finally:
             venv.writeunlock()
 
-class BaseReq:
-
-    @classmethod
-    def parselines(cls, lines):
-        from pkg_resources import parse_requirements # Expensive module!
-        return [cls(parsed) for parsed in parse_requirements(lines)]
-
-    @property
-    def namepart(self):
-        return self.parsed.name
-
-    @property
-    def extras(self):
-        return self.parsed.extras
-
-    @property
-    def reqstr(self):
-        return str(self.parsed)
-
-    def __init__(self, parsed):
-        self.parsed = parsed
-
-    def acceptversion(self, versionstr):
-        return versionstr in self.parsed
-
 class FastReq:
 
     class Version:
