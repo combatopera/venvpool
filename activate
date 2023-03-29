@@ -30,6 +30,8 @@ if ('__main__' == __name__): # Hide from scriptregex.
                 if 1 < len(a) and '-' == a[0]:
                     self.letter = a[1]
         def __call__(self, cls):
+            if self.letter == cls.letter:
+                sys.exit(cls.main())
             propersubcommands.append(cls)
             return cls
     _shortcut = _shortcut()
@@ -806,18 +808,5 @@ class ConsoleScripts(ParserCommand):
         v = [os.path.join(os.path.dirname(sys.executable), sys.argv[1])] + sys.argv[2:]
         os.execv(v[0], v)
 
-def main():
-    try:
-        firstarg = sys.argv[1]
-    except IndexError:
-        pass
-    else:
-        if firstarg.startswith('-'):
-            letter = firstarg[1]
-            for cls in propersubcommands:
-                if letter == cls.letter:
-                    return cls.main()
-    Activate.main()
-
 if propersubcommands is not None:
-    main()
+    Activate.main()
