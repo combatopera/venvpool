@@ -770,7 +770,7 @@ class ConsoleScripts(ParserCommand):
         with TemporaryDirectory() as tempdir:
             with open(os.path.join(tempdir, 'list.py'), 'w') as f:
                 f.write("class C:\n%sC.%s(%r)\n" % (getsource(cls._commands), cls._commands.__name__, spec.namepart))
-            with Pool(pyversion).readonly(SimpleInstallDeps(['importlib-metadata', spec.reqstr])) as venv:
+            with Pool(pyversion).readonly(SimpleInstallDeps(['importlib-metadata', spec.reqstr], FastReq)) as venv:
                 names = venv.run('check_output', [tempdir], 'list', [], universal_newlines = True).splitlines()
         configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool', 'console_scripts')
         for name in names:
