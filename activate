@@ -68,8 +68,8 @@ except AttributeError:
 subprocess = subprocess()
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
-def safe_name(name, unsafeseq = re.compile('[^A-Za-z0-9.]+')):
-    return unsafeseq.sub('-', name)
+def safe_name(name):
+    return re.sub('[^A-Za-z0-9.]+', '-', name)
 
 def to_filename(name):
     return name.replace('-', '_')
