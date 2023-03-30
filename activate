@@ -467,9 +467,9 @@ class FastReq:
     allnames = re.compile(name).findall
     extras = r"\[{s}(?:{name}{s}(?:,{s}{name}{s})*)?]".format(**locals())
     version = "(<|<=|!=|==|>=|>){s}([0-9.]+(?:[.]dev[0-9]+)?)".format(**locals()) # Subset of features.
-    versionmatch = re.compile("^{s}{version}{s}$".format(**locals())).search
-    getmatch = re.compile("^{s}({name}){s}({extras}{s})?({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())).search
-    skipmatch = re.compile("^{s}(?:#|$)".format(**locals())).search
+    versionregex = "^{s}{version}{s}$".format(**locals())
+    getregex = "^{s}({name}){s}({extras}{s})?({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())
+    skipregex = "^{s}(?:#|$)".format(**locals())
     del s, name, extras, version
     operators = {
         '<': operator.lt,
@@ -484,15 +484,15 @@ class FastReq:
     def parselines(cls, lines):
         def g():
             for line in lines:
-                if cls.skipmatch(line) is not None:
+                if re.search(cls.skipregex, line) is not None:
                     continue
-                namepart, extras, versionspec = cls.getmatch(line).groups()[:3]
+                namepart, extras, versionspec = re.search(cls.getregex, line).groups()[:3]
                 extras = () if extras is None else tuple(sorted(set(cls.allnames(extras)))) # TODO LATER: Normalisation.
                 versions = []
                 reqstrversions = []
                 if versionspec is not None:
                     for onestr in versionspec.split(','):
-                        operatorstr, versionstr = cls.versionmatch(onestr).groups()
+                        operatorstr, versionstr = re.search(cls.versionregex, onestr).groups()
                         versions.append(cls.Version(cls.operators[operatorstr], cls._splitversion(versionstr)))
                         reqstrversions.append(operatorstr + versionstr)
                 yield cls(namepart, extras, versions, namepart + ("[%s]" % ','.join(extras) if extras else '') + ','.join(sorted(reqstrversions)))
