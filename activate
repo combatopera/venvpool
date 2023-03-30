@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
+import os, sys
 
 if ('__main__' == __name__): # Hide from scriptregex.
     propersubcommands = []
@@ -39,12 +39,53 @@ else:
     propersubcommands = None
     _shortcut = lambda cls: cls
 
+def _decompress(paths):
+    i = iter(paths)
+    prefix = next(i)
+    try:
+        while True:
+            yield prefix + next(i)
+    except StopIteration:
+        pass
+
+@_shortcut
+class Execute:
+
+    help = 'augment interpreter environment and exec module for internal use only'
+    letter = 'X'
+
+    @classmethod
+    def main(cls):
+        import runpy # A few thousandths.
+        assert '-X' == sys.argv.pop(1)
+        sys.path[0] = bindir = os.path.dirname(sys.executable)
+        try:
+            envpath = os.environ['PATH']
+        except KeyError:
+            envpath = bindir
+        else:
+            envpath = bindir + os.pathsep + envpath
+        os.environ['PATH'] = envpath
+        sys.path[slice(*[cls._insertionpoint(sys.path)] * 2)] = _decompress(sys.argv.pop(1).split(os.pathsep))
+        runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
+
+    @staticmethod
+    def _insertionpoint(v, suffix = os.sep + 'site-packages'):
+        i = n = len(v)
+        while not v[i - 1].endswith(suffix):
+            i -= 1
+            if not i:
+                return n
+        while i and v[i - 1].endswith(suffix):
+            i -= 1
+        return i
+
 from collections import OrderedDict
 from contextlib import contextmanager
 from random import shuffle # XXX: Expensive?
 from stat import S_IXUSR, S_IXGRP, S_IXOTH
 from tempfile import mkdtemp, mkstemp # TODO: Over a hundredth.
-import errno, logging, operator, os, re, shutil # XXX: Still expensive?
+import errno, logging, operator, re, shutil # XXX: Still expensive?
 
 class subprocess:
 
@@ -184,15 +225,6 @@ def _compress(paths, splitchar = os.sep):
     for p in paths:
         yield p[firstdiff:]
 
-def _decompress(paths):
-    i = iter(paths)
-    prefix = next(i)
-    try:
-        while True:
-            yield prefix + next(i)
-    except StopIteration:
-        pass
-
 class SharedDir(object):
 
     def __init__(self, dirpath):
@@ -310,38 +342,6 @@ class Venv(SharedDir):
         if 'exec' == mode:
             os.execv(argv[0], argv, **kwargs)
         raise ValueError(mode)
-
-@_shortcut
-class Execute: # TODO: Fast path for this subcommand before most imports.
-
-    help = 'augment interpreter environment and exec module for internal use only'
-    letter = 'X'
-
-    @classmethod
-    def main(cls):
-        import runpy # A few thousandths.
-        assert '-X' == sys.argv.pop(1)
-        sys.path[0] = bindir = os.path.dirname(sys.executable)
-        try:
-            envpath = os.environ['PATH']
-        except KeyError:
-            envpath = bindir
-        else:
-            envpath = bindir + os.pathsep + envpath
-        os.environ['PATH'] = envpath
-        sys.path[slice(*[cls._insertionpoint(sys.path)] * 2)] = _decompress(sys.argv.pop(1).split(os.pathsep))
-        runpy.run_module(sys.argv.pop(1), run_name = '__main__', alter_sys = True)
-
-    @staticmethod
-    def _insertionpoint(v, suffix = os.sep + 'site-packages'):
-        i = n = len(v)
-        while not v[i - 1].endswith(suffix):
-            i -= 1
-            if not i:
-                return n
-        while i and v[i - 1].endswith(suffix):
-            i -= 1
-        return i
 
 class Pool:
 
