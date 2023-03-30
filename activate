@@ -463,14 +463,13 @@ class FastReq:
         return [cls.DevSegment(int(k[len(devprefix):])) if k.startswith(devprefix) else int(k) for k in versionstr.split('.')]
 
     s = r'\s*'
-    name = '[A-Za-z0-9._-]+' # Slightly more lenient than PEP 508.
-    allnames = re.compile(name).findall
-    extras = r"\[{s}(?:{name}{s}(?:,{s}{name}{s})*)?]".format(**locals())
+    nameregex = '[A-Za-z0-9._-]+' # Slightly more lenient than PEP 508.
+    extras = r"\[{s}(?:{nameregex}{s}(?:,{s}{nameregex}{s})*)?]".format(**locals())
     version = "(<|<=|!=|==|>=|>){s}([0-9.]+(?:[.]dev[0-9]+)?)".format(**locals()) # Subset of features.
     versionregex = "^{s}{version}{s}$".format(**locals())
-    getregex = "^{s}({name}){s}({extras}{s})?({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())
+    getregex = "^{s}({nameregex}){s}({extras}{s})?({version}{s}(?:,{s}{version}{s})*)?$".format(**locals())
     skipregex = "^{s}(?:#|$)".format(**locals())
-    del s, name, extras, version
+    del s, extras, version
     operators = {
         '<': operator.lt,
         '<=': operator.le,
@@ -487,7 +486,7 @@ class FastReq:
                 if re.search(cls.skipregex, line) is not None:
                     continue
                 namepart, extras, versionspec = re.search(cls.getregex, line).groups()[:3]
-                extras = () if extras is None else tuple(sorted(set(cls.allnames(extras)))) # TODO LATER: Normalisation.
+                extras = () if extras is None else tuple(sorted(set(re.findall(cls.nameregex, extras)))) # TODO LATER: Normalisation.
                 versions = []
                 reqstrversions = []
                 if versionspec is not None:
