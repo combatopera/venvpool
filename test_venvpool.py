@@ -28,7 +28,7 @@ from multiprocessing import cpu_count
 from pkg_resources import parse_requirements # Expensive module!
 from tempfile import mkstemp
 from unittest import TestCase
-from venvpool import _chunkify, _compress, _decompress, Execute, FastReq, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory
+from venvpool import _chunkify, _compress, _decompress, Execute, FastReq, listorempty, LockStateException, oserrors, _osop, ReadLock, TemporaryDirectory, Venv
 import errno, inspect, operator, os, subprocess
 
 def _inherithandle(tempdir):
@@ -106,13 +106,13 @@ class TestVenvPool(TestCase):
                 "%s%s(%r)" % (inspect.getsource(_inherithandle), _inherithandle.__name__, tempdir),
             ], env = dict(os.environ, PYTHONPATH = os.path.dirname(venvpool.__file__)))
 
-    def test_fileglobal(self): # XXX: Does this have to use the shared pool?
+    def test_fileglobal(self):
         with TemporaryDirectory() as tempdir:
             open(os.path.join(tempdir, 'requirements.txt'), 'w').close()
             scriptpath = os.path.join(tempdir, 'module.py')
             with open(scriptpath, 'w') as f:
                 f.write('import sys\nprint(sys.modules[__name__].__file__)')
-            self.assertEqual(scriptpath + '\n', subprocess.check_output([sys.executable, venvpool.__file__, '-L', scriptpath], universal_newlines = True))
+            self.assertEqual(scriptpath + '\n', Venv(os.path.dirname(os.path.dirname(sys.executable))).run('check_output', [tempdir], 'module', [], universal_newlines = True))
 
     def test_insertionpoint(self):
         self.assertEqual(0, Execute._insertionpoint(['ax', 'bx', 'cx'], 'x'))
