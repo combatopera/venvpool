@@ -108,11 +108,10 @@ class TestVenvPool(TestCase):
 
     def test_fileglobal(self):
         with TemporaryDirectory() as tempdir:
-            open(os.path.join(tempdir, 'requirements.txt'), 'w').close()
-            scriptpath = os.path.join(tempdir, 'module.py')
+            scriptpath = os.path.join(tempdir, 'module_name.py')
             with open(scriptpath, 'w') as f:
                 f.write('import sys\nprint(sys.modules[__name__].__file__)')
-            self.assertEqual(scriptpath + '\n', Venv(os.path.dirname(os.path.dirname(sys.executable))).run('check_output', [tempdir], 'module', [], universal_newlines = True))
+            self.assertEqual(scriptpath + '\n', Venv(os.path.dirname(os.path.dirname(sys.executable))).run('check_output', [tempdir], 'module_name', [], universal_newlines = True))
 
     def test_insertionpoint(self):
         self.assertEqual(0, Execute._insertionpoint(['ax', 'bx', 'cx'], 'x'))
