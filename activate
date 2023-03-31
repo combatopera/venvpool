@@ -109,20 +109,11 @@ except AttributeError:
 subprocess = subprocess()
 userbin = os.path.join(os.path.expanduser('~'), '.local', 'bin')
 
-def safe_name(name):
-    return re.sub('[^A-Za-z0-9.]+', '-', name)
-
-def to_filename(name):
-    return name.replace('-', '_')
-
 def _osop(f, *args, **kwargs):
     try:
         return f(*args, **kwargs)
     except OSError as e:
         raise oserrors[e.errno](*e.args)
-
-def initlogging():
-    logging.basicConfig(format = "%(asctime)s %(levelname)s %(message)s", level = logging.DEBUG)
 
 @contextmanager
 def TemporaryDirectory():
@@ -267,17 +258,24 @@ class SharedDir(object):
         except oserrors[errno.ENOENT]:
             pass
 
-def _safewhich(name):
-    poolprefix = pooldir + os.sep
-    for bindir in os.environ['PATH'].split(os.pathsep):
-        if bindir.startswith(poolprefix) or not os.path.isabs(bindir): # XXX: Also exclude other venvs?
-            log.debug("Ignore bin directory: %s", bindir)
-        else:
-            path = os.path.join(bindir, name)
-            if os.path.exists(path):
-                return path
+def safe_name(name):
+    return re.sub('[^A-Za-z0-9.]+', '-', name)
+
+def to_filename(name):
+    return name.replace('-', '_')
 
 class Venv(SharedDir):
+
+    @staticmethod
+    def _safewhich(name):
+        poolprefix = pooldir + os.sep
+        for bindir in os.environ['PATH'].split(os.pathsep):
+            if bindir.startswith(poolprefix) or not os.path.isabs(bindir): # XXX: Also exclude other venvs?
+                log.debug("Ignore bin directory: %s", bindir)
+            else:
+                path = os.path.join(bindir, name)
+                if os.path.exists(path):
+                    return path
 
     @property
     def site_packages(self):
@@ -292,7 +290,7 @@ class Venv(SharedDir):
     def create(self, pyversion):
         def isolated(*command):
             subprocess.check_call(command, cwd = tempdir, stdout = sys.stderr)
-        executable = _safewhich("python%s" % pyversion)
+        executable = self._safewhich("python%s" % pyversion)
         absvenvpath = os.path.abspath(self.venvpath) # XXX: Safe when venvpath has symlinks?
         with TemporaryDirectory() as tempdir:
             if pyversion < 3:
@@ -554,6 +552,9 @@ def _getrequirementslinesornone(projectdir, extras):
     if names:
         name, = names # XXX: Could there legitimately be multiple?
         return linesornone(True, name, 'requires.txt')
+
+def initlogging():
+    logging.basicConfig(format = "%(asctime)s %(levelname)s %(message)s", level = logging.DEBUG)
 
 class ParserCommand:
 
