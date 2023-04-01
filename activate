@@ -515,7 +515,7 @@ class ParsedRequires:
     def invoke(self, venv):
         venv.install([r.reqstr for r in self.pypireqs])
 
-    def poplocalreqs(self, workspace, makerequirementslines):
+    def poplocalreqs(self, workspace):
         local = OrderedDict()
         reqs = list(self.pypireqs)
         del self.pypireqs[:]
@@ -527,7 +527,7 @@ class ParsedRequires:
                     continue
                 if os.path.exists(projectdir):
                     local[projectdir] = None
-                    nextreqs.extend(self.parselines(makerequirementslines(projectdir, req.extras))) # FIXME: Can pass None into parselines.
+                    nextreqs.extend(self.parselines(_getrequirementslinesornone(projectdir, req.extras))) # FIXME: Can pass None into parselines.
                 else:
                     self.pypireqs.append(req)
             reqs = nextreqs
@@ -604,7 +604,7 @@ class Launch(ParserCommand):
         assert scriptpath.endswith(dotpy)
         projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
         installdeps = ParsedRequires(requirementslines)
-        localreqs = [] if args.isolated else installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')), _getrequirementslinesornone)
+        localreqs = [] if args.isolated else installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')))
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv: # TODO: Likely to be major 2 when launching manually.
