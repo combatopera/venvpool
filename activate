@@ -523,13 +523,15 @@ class ParsedRequires:
             nextreqs = []
             for req in reqs:
                 projectdir = os.path.join(workspace, req.namepart)
-                if projectdir in local:
-                    continue
-                if os.path.exists(projectdir):
-                    local[projectdir] = None
-                    nextreqs.extend(self.parselines(_getrequirementslinesornone(projectdir, req.extras))) # FIXME: Can pass None into parselines.
-                else:
-                    self.pypireqs.append(req)
+                if projectdir not in local:
+                    if os.path.exists(projectdir):
+                        requirementslines = _getrequirementslinesornone(projectdir, req.extras)
+                        if requirementslines is None:
+                            raise NoRequirementsFoundException(projectdir, req.extras)
+                        nextreqs.extend(self.parselines(requirementslines))
+                        local[projectdir] = None
+                    else:
+                        self.pypireqs.append(req)
             reqs = nextreqs
         return list(local)
 
