@@ -529,7 +529,7 @@ class ParsedRequires:
                     if os.path.exists(projectdir):
                         requirementslines = _getrequirementslinesornone(projectdir, req.extras)
                         if requirementslines is None:
-                            raise NoRequirementsFoundException(projectdir, req.extras)
+                            raise NoRequirementsFoundException("%s[%s]" % (projectdir, ','.join(req.extras)))
                         nextreqs.extend(self.parselines(requirementslines))
                         local[projectdir] = None
                     else:
