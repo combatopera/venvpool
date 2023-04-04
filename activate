@@ -801,10 +801,14 @@ class ConsoleScripts(ParserCommand):
 
     @staticmethod
     def _commands(distname):
-        from importlib_metadata import distribution
+        from importlib_metadata import distribution, files
         for ep in distribution(distname).entry_points:
             if 'console_scripts' == ep.group:
                 print(ep.name)
+        for p in files(distname):
+            t = p.parts
+            if 5 == len(t) and ('..', '..', '..', 'bin') == t[:4]:
+                print(t[4])
 
     @staticmethod
     def _chain():
