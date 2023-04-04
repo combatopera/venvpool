@@ -599,13 +599,14 @@ class Launch(ParserCommand):
     @staticmethod
     def initparser(parser):
         parser.add_argument('--isolated', action = 'store_true', help = 'exclude sibling projects when satisfying requirements')
-        parser.add_argument('scriptpath', type = os.path.abspath, help = 'should be preceded by a -- arg') # XXX: Is abspath safe when scriptpath has symlinks?
+        parser.add_argument('scriptpath', help = 'should be preceded by a -- arg')
         parser.add_argument('scriptarg', nargs = '*', help = 'arguments for scriptpath')
 
     @classmethod
     def mainimpl(cls, args):
         scriptpath = args.scriptpath
         assert scriptpath.endswith(dotpy)
+        scriptpath = os.path.abspath(scriptpath) # XXX: Is abspath safe when scriptpath has symlinks?
         projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
         installdeps = ParsedRequires(requirementslines)
         localreqs = [] if args.isolated else installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')))
