@@ -300,6 +300,13 @@ class Venv(SharedDir):
             else:
                 isolated(executable, '-m', 'venv', absvenvpath)
                 isolated(os.path.join(absvenvpath, 'bin', 'pip'), 'install', '--upgrade', 'pip', 'setuptools', 'wheel')
+        chainpath = os.path.join(self.site_packages, 'venvpool', 'chain.py')
+        os.mkdir(os.path.dirname(chainpath))
+        with open(chainpath, 'w') as f:
+            f.write('''import os, sys
+v = [os.path.join(os.path.dirname(sys.executable), sys.argv[1])] + sys.argv[2:]
+os.execv(v[0], v)
+''')
 
     def delete(self, label = 'transient'):
         log.debug("Delete %s venv: %s", label, self.venvpath)
@@ -803,8 +810,6 @@ class ConsoleScripts(ParserCommand):
                 pass
             with open(os.path.join(d, 'requirements.txt'), 'w') as f:
                 f.write("%s\n" % spec.reqstr)
-            with open(srcpath, 'w') as f:
-                f.write("class C:\n%sC.%s()\n" % (getsource(cls._chain), cls._chain.__name__))
 
     @staticmethod
     def _commands(distname):
@@ -816,12 +821,6 @@ class ConsoleScripts(ParserCommand):
             t = p.parts
             if 5 == len(t) and ('..', '..', '..', 'bin') == t[:4]:
                 print(t[4])
-
-    @staticmethod
-    def _chain():
-        import os, sys
-        v = [os.path.join(os.path.dirname(sys.executable), sys.argv[1])] + sys.argv[2:]
-        os.execv(v[0], v)
 
 if propersubcommands is not None:
     Activate.main()
