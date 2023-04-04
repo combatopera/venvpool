@@ -791,7 +791,7 @@ class ConsoleScripts(ParserCommand):
             with open(os.path.join(tempdir, 'list.py'), 'w') as f:
                 f.write("class C:\n%sC.%s(%r)\n" % (getsource(cls._commands), cls._commands.__name__, spec.namepart))
             with Pool(pyversion).readonly(ParsedRequires(['importlib-metadata', spec.reqstr])) as venv:
-                names = venv.run('check_output', [tempdir], 'list', [], universal_newlines = True).splitlines()
+                names = set(venv.run('check_output', [tempdir], 'list', [], universal_newlines = True).splitlines())
         for name in names:
             Activate.install(args.f, name, pyversion, spec.reqstr, chainrelpath, name)
 
