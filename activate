@@ -606,16 +606,18 @@ class Launch(ParserCommand):
     def mainimpl(cls, args):
         scriptpath = args.scriptpath
         assert scriptpath.endswith(dotpy)
-        scriptpath = os.path.abspath(scriptpath) # XXX: Is abspath safe when scriptpath has symlinks?
-        projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
-        installdeps = ParsedRequires(requirementslines)
         reqstr = args.req
         if reqstr is None:
+            scriptpath = os.path.abspath(scriptpath) # XXX: Is abspath safe when scriptpath has symlinks?
+            projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
+            installdeps = ParsedRequires(requirementslines)
             localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')))
+            localreqs.insert(0, projectdir)
+            module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         else:
+            installdeps = ParsedRequires([reqstr])
             localreqs = []
-        localreqs.insert(0, projectdir)
-        module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
+            module = scriptpath[:-len(dotpy)].replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv: # TODO: Likely to be major 2 when launching manually.
             venv.run('exec', localreqs, module, args.scriptarg)
 
