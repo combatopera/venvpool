@@ -598,7 +598,7 @@ class Launch(ParserCommand):
 
     @staticmethod
     def initparser(parser):
-        parser.add_argument('--isolated', action = 'store_true', help = 'exclude sibling projects when satisfying requirements')
+        parser.add_argument('--req', help = 'use the given requirement specifier only')
         parser.add_argument('scriptpath', help = 'should be preceded by a -- arg')
         parser.add_argument('scriptarg', nargs = '*', help = 'arguments for scriptpath')
 
@@ -609,7 +609,11 @@ class Launch(ParserCommand):
         scriptpath = os.path.abspath(scriptpath) # XXX: Is abspath safe when scriptpath has symlinks?
         projectdir, requirementslines = _findrequirements(os.path.dirname(scriptpath))
         installdeps = ParsedRequires(requirementslines)
-        localreqs = [] if args.isolated else installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')))
+        reqstr = args.req
+        if reqstr is None:
+            localreqs = installdeps.poplocalreqs(os.path.normpath(os.path.join(projectdir, '..')))
+        else:
+            localreqs = []
         localreqs.insert(0, projectdir)
         module = os.path.relpath(scriptpath[:-len(dotpy)], projectdir).replace(os.sep, '.')
         with Pool(sys.version_info.major).readonly(installdeps) as venv: # TODO: Likely to be major 2 when launching manually.
@@ -656,13 +660,13 @@ class Activate(ParserCommand):
             if command is None:
                 log.debug("Bad source name: %s", srcpath)
                 continue
-            cls.install(force, command, pyversion, False, srcpath)
+            cls.install(force, command, pyversion, None, srcpath)
 
     @staticmethod
-    def install(force, command, pyversion, isolated, *words):
+    def install(force, command, pyversion, reqstrornone, *words):
         def allwords():
-            if isolated:
-                yield '--isolated'
+            if reqstrornone is not None:
+                yield '--req', reqstrornone
             yield '--'
             for w in words:
                 yield w
@@ -782,7 +786,7 @@ class ConsoleScripts(ParserCommand):
         for name in names:
             d = os.path.join(configdir, name)
             srcpath = os.path.join(d, 'chain.py')
-            if not Activate.install(args.f, name, pyversion, True, srcpath, name):
+            if not Activate.install(args.f, name, pyversion, spec.reqstr, srcpath, name):
                 continue
             if os.path.exists(d):
                 if not args.f:
