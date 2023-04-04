@@ -86,7 +86,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from random import shuffle # XXX: Expensive?
 from stat import S_IXUSR, S_IXGRP, S_IXOTH
-from tempfile import mkdtemp, mkstemp # TODO: Over a hundredth.
+from tempfile import mkdtemp, mkstemp
 import errno, logging, operator, re, shutil # XXX: Still expensive?
 
 class subprocess:
