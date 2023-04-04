@@ -676,7 +676,8 @@ class Activate(ParserCommand):
     def install(force, command, pyversion, reqstrornone, *words):
         def allwords():
             if reqstrornone is not None:
-                yield '--req', reqstrornone
+                yield '--req'
+                yield reqstrornone
             yield '--'
             for w in words:
                 yield w
