@@ -96,6 +96,7 @@ class subprocess:
         return getattr(subprocess, name)
 
 log = logging.getLogger(__name__)
+chainrelpath = os.path.join('venvpool', 'chain.py')
 dotpy = '.py'
 executablebits = S_IXUSR | S_IXGRP | S_IXOTH
 oserrors = {code: type(name, (OSError,), {}) for code, name in errno.errorcode.items()}
@@ -300,7 +301,7 @@ class Venv(SharedDir):
             else:
                 isolated(executable, '-m', 'venv', absvenvpath)
                 isolated(os.path.join(absvenvpath, 'bin', 'pip'), 'install', '--upgrade', 'pip', 'setuptools', 'wheel')
-        chainpath = os.path.join(self.site_packages, 'venvpool', 'chain.py')
+        chainpath = os.path.join(self.site_packages, chainrelpath)
         os.mkdir(os.path.dirname(chainpath))
         with open(chainpath, 'w') as f:
             f.write('''import os, sys
@@ -698,17 +699,16 @@ exec(venvpoolsrc)
         if os.path.exists(scriptpath):
             if identical():
                 log.debug("Identical: %s", scriptpath)
-                return True
+                return
             if not force:
                 log.info("Exists: %s", scriptpath)
-                return False
+                return
             log.info("Overwrite: %s", scriptpath)
         else:
             log.info("Create: %s", scriptpath)
         with open(scriptpath, 'w') as f:
             f.write(text)
         os.chmod(scriptpath, os.stat(scriptpath).st_mode | executablebits)
-        return True
 
 def checkpath(projectdir, path):
     while True:
@@ -791,25 +791,8 @@ class ConsoleScripts(ParserCommand):
                 f.write("class C:\n%sC.%s(%r)\n" % (getsource(cls._commands), cls._commands.__name__, spec.namepart))
             with Pool(pyversion).readonly(ParsedRequires(['importlib-metadata', spec.reqstr])) as venv:
                 names = venv.run('check_output', [tempdir], 'list', [], universal_newlines = True).splitlines()
-        configdir = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config'), 'venvpool', 'console_scripts')
         for name in names:
-            d = os.path.join(configdir, name)
-            srcpath = os.path.join(d, 'chain.py')
-            if not Activate.install(args.f, name, pyversion, spec.reqstr, srcpath, name):
-                continue
-            if os.path.exists(d):
-                if not args.f:
-                    log.info("Exists: %s", d)
-                    continue
-                log.info("Overwrite: %s", d)
-            else:
-                log.info("Create: %s", d)
-            try:
-                _osop(os.makedirs, d)
-            except oserrors[errno.EEXIST]:
-                pass
-            with open(os.path.join(d, 'requirements.txt'), 'w') as f:
-                f.write("%s\n" % spec.reqstr)
+            Activate.install(args.f, name, pyversion, spec.reqstr, chainrelpath, name)
 
     @staticmethod
     def _commands(distname):
