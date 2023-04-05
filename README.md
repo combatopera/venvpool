@@ -1,5 +1,5 @@
 # venvpool
-Run your Python scripts using an automated pool of virtual environments for their requirements
+Run your Python scripts using an automated pool of virtual environments to satisfy their requirements
 
 ## Install
 These are generic installation instructions.
