@@ -2,7 +2,10 @@
 Run your Python scripts using an automated pool of virtual environments to satisfy their requirements
 
 ## Install
+<!--
 These are generic installation instructions.
+-->
+The activate script is a single file with no requirements of its own other than Python 2 or 3.
 
 ### To use, permanently
 The quickest way to get started is to install the current release from PyPI:
