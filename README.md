@@ -52,3 +52,14 @@ Now symlink the activate script:
 ```
 ln -s "$PWD/venvpool/activate" ~/.local/bin/
 ```
+
+## Commands
+
+### activate
+Create and maintain wrapper scripts in ~/.local/bin for all runnable modules in the given projects, or the current project if none given.
+
+### activate -S
+Create/maintain wrappers for all console_scripts of the given requirement specifier.
+
+### activate -C
+Compact the pool of venvs.
