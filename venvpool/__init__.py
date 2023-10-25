@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with venvpool.  If not, see <http://www.gnu.org/licenses/>.
 
-'eval' 'echo Not a shell script. >&2; return 1'
-__doc__ = None
 import os, sys
 
 class MainModule:
