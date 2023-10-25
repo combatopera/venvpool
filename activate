@@ -21,8 +21,8 @@
 __doc__ = None
 import os, sys
 
+propersubcommands = []
 if ('__main__' == __name__): # Hide from scriptregex.
-    propersubcommands = []
     class _module:
         letter = None
         def __init__(self):
@@ -41,6 +41,7 @@ if ('__main__' == __name__): # Hide from scriptregex.
 else:
     class _module:
         def shortcut(self, cls):
+            propersubcommands.append(cls)
             return cls
         def end(self):
             pass
