@@ -21,20 +21,26 @@
 __doc__ = None
 import os, sys
 
+class MainModule:
+
+    letter = None
+
+    def __init__(self):
+        args = sys.argv
+        if 1 < len(args):
+            a = args[1]
+            if 1 < len(a) and '-' == a[0]:
+                self.letter = a[1]
+
+    def shortcut(self, cls):
+        if self.letter == cls.letter:
+            sys.exit(cls.main())
+
+    def end(self):
+        Activate.main()
+
 if ('__main__' == __name__): # Hide from scriptregex.
-    class _module:
-        letter = None
-        def __init__(self):
-            args = sys.argv
-            if 1 < len(args):
-                a = args[1]
-                if 1 < len(a) and '-' == a[0]:
-                    self.letter = a[1]
-        def shortcut(self, cls):
-            if self.letter == cls.letter:
-                sys.exit(cls.main())
-        def end(self):
-            Activate.main()
+    _module = MainModule
 else:
     class _module:
         def shortcut(self, cls):
@@ -48,6 +54,12 @@ def _shortcut(cls):
     _module.shortcut(cls)
     propersubcommands.append(cls)
     return cls
+
+def main():
+    m = MainModule()
+    for cls in propersubcommands:
+        m.shortcut(cls)
+    m.end()
 
 def _decompress(paths):
     i = iter(paths)
