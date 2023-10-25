@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright 2013, 2014, 2015, 2016, 2017, 2020, 2022, 2023 Andrzej Cichocki
 
 # This file is part of venvpool.
