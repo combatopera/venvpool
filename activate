@@ -21,7 +21,6 @@
 __doc__ = None
 import os, sys
 
-propersubcommands = []
 if ('__main__' == __name__): # Hide from scriptregex.
     class _module:
         letter = None
@@ -34,18 +33,21 @@ if ('__main__' == __name__): # Hide from scriptregex.
         def shortcut(self, cls):
             if self.letter == cls.letter:
                 sys.exit(cls.main())
-            propersubcommands.append(cls)
-            return cls
         def end(self):
             Activate.main()
 else:
     class _module:
         def shortcut(self, cls):
-            propersubcommands.append(cls)
-            return cls
+            pass
         def end(self):
             pass
 _module = _module()
+propersubcommands = []
+
+def _shortcut(cls):
+    _module.shortcut(cls)
+    propersubcommands.append(cls)
+    return cls
 
 def _decompress(paths):
     i = iter(paths)
@@ -56,7 +58,7 @@ def _decompress(paths):
     except StopIteration:
         pass
 
-@_module.shortcut
+@_shortcut
 class Execute:
 
     help = 'augment interpreter environment and exec module for internal use only'
@@ -604,7 +606,7 @@ def _findrequirements(projectdir):
             raise NoRequirementsFoundException
         projectdir = parent
 
-@_module.shortcut
+@_shortcut
 class Launch(ParserCommand):
 
     help = 'launch a script with the interpreter and requirements it needs'
@@ -731,7 +733,7 @@ def commandornone(srcpath):
     if '-' not in name:
         return name.replace('_', '-')
 
-@_module.shortcut
+@_shortcut
 class Compact(ParserCommand):
 
     help = 'compact the pool of venvs'
@@ -777,7 +779,7 @@ class Compact(ParserCommand):
             subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
         log.info('Compaction complete.')
 
-@_module.shortcut
+@_shortcut
 class ConsoleScripts(ParserCommand):
 
     help = 'activate all console scripts of the given requirement specifier'
