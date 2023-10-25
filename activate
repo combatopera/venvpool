@@ -36,10 +36,15 @@ if ('__main__' == __name__): # Hide from scriptregex.
                 sys.exit(cls.main())
             propersubcommands.append(cls)
             return cls
-    _shortcut = _shortcut()
+        def end(self):
+            Activate.main()
 else:
-    propersubcommands = None
-    _shortcut = lambda cls: cls
+    class _shortcut:
+        def __call__(self, cls):
+            return cls
+        def end(self):
+            pass
+_shortcut = _shortcut()
 
 def _decompress(paths):
     i = iter(paths)
@@ -806,5 +811,4 @@ class ConsoleScripts(ParserCommand):
             if 5 == len(t) and ('..', '..', '..', 'bin') == t[:4]:
                 print(t[4])
 
-if propersubcommands is not None:
-    Activate.main()
+_shortcut.end()
