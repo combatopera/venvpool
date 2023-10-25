@@ -23,7 +23,7 @@ import os, sys
 
 if ('__main__' == __name__): # Hide from scriptregex.
     propersubcommands = []
-    class _shortcut:
+    class _module:
         letter = None
         def __init__(self):
             args = sys.argv
@@ -31,7 +31,7 @@ if ('__main__' == __name__): # Hide from scriptregex.
                 a = args[1]
                 if 1 < len(a) and '-' == a[0]:
                     self.letter = a[1]
-        def __call__(self, cls):
+        def shortcut(self, cls):
             if self.letter == cls.letter:
                 sys.exit(cls.main())
             propersubcommands.append(cls)
@@ -39,12 +39,12 @@ if ('__main__' == __name__): # Hide from scriptregex.
         def end(self):
             Activate.main()
 else:
-    class _shortcut:
-        def __call__(self, cls):
+    class _module:
+        def shortcut(self, cls):
             return cls
         def end(self):
             pass
-_shortcut = _shortcut()
+_module = _module()
 
 def _decompress(paths):
     i = iter(paths)
@@ -55,7 +55,7 @@ def _decompress(paths):
     except StopIteration:
         pass
 
-@_shortcut
+@_module.shortcut
 class Execute:
 
     help = 'augment interpreter environment and exec module for internal use only'
@@ -603,7 +603,7 @@ def _findrequirements(projectdir):
             raise NoRequirementsFoundException
         projectdir = parent
 
-@_shortcut
+@_module.shortcut
 class Launch(ParserCommand):
 
     help = 'launch a script with the interpreter and requirements it needs'
@@ -730,7 +730,7 @@ def commandornone(srcpath):
     if '-' not in name:
         return name.replace('_', '-')
 
-@_shortcut
+@_module.shortcut
 class Compact(ParserCommand):
 
     help = 'compact the pool of venvs'
@@ -776,7 +776,7 @@ class Compact(ParserCommand):
             subprocess.check_call(['jdupes', '-Lrq'] + venvpaths)
         log.info('Compaction complete.')
 
-@_shortcut
+@_module.shortcut
 class ConsoleScripts(ParserCommand):
 
     help = 'activate all console scripts of the given requirement specifier'
@@ -811,4 +811,4 @@ class ConsoleScripts(ParserCommand):
             if 5 == len(t) and ('..', '..', '..', 'bin') == t[:4]:
                 print(t[4])
 
-_shortcut.end()
+_module.end()
