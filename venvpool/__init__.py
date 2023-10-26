@@ -704,6 +704,8 @@ class Activate(ParserCommand):
                     return f.read() == text
         wordsrepr = ', '.join(map(repr, allwords()))
         venvpoolpath = os.path.realpath(__file__)
+        if venvpoolpath[-1] == 'c':
+            venvpoolpath = venvpoolpath[:-1]
         text = """#!/usr/bin/env python{pyversion}
 import sys
 sys.argv[1:1] = '-L', {wordsrepr}
