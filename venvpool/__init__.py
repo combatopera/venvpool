@@ -356,7 +356,7 @@ os.execv(v[0], v)
                     return m.group(1)
 
     def run(self, mode, localreqs, module, scriptargs, **kwargs):
-        argv = [os.path.join(self.venvpath, 'bin', 'python'), __file__, '-X', os.pathsep.join(_compress(localreqs)), module] + scriptargs
+        argv = [os.path.join(self.venvpath, 'bin', 'python'), _stripc(__file__), '-X', os.pathsep.join(_compress(localreqs)), module] + scriptargs
         if 'call' == mode:
             return subprocess.call(argv, **kwargs)
         if 'check_call' == mode:
@@ -366,6 +366,9 @@ os.execv(v[0], v)
         if 'exec' == mode:
             os.execv(argv[0], argv, **kwargs)
         raise ValueError(mode)
+
+def _stripc(path):
+    return path[:-1] if 'c' == path[-1] else path
 
 class Pool:
 
@@ -703,9 +706,7 @@ class Activate(ParserCommand):
                 with open(scriptpath) as f:
                     return f.read() == text
         wordsrepr = ', '.join(map(repr, allwords()))
-        venvpoolpath = os.path.realpath(__file__)
-        if venvpoolpath[-1] == 'c':
-            venvpoolpath = venvpoolpath[:-1]
+        venvpoolpath = _stripc(os.path.realpath(__file__))
         text = """#!/usr/bin/env python{pyversion}
 import sys
 sys.argv[1:1] = '-L', {wordsrepr}
