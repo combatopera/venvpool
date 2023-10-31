@@ -104,7 +104,7 @@ class TestVenvPool(TestCase):
                 sys.executable,
                 '-c',
                 "%s%s(%r)" % (inspect.getsource(_inherithandle), _inherithandle.__name__, tempdir),
-            ], env = dict(os.environ, PYTHONPATH = os.path.dirname(venvpool.__file__)))
+            ], env = dict(os.environ, PYTHONPATH = os.path.dirname(os.path.dirname(venvpool.__file__))))
 
     def test_fileglobal(self):
         with TemporaryDirectory() as tempdir:
