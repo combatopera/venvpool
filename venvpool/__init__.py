@@ -791,6 +791,27 @@ class Compact(ParserCommand):
         log.info('Compaction complete.')
 
 @_shortcut
+class Unlock(ParserCommand):
+
+    help = 'release write locks on reboot'
+    letter = 'U'
+
+    @staticmethod
+    def initparser(parser):
+        pass
+
+    @classmethod
+    def mainimpl(cls, args):
+        for versiondir in listorempty(pooldir):
+            for venv in listorempty(versiondir, Venv):
+                try:
+                    venv.writeunlock()
+                except LockStateException:
+                    log.debug("Was not write locked: %s", venv.venvpath)
+                else:
+                    log.warning("Released write lock: %s", venv.venvpath)
+
+@_shortcut
 class ConsoleScripts(ParserCommand):
 
     help = 'activate all console scripts of the given requirement specifier'
